@@ -26,7 +26,7 @@ class Status(View):
 
         f = models.Status.objects.get(status_id=request.GET.get("status_id"))
 
-        return HttpResponse(f.status_json)
+        return JsonResponse(f.status_json)
 
     def put(self, request):
 
@@ -49,7 +49,9 @@ class Status(View):
     def post(self, request):
 
         data = JSONParser().parse(request)
+        print(data)
         serializer = StatusSerializer(data=data)
+        # print(serializer.data)
 
         if serializer.is_valid():
             serializer.save()
