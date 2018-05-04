@@ -1,0 +1,26 @@
+.node circle {
+    stroke: steelblue;
+    stroke-width: 3px;
+}
+
+.node text {
+    font: 14px sans-serif;
+    font-weight: bold;
+}
+
+.link {
+    fill: none;
+    stroke: #acacac;
+    stroke-width: 2px;
+}
+
+div.tooltip {
+    position: absolute;
+    text-align: center;
+    padding: 10px 15px 10px 15px;
+    font: 14px sans-serif;
+    background: lightsteelblue;
+    box-shadow: 1px 2px 8px #626262;
+    border-radius: 8px;
+    pointer-events: none;
+}
