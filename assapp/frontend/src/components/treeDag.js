@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import "./treeDag.css"
+import "../styles/treeDag.css"
 import {tree, hierarchy} from "d3-hierarchy";
 import {select, selectAll} from "d3-selection";
 import {max, event, zoom} from "d3";
@@ -285,7 +285,7 @@ class TreeDag extends Component {
 
     render() {
         return <svg ref={node => this.node = node}></svg>
-    }
+    }div
 
 }
 

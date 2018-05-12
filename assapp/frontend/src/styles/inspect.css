@@ -1,0 +1,87 @@
+:local(.homeContainer) {
+
+}
+
+:local(.home) {
+    width: 40%;
+    height: 80px;
+
+    position: absolute;
+    top:0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    margin: auto;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+:local(.textRunId) {
+
+}
+
+:local(.loader) {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    margin: auto;
+}
+
+:local(.badrequest) {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    text-align: center;
+    vertical-align: middle;
+
+    width: 20%;
+    height: 50px;
+    line-height: 50px;
+    margin: auto;
+}
+
+:local(.headerRoot) {
+    flex-grow: 1;
+    padding: 20px;
+}
+
+:local(.headerPaper) {
+    padding: 5px;
+    width: 200px;
+    text-align: center;
+}
+
+:local(.cardHeader) {
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 10px;
+    text-align: left;
+    color: #5b5b5b
+}
+
+:local(.cardValue) {
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 18px;
+}
+
+:local(.mainPaper) {
+    flex-grow: 1;
+    height: 100%;
+}
+
+:local(.tableRoot) {
+    width: 100%;
+    overflow-x: auto;
+}
+
+:local(.tableMain) {
+    min-width: 700px;
+}
