@@ -69,9 +69,9 @@ class InspectApp extends React.Component {
                         }});
                     this.setState({tableData: {
                             "header": response.data.tableHeader,
-                            "data": response.data.tableStats
+                            "data": response.data.tableData,
+                            "mappings": response.data.tableMappings
                         }});
-                    console.log(this.state.tableData);
                 },
                 (error) => {
                     this.setState({badRequest: true});
@@ -96,8 +96,10 @@ class InspectApp extends React.Component {
             <div>
                 {
                     this.state.badRequest ?
+                        // BAD request component
                         <BadRequestPaper runID={this.state.runID}/> :
                         this.state.loading ?
+                            // Normal main inspect app
                             <Loader/> :
                             <div>
                                 <HeaderCard headerInfo={this.state.headerInfo}/>
@@ -207,7 +209,9 @@ class MainPaper extends React.Component {
                 <Grid item xs={12} sm={6}>
                     <Paper xs={12} sm={6} className={styles.mainPaper}>
                         <h2>Table Overview</h2>
-                        <TableOverview header={this.props.tableData.header}/>
+                        <TableOverview header={this.props.tableData.header}
+                                       data={this.props.tableData.data}
+                                       mappings={this.props.tableData.mappings}/>
                     </Paper>
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -253,13 +257,26 @@ class TableOverview extends React.Component {
                         <TableRow>
                             {this.props.header.map(val => {
                                 return (
-                                    <TableCell>{val}</TableCell>
+                                    <TableCell key={val}>{val}</TableCell>
                                 )
                             })}
                         </TableRow>
                     </TableHead>
                     <TableBody>
-
+                        {this.props.data.map(i => {
+                            return (
+                                <TableRow key={i.process}>
+                                    <TableCell>{i.process}</TableCell>
+                                    <TableCell>{i.running}</TableCell>
+                                    <TableCell>{i.complete}</TableCell>
+                                    <TableCell>{i.error}</TableCell>
+                                    <TableCell>{i.avgTime}</TableCell>
+                                    <TableCell>{i.maxMem}</TableCell>
+                                    <TableCell>{i.avgRead}</TableCell>
+                                    <TableCell>{i.avgWrite}</TableCell>
+                                </TableRow>
+                            )
+                        })}
                     </TableBody>
                 </Table>
             </div>
