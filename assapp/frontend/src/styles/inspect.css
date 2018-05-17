@@ -78,13 +78,19 @@
 }
 
 :local(.tableRoot) {
-    overflow-x: auto;
+    padding: 10px;
 }
 
 :local(.mainTable) {
     min-width: 700px;
 }
 
+:local(.tableButton) {
+    min-width: 70px!important;
+    width: 70px;
+}
+
+/* This prevents the focus outlier when clicking react table headers */
 .ReactTable .rt-thead [role="columnheader"] {
 outline: 0;
 }

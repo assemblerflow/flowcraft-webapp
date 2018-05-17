@@ -8,6 +8,8 @@ import Grid from "material-ui/Grid";
 import Table, { TableBody, TableCell, TableHead, TableRow } from "material-ui/Table";
 import Button from "material-ui/Button";
 import ReactTable from "react-table";
+import Icon from "material-ui/Icon";
+import green from "material-ui/colors/green";
 
 const styles = require("../styles/inspect.css");
 
@@ -71,7 +73,6 @@ class InspectApp extends React.Component {
                             "numProcesses": response.data.processes.length,
                         }});
                     this.setState({tableData: {
-                            "header": response.data.tableHeader,
                             "data": response.data.tableData,
                             "mappings": response.data.tableMappings
                         }});
@@ -114,7 +115,7 @@ class InspectApp extends React.Component {
                             <Loader/> :
                             <div>
                                 <HeaderCard headerInfo={this.state.headerInfo}/>
-                                {this.state.tableData.header ?
+                                {this.state.tableData.data ?
                                     <MainPaper tableData={this.state.tableData}/> :
                                     <div>waiting</div>
                                 }
@@ -193,8 +194,7 @@ class HeaderCard extends React.Component {
             <div>
                 <Grid container className={styles.headerRoot}
                       justify={"center"}
-                      spacing={24}
-                      xs={12}>
+                      spacing={24}>
                     <Grid item>
                         <HeaderPaper header={"Pipeline name"}
                                      value={this.props.headerInfo.pipelineName}/>
@@ -294,7 +294,7 @@ class TableOverview extends React.Component {
             let dt = {};
             Object.keys(processInfo).forEach(header => {
                 if (listToLength.includes(header)) {
-                    dt[header] = <Button>{processInfo[header].length}</Button>;
+                    dt[header] = <Button className={styles.tableButton}>{processInfo[header].length}</Button>;
                 } else {
                     dt[header] = processInfo[header];
                 }
@@ -308,6 +308,21 @@ class TableOverview extends React.Component {
         const mainWidth = 90;
 
         return [
+            {
+                Header: "",
+                accessor: "barrier",
+                minWidth: 30,
+                Cell: row => (
+                    <div>
+                        {row.value === "C" ?
+                            <Icon>check_circle</Icon> :
+                            row.value === "W" ?
+                                <Icon>access_time</Icon> :
+                                <CircularProgress size={25} style={{ color: green[500] }}/>
+                        }
+                    </div>
+                )
+            },
             {
                 Header: "Process",
                 accessor: "process",
@@ -356,8 +371,7 @@ class TableOverview extends React.Component {
                      data={this.prepareData(this.state.data)}
                      columns={this.state.columns}
                      defaultPageSize={this.state.data.length <= 10 ? this.state.data.length : 10}
-                     className="-striped -highlight mainTable"
-                     style={{minWidth: 800}}
+                     className="-striped -highlight"
                  />
              </div>
         )
