@@ -87,7 +87,18 @@
 
 :local(.tableButton) {
     min-width: 70px!important;
-    width: 70px;
+    width: 100%;
+}
+
+:local(.tableCell) {
+    text-align: center;
+    line-height: 33px;
+    vertical-align: middle;
+}
+
+:local(.tableBarrier){
+    text-align: center;
+    margin: auto;
 }
 
 /* This prevents the focus outlier when clicking react table headers */

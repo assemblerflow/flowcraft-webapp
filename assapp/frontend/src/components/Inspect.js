@@ -224,16 +224,16 @@ class MainPaper extends React.Component {
     render () {
         return (
             <Grid container spacing={24} className={styles.headerRoot}>
-                <Grid item xs={12} md={6}>
-                    <Paper xs={12} md={6} className={styles.mainPaper}>
+                <Grid item xs={12} md={12}>
+                    <Paper xs={12} md={12} className={styles.mainPaper}>
                         <h2>Table Overview</h2>
                         <TableOverview header={this.props.tableData.header}
                                        data={this.props.tableData.data}
                                        mappings={this.props.tableData.mappings}/>
                     </Paper>
                 </Grid>
-                <Grid item xs={12} md={6}>
-                    <Paper xs={12} md={6} className={styles.mainPaper}>
+                <Grid item xs={12} md={12}>
+                    <Paper xs={12} md={12} className={styles.mainPaper}>
                         <h2>DAG Overview</h2>
                     </Paper>
                 </Grid>
@@ -265,6 +265,15 @@ class HeaderPaper extends React.Component {
 /*
 Table overview component
  */
+
+const sortIgnoreNA = (a, b) => {
+
+    a = a === "NA" ? -1 : a;
+    b = b === "NA" ? -1 : b;
+
+    return a > b ? 1 : -1;
+
+};
 
 class TableOverview extends React.Component {
 
@@ -312,12 +321,13 @@ class TableOverview extends React.Component {
                 Header: "",
                 accessor: "barrier",
                 minWidth: 30,
+                className: styles.tableBarrier,
                 Cell: row => (
                     <div>
                         {row.value === "C" ?
-                            <Icon>check_circle</Icon> :
+                            <Icon size={30}>check_circle</Icon> :
                             row.value === "W" ?
-                                <Icon>access_time</Icon> :
+                                <Icon size={30}>access_time</Icon> :
                                 <CircularProgress size={25} style={{ color: green[500] }}/>
                         }
                     </div>
@@ -331,34 +341,40 @@ class TableOverview extends React.Component {
                 Header: "Running",
                 accessor: "running",
                 minWidth: mainWidth,
+                className: styles.tableCell
             }, {
                 Header: "Completed",
                 accessor: "complete",
                 minWidth: mainWidth,
+                className: styles.tableCell
             }, {
                 Header: "Error",
                 accessor: "error",
                 minWidth: mainWidth,
+                className: styles.tableCell
             }, {
                 Header: "Avg Time",
                 accessor: "avgTime",
                 minWidth: mainWidth,
-            }, {
-                Header: "Avg Time",
-                accessor: "avgTime",
-                minWidth: mainWidth,
+                className: styles.tableCell
             }, {
                 Header: "Max mem",
                 accessor: "maxMem",
                 minWidth: mainWidth,
+                className: styles.tableCell,
+                sortMethod: sortIgnoreNA
             }, {
                 Header: "Avg Read",
                 accessor: "avgRead",
                 minWidth: mainWidth,
+                className: styles.tableCell,
+                sortMethod: sortIgnoreNA
             }, {
                 Header: "Avg Write",
                 accessor: "avgWrite",
                 minWidth: mainWidth,
+                className: styles.tableCell,
+                sortMethod: sortIgnoreNA
             }
         ];
     }
