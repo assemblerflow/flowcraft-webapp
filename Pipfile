@@ -7,6 +7,9 @@ name = "pypi"
 django = "*"
 djangorestframework = "*"
 "psycopg2" = "*"
+channels = "*"
+channels-redis = "*"
+websocket-client = "*"
 
 [dev-packages]
 

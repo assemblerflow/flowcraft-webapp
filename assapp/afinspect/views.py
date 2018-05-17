@@ -1,17 +1,12 @@
 import json
+from websocket import create_connection
 
 from rest_framework import status
 from rest_framework.parsers import JSONParser
-from rest_framework.response import Response
-from rest_framework.renderers import JSONRenderer
-from rest_framework.decorators import api_view
 
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from django.views import View
 from django.core.exceptions import ObjectDoesNotExist
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
 
 from . import models
 from afinspect.serializers import StatusSerializer
@@ -28,7 +23,6 @@ class Status(View):
     def put(self, request):
 
         data = JSONParser().parse(request)
-        print(data)
         serializer = StatusSerializer(data=data)
 
         if serializer.is_valid():
@@ -36,6 +30,15 @@ class Status(View):
                 run_id=serializer.data["run_id"])
             instance.status_json = serializer.data["status_json"]
             instance.save()
+
+            ws_addr = "ws://{}/ws/inspect/{}/".format(
+                request.get_host(),
+                data["run_id"]
+            )
+            ws_con = create_connection(ws_addr)
+            ws_con.send(json.dumps({
+                "message": data["run_id"]
+            }))
 
             return JsonResponse(serializer.data,
                                 status=status.HTTP_202_ACCEPTED)
@@ -46,9 +49,7 @@ class Status(View):
     def post(self, request):
 
         data = JSONParser().parse(request)
-        print(data)
         serializer = StatusSerializer(data=data)
-        # print(serializer.data)
 
         if serializer.is_valid():
 
@@ -60,6 +61,8 @@ class Status(View):
                 pass
 
             serializer.save()
+
+            # self.ws_con = create_connection()
             return JsonResponse(serializer.data,
                                 status=status.HTTP_201_CREATED)
         else:

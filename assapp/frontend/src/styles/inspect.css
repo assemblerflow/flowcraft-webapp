@@ -78,10 +78,13 @@
 }
 
 :local(.tableRoot) {
-    width: 100%;
     overflow-x: auto;
 }
 
-:local(.tableMain) {
+:local(.mainTable) {
     min-width: 700px;
+}
+
+.ReactTable .rt-thead [role="columnheader"] {
+outline: 0;
 }

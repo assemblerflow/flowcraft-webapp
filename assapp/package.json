@@ -31,6 +31,7 @@
     "material-design-icons": "^3.0.1",
     "material-ui": "^1.0.0-beta.45",
     "react-router-dom": "^4.2.2",
+    "react-table": "^6.8.2",
     "style-loader": "^0.21.0",
     "url-loader": "^1.0.1"
   }

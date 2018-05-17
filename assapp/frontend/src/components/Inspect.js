@@ -6,6 +6,8 @@ import axios from "axios";
 import Typography from "material-ui/Typography";
 import Grid from "material-ui/Grid";
 import Table, { TableBody, TableCell, TableHead, TableRow } from "material-ui/Table";
+import Button from "material-ui/Button";
+import ReactTable from "react-table";
 
 const styles = require("../styles/inspect.css");
 
@@ -23,7 +25,8 @@ export class Inspect extends React.Component {
 
         this.state = {
             runId: runId
-        }
+        };
+
     }
 
     render() {
@@ -81,10 +84,18 @@ class InspectApp extends React.Component {
     }
 
     componentDidMount() {
-        this.hook = setInterval(
-            () => this.updateJson(),
-            1000
+
+        this.updateJson();
+
+        const statusSocket = new WebSocket(
+            "ws://" + window.location.host + "/ws/inspect/" +
+            this.props.runID + "/"
         );
+
+        statusSocket.onmessage = (e) => {
+            this.updateJson()
+        };
+
     }
 
     componentWillUnmount() {
@@ -116,6 +127,12 @@ class InspectApp extends React.Component {
 }
 
 export class InspectHome extends React.Component {
+
+    constructor(props) {
+        super(props);
+
+    }
+
     render () {
         return (
             <div className={styles.homeContainer}>
@@ -126,6 +143,7 @@ export class InspectHome extends React.Component {
                         fullWidth
                         margin="normal"
                         className={styles.textRunId}/>
+
                 </Paper>
             </div>
         )
@@ -206,16 +224,16 @@ class MainPaper extends React.Component {
     render () {
         return (
             <Grid container spacing={24} className={styles.headerRoot}>
-                <Grid item xs={12} sm={6}>
-                    <Paper xs={12} sm={6} className={styles.mainPaper}>
+                <Grid item xs={12} md={6}>
+                    <Paper xs={12} md={6} className={styles.mainPaper}>
                         <h2>Table Overview</h2>
                         <TableOverview header={this.props.tableData.header}
                                        data={this.props.tableData.data}
                                        mappings={this.props.tableData.mappings}/>
                     </Paper>
                 </Grid>
-                <Grid item xs={12} sm={6}>
-                    <Paper xs={12} sm={6} className={styles.mainPaper}>
+                <Grid item xs={12} md={6}>
+                    <Paper xs={12} md={6} className={styles.mainPaper}>
                         <h2>DAG Overview</h2>
                     </Paper>
                 </Grid>
@@ -247,39 +265,101 @@ class HeaderPaper extends React.Component {
 /*
 Table overview component
  */
+
 class TableOverview extends React.Component {
 
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            "data": props.data,
+            "columns": this.prepareColumns()
+        };
+
+    }
+
+    static getDerivedStateFromProps(nextProps, prevState) {
+        if (nextProps.data && nextProps.data !== prevState.data) {
+            return {data: nextProps.data}
+        } else {
+            return null
+        }
+    }
+
+    prepareData(data) {
+
+        const listToLength = ["running", "complete", "error"];
+
+        return data.map(processInfo => {
+            let dt = {};
+            Object.keys(processInfo).forEach(header => {
+                if (listToLength.includes(header)) {
+                    dt[header] = <Button>{processInfo[header].length}</Button>;
+                } else {
+                    dt[header] = processInfo[header];
+                }
+            });
+            return dt;
+        })
+    }
+
+    prepareColumns() {
+
+        const mainWidth = 90;
+
+        return [
+            {
+                Header: "Process",
+                accessor: "process",
+                minWidth: 180
+            }, {
+                Header: "Running",
+                accessor: "running",
+                minWidth: mainWidth,
+            }, {
+                Header: "Completed",
+                accessor: "complete",
+                minWidth: mainWidth,
+            }, {
+                Header: "Error",
+                accessor: "error",
+                minWidth: mainWidth,
+            }, {
+                Header: "Avg Time",
+                accessor: "avgTime",
+                minWidth: mainWidth,
+            }, {
+                Header: "Avg Time",
+                accessor: "avgTime",
+                minWidth: mainWidth,
+            }, {
+                Header: "Max mem",
+                accessor: "maxMem",
+                minWidth: mainWidth,
+            }, {
+                Header: "Avg Read",
+                accessor: "avgRead",
+                minWidth: mainWidth,
+            }, {
+                Header: "Avg Write",
+                accessor: "avgWrite",
+                minWidth: mainWidth,
+            }
+        ];
+    }
+
     render () {
-        return (
-            <div className={styles.tableRoot}>
-                <Table className={styles.tableMain}>
-                    <TableHead>
-                        <TableRow>
-                            {this.props.header.map(val => {
-                                return (
-                                    <TableCell key={val}>{val}</TableCell>
-                                )
-                            })}
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {this.props.data.map(i => {
-                            return (
-                                <TableRow key={i.process}>
-                                    <TableCell>{i.process}</TableCell>
-                                    <TableCell>{i.running}</TableCell>
-                                    <TableCell>{i.complete}</TableCell>
-                                    <TableCell>{i.error}</TableCell>
-                                    <TableCell>{i.avgTime}</TableCell>
-                                    <TableCell>{i.maxMem}</TableCell>
-                                    <TableCell>{i.avgRead}</TableCell>
-                                    <TableCell>{i.avgWrite}</TableCell>
-                                </TableRow>
-                            )
-                        })}
-                    </TableBody>
-                </Table>
-            </div>
+
+         return (
+             <div className={styles.tableRoot}>
+                 <ReactTable
+                     data={this.prepareData(this.state.data)}
+                     columns={this.state.columns}
+                     defaultPageSize={this.state.data.length <= 10 ? this.state.data.length : 10}
+                     className="-striped -highlight mainTable"
+                     style={{minWidth: 800}}
+                 />
+             </div>
         )
     }
 }
