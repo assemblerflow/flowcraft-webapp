@@ -409,6 +409,11 @@ class TableOverview extends React.Component {
                 minWidth: mainWidth,
                 className: styles.tableCell
             }, {
+                Header:  <Tooltip id="cpuhour" title="Cumulative CPU/hour measurement"><div>CPU/hour</div></Tooltip>,
+                accessor: "cpuhour",
+                minWidth: mainWidth,
+                className: styles.tableCell
+            }, {
                 Header:  <Tooltip id="maxmem" title="Maximum RAM used (MB)"><div>Max Mem</div></Tooltip>,
                 accessor: "maxMem",
                 minWidth: mainWidth,
