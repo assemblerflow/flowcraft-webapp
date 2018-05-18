@@ -1,15 +1,22 @@
+// React imports
 import React from "react"
-import Paper from "@material-ui/core/Paper";
-import TextField from "@material-ui/core/TextField"
-import CircularProgress from '@material-ui/core/CircularProgress';
-import axios from "axios";
-import Typography from "@material-ui/core/Typography";
-import Grid from "@material-ui/core/Grid";
-import Button from "@material-ui/core/Button";
 import ReactTable from "react-table";
-import Icon from "@material-ui/core/Icon";
-import green from "@material-ui/core/colors/green";
 
+//Material UI imports
+import CircularProgress from '@material-ui/core/CircularProgress';
+import Typography from "@material-ui/core/Typography";
+import TextField from "@material-ui/core/TextField"
+import green from "@material-ui/core/colors/green";
+import Tooltip from '@material-ui/core/Tooltip';
+import Button from "@material-ui/core/Button";
+import Paper from "@material-ui/core/Paper";
+import Grid from "@material-ui/core/Grid";
+import Icon from "@material-ui/core/Icon";
+
+// Other imports
+import axios from "axios";
+
+// CSS imports
 const styles = require("../styles/inspect.css");
 
 /*
@@ -365,55 +372,56 @@ class TableOverview extends React.Component {
                 )
             },
             {
-                Header: "Lane",
+                Header: <Tooltip id="lane" title="Process lane"><div>Lane</div></Tooltip>,
                 accessor: "lane",
                 minWidth: 25,
                 className: styles.tableCell
             },
             {
-                Header: "ID",
+                Header: <Tooltip id="pid" title="Process Identifier"><div>ID</div></Tooltip>,
                 accessor: "pid",
                 minWidth: 25,
                 className: styles.tableCell
             },
             {
-                Header: "Process",
+                Header: <Tooltip id="pname" title="Process name"><div>Process</div></Tooltip>,
                 accessor: "process",
-                minWidth: 180
+                minWidth: 180,
+                className: styles.tableProcess
             }, {
-                Header: "Running",
+                Header:  <Tooltip id="running" title="Submitted/Running processes"><div>Running</div></Tooltip>,
                 accessor: "running",
                 minWidth: mainWidth,
                 className: styles.tableCell
             }, {
-                Header: "Completed",
+                Header:  <Tooltip id="completed" title="Completed processes"><div>Complete</div></Tooltip>,
                 accessor: "complete",
                 minWidth: mainWidth,
                 className: styles.tableCell
             }, {
-                Header: "Error",
+                Header:  <Tooltip id="error" title="Process exited with error"><div>Error</div></Tooltip>,
                 accessor: "error",
                 minWidth: mainWidth,
                 className: styles.tableCell
             }, {
-                Header: "Avg Time",
+                Header:  <Tooltip id="avgtime" title="Average time each process took"><div>Avg Time</div></Tooltip>,
                 accessor: "avgTime",
                 minWidth: mainWidth,
                 className: styles.tableCell
             }, {
-                Header: "Max mem",
+                Header:  <Tooltip id="maxmem" title="Maximum RAM used (MB)"><div>Max Mem</div></Tooltip>,
                 accessor: "maxMem",
                 minWidth: mainWidth,
                 className: styles.tableCell,
                 sortMethod: sortIgnoreNA
             }, {
-                Header: "Avg Read",
+                Header:  <Tooltip id="avgread" title="Average disk read (MB)"><div>Avg Read</div></Tooltip>,
                 accessor: "avgRead",
                 minWidth: mainWidth,
                 className: styles.tableCell,
                 sortMethod: sortIgnoreNA
             }, {
-                Header: "Avg Write",
+                Header:  <Tooltip id="avgwrite" title="Average disk write (MB)"><div>Avg Write</div></Tooltip>,
                 accessor: "avgWrite",
                 minWidth: mainWidth,
                 className: styles.tableCell,

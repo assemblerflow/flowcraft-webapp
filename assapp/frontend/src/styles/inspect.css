@@ -96,6 +96,12 @@
     vertical-align: middle;
 }
 
+:local(.tableProcess) {
+    text-align: left;
+    line-height: 33px;
+    vertical-align: middle;
+}
+
 :local(.tableBarrier){
     text-align: center;
     margin: auto;
