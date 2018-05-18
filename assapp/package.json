@@ -23,13 +23,13 @@
     "webpack-cli": "^2.1.2"
   },
   "dependencies": {
-    "@material-ui/icons": "^1.0.0-beta.43",
+    "@material-ui/core": "^1.0.0",
+    "@material-ui/icons": "^1.0.0",
     "axios": "^0.18.0",
     "babel-loader": "^7.1.4",
     "css-loader": "^0.28.11",
     "d3": "^5.1.0",
     "material-design-icons": "^3.0.1",
-    "material-ui": "^1.0.0-beta.45",
     "react-router-dom": "^4.2.2",
     "react-table": "^6.8.2",
     "style-loader": "^0.21.0",

@@ -1,11 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import axios from "axios";
-import TreeDag from "./treeDag";
 import { BrowserRouter, Link, Route, Switch } from "react-router-dom";
 import Header from "./Header";
 import Main from "./Main";
-import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 
 // /**
 //  * Function that handles the conditional rendering of the Wrapper component

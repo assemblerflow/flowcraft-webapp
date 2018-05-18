@@ -1,15 +1,14 @@
 import React from "react"
-import Paper from "material-ui/Paper";
-import TextField from "material-ui/TextField"
-import { CircularProgress } from 'material-ui/Progress';
+import Paper from "@material-ui/core/Paper";
+import TextField from "@material-ui/core/TextField"
+import { CircularProgress } from '@material-ui/core/Progress';
 import axios from "axios";
-import Typography from "material-ui/Typography";
-import Grid from "material-ui/Grid";
-import Table, { TableBody, TableCell, TableHead, TableRow } from "material-ui/Table";
-import Button from "material-ui/Button";
+import Typography from "@material-ui/core/Typography";
+import Grid from "@material-ui/core/Grid";
+import Button from "@material-ui/core/Button";
 import ReactTable from "react-table";
-import Icon from "material-ui/Icon";
-import green from "material-ui/colors/green";
+import Icon from "@material-ui/core/Icon";
+import green from "@material-ui/core/colors/green";
 
 const styles = require("../styles/inspect.css");
 
