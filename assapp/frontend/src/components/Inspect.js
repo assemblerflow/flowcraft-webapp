@@ -1,7 +1,7 @@
 import React from "react"
 import Paper from "@material-ui/core/Paper";
 import TextField from "@material-ui/core/TextField"
-import { CircularProgress } from '@material-ui/core/Progress';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import axios from "axios";
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
@@ -294,6 +294,33 @@ class TableOverview extends React.Component {
         }
     }
 
+    parseProcessNames(processStr) {
+
+        const fields = processStr.split("_").reverse();
+        let processName,
+            lane,
+            processId;
+
+        // Check if the last two elements are integers. If so, they are
+        // interpreted as the lane and process ID.
+        if (!isNaN(fields[0]) && !isNaN(fields[1])) {
+            processId = fields[0];
+            lane = fields[1];
+            processName = fields.slice(2,).reverse().join("_")
+        } else {
+            procesID = processStr;
+            lane = "-";
+            processId = "-"
+        }
+
+        return {
+            processName,
+            lane,
+            processId
+        }
+
+    }
+
     prepareData(data) {
 
         const listToLength = ["running", "complete", "error"];
@@ -303,6 +330,11 @@ class TableOverview extends React.Component {
             Object.keys(processInfo).forEach(header => {
                 if (listToLength.includes(header)) {
                     dt[header] = <Button className={styles.tableButton}>{processInfo[header].length}</Button>;
+                } else if (header === "process") {
+                    const res = this.parseProcessNames(processInfo[header]);
+                    dt[header] = res.processName;
+                    dt["lane"] = res.lane;
+                    dt["pid"] = res.processId;
                 } else {
                     dt[header] = processInfo[header];
                 }
@@ -319,7 +351,7 @@ class TableOverview extends React.Component {
             {
                 Header: "",
                 accessor: "barrier",
-                minWidth: 30,
+                minWidth: 25,
                 className: styles.tableBarrier,
                 Cell: row => (
                     <div>
@@ -331,6 +363,18 @@ class TableOverview extends React.Component {
                         }
                     </div>
                 )
+            },
+            {
+                Header: "Lane",
+                accessor: "lane",
+                minWidth: 25,
+                className: styles.tableCell
+            },
+            {
+                Header: "ID",
+                accessor: "pid",
+                minWidth: 25,
+                className: styles.tableCell
             },
             {
                 Header: "Process",
