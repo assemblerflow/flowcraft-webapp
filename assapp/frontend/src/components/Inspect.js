@@ -268,8 +268,8 @@ Table overview component
 
 const sortIgnoreNA = (a, b) => {
 
-    a = a === "NA" ? -1 : a;
-    b = b === "NA" ? -1 : b;
+    a = a === "-" ? -1 : a;
+    b = b === "-" ? -1 : b;
 
     return a > b ? 1 : -1;
 
