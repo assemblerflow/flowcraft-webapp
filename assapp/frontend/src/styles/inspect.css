@@ -82,7 +82,6 @@
 }
 
 :local(.mainTable) {
-    min-width: 700px;
 }
 
 :local(.tableButton) {
@@ -105,6 +104,18 @@
 :local(.tableBarrier){
     text-align: center;
     margin: auto;
+}
+
+:local(.warningIcon){
+    font-size: 18px!important;
+    color: #ff935e;
+    line-height: 13px;
+    vertical-align: middle;
+    text-align: right;
+}
+
+:local(.warningPopover){
+    margin: 10px;
 }
 
 /* This prevents the focus outlier when clicking react table headers */

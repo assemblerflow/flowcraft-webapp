@@ -3,15 +3,22 @@ import React from "react"
 import ReactTable from "react-table";
 
 //Material UI imports
+import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction"
 import CircularProgress from '@material-ui/core/CircularProgress';
+import ListItemIcon from "@material-ui/core/ListItemIcon";
+import ListItemText from "@material-ui/core/ListItemText";
 import Typography from "@material-ui/core/Typography";
-import TextField from "@material-ui/core/TextField"
+import TextField from "@material-ui/core/TextField";
 import green from "@material-ui/core/colors/green";
+import ListItem from "@material-ui/core/ListItem";
 import Tooltip from '@material-ui/core/Tooltip';
+import Divider from "@material-ui/core/Divider";
+import Popover from "@material-ui/core/Popover";
 import Button from "@material-ui/core/Button";
 import Paper from "@material-ui/core/Paper";
 import Grid from "@material-ui/core/Grid";
 import Icon from "@material-ui/core/Icon";
+import List from "@material-ui/core/List";
 
 // Other imports
 import axios from "axios";
@@ -342,6 +349,13 @@ class TableOverview extends React.Component {
                     dt[header] = res.processName;
                     dt["lane"] = res.lane;
                     dt["pid"] = res.processId;
+                } else if (header === "maxMem"){
+                    if (Object.keys(processInfo["memWarn"]).length !== 0 && processInfo["m" +
+                    "emWarn"].constructor === Object){
+                        dt[header] = <div>{processInfo[header]} <WarningPopover warningType={"memory"} warnings={processInfo["memWarn"]} /></div>
+                    } else {
+                        dt[header] = processInfo[header];
+                    }
                 } else {
                     dt[header] = processInfo[header];
                 }
@@ -404,29 +418,34 @@ class TableOverview extends React.Component {
                 minWidth: mainWidth,
                 className: styles.tableCell
             }, {
-                Header:  <Tooltip id="avgtime" title="Average time each process took"><div>Avg Time</div></Tooltip>,
+                // Header:  <Tooltip id="avgtime" title="Average time each process took"><div>Avg Time</div></Tooltip>,
+                Header: "Avg Time",
                 accessor: "avgTime",
                 minWidth: mainWidth,
                 className: styles.tableCell
             }, {
-                Header:  <Tooltip id="cpuhour" title="Cumulative CPU/hour measurement"><div>CPU/hour</div></Tooltip>,
+                // Header:  <Tooltip id="cpuhour" title="Cumulative CPU/hour measurement"><div>CPU/hour</div></Tooltip>,
+                Header: "CPU/Hour",
                 accessor: "cpuhour",
                 minWidth: mainWidth,
                 className: styles.tableCell
             }, {
-                Header:  <Tooltip id="maxmem" title="Maximum RAM used (MB)"><div>Max Mem</div></Tooltip>,
+                // Header:  <Tooltip id="maxmem" title="Maximum RAM used (MB)"><div>Max Mem</div></Tooltip>,
+                Header: "Max Mem",
                 accessor: "maxMem",
                 minWidth: mainWidth,
                 className: styles.tableCell,
                 sortMethod: sortIgnoreNA
             }, {
-                Header:  <Tooltip id="avgread" title="Average disk read (MB)"><div>Avg Read</div></Tooltip>,
+                // Header:  <Tooltip id="avgread" title="Average disk read (MB)"><div>Avg Read</div></Tooltip>,
+                Header: "Avg Read",
                 accessor: "avgRead",
                 minWidth: mainWidth,
                 className: styles.tableCell,
                 sortMethod: sortIgnoreNA
             }, {
-                Header:  <Tooltip id="avgwrite" title="Average disk write (MB)"><div>Avg Write</div></Tooltip>,
+                // Header:  <Tooltip id="avgwrite" title="Average disk write (MB)"><div>Avg Write</div></Tooltip>,
+                Header: "Avg Write",
                 accessor: "avgWrite",
                 minWidth: mainWidth,
                 className: styles.tableCell,
@@ -446,6 +465,68 @@ class TableOverview extends React.Component {
                      className="-striped -highlight"
                  />
              </div>
+        )
+    }
+}
+
+class WarningPopover extends React.Component {
+
+    state = {
+        anchorEl: null,
+    };
+
+    handleClick = event => {
+        this.setState({
+            anchorEl: event.currentTarget,
+        });
+    };
+
+    handleClose = () => {
+        this.setState({
+            anchorEl: null,
+        });
+    };
+
+    render() {
+        const { anchorEl } = this.state;
+        const title = this.props.warningType === "memory" ?
+            "Excessive RAM usage" :
+            "Excessive CPU usage";
+
+        return(
+            <span>
+                <Icon onClick={this.handleClick} className={styles.warningIcon}>
+                    warning-outline
+                </Icon>
+                <Popover
+                    open={Boolean(anchorEl)}
+                    anchorEl={anchorEl}
+                    onClose={this.handleClose}
+                    anchorOrigin={{
+                      vertical: "center",
+                      horizontal: "right",
+                    }}
+                    transformOrigin={{
+                      vertical: "center",
+                      horizontal: "left",
+                    }}>
+                    <List>
+                        <ListItem>
+                            <ListItemText primary={title}/>
+                        </ListItem>
+                    </List>
+                    <Divider/>
+                    <List style={{ maxHeight: 200, overflow: "auto"}}>
+                        {Object.keys(this.props.warnings).map(val => {
+                            return (
+                                <ListItem key={val}>
+                                    <ListItemText primary={val} secondary={`${this.props.warnings[val].value}Mb`}/>
+                                </ListItem>
+                            )
+                        })}
+                    </List>
+                </Popover>
+            </span>
         )
     }
 }
