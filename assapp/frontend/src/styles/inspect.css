@@ -118,6 +118,18 @@
     margin: 10px;
 }
 
+:local(.tagModal){
+    position: absolute;
+    top:0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 70%;
+    height: 70%;
+    margin: auto;
+    padding: 10px;
+}
+
 /* This prevents the focus outlier when clicking react table headers */
 .ReactTable .rt-thead [role="columnheader"] {
 outline: 0;

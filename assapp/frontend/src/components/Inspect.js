@@ -3,19 +3,18 @@ import React from "react"
 import ReactTable from "react-table";
 
 //Material UI imports
-import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction"
-import CircularProgress from '@material-ui/core/CircularProgress';
-import ListItemIcon from "@material-ui/core/ListItemIcon";
+import CircularProgress from "@material-ui/core/CircularProgress";
 import ListItemText from "@material-ui/core/ListItemText";
 import Typography from "@material-ui/core/Typography";
 import TextField from "@material-ui/core/TextField";
 import green from "@material-ui/core/colors/green";
 import ListItem from "@material-ui/core/ListItem";
-import Tooltip from '@material-ui/core/Tooltip';
+import Tooltip from "@material-ui/core/Tooltip";
 import Divider from "@material-ui/core/Divider";
 import Popover from "@material-ui/core/Popover";
 import Button from "@material-ui/core/Button";
 import Paper from "@material-ui/core/Paper";
+import Modal from "@material-ui/core/Modal";
 import Grid from "@material-ui/core/Grid";
 import Icon from "@material-ui/core/Icon";
 import List from "@material-ui/core/List";
@@ -70,7 +69,8 @@ class InspectApp extends React.Component {
             badRequest: false,
             runID: props.runID,
             headerInfo: {},
-            tableData: {}
+            tableData: {},
+            tagData: {},
         };
     }
 
@@ -89,6 +89,7 @@ class InspectApp extends React.Component {
                             "data": response.data.tableData,
                             "mappings": response.data.tableMappings
                         }});
+                    this.setState({tagData: response.data.processTags})
                 },
                 (error) => {
                     this.setState({badRequest: true});
@@ -117,6 +118,7 @@ class InspectApp extends React.Component {
     }
 
     render () {
+        console.log(this.state.tagData)
         return (
             <div>
                 {
@@ -129,7 +131,8 @@ class InspectApp extends React.Component {
                             <div>
                                 <HeaderCard headerInfo={this.state.headerInfo}/>
                                 {this.state.tableData.data ?
-                                    <MainPaper tableData={this.state.tableData}/> :
+                                    <MainPaper tableData={this.state.tableData}
+                                               tagData={this.state.tagData}/> :
                                     <div>waiting</div>
                                 }
                             </div>
@@ -242,7 +245,8 @@ class MainPaper extends React.Component {
                         <h2>Table Overview</h2>
                         <TableOverview header={this.props.tableData.header}
                                        data={this.props.tableData.data}
-                                       mappings={this.props.tableData.mappings}/>
+                                       mappings={this.props.tableData.mappings}
+                                       tagData={this.props.tagData}/>
                     </Paper>
                 </Grid>
                 <Grid item xs={12} md={12}>
@@ -343,7 +347,11 @@ class TableOverview extends React.Component {
             let dt = {};
             Object.keys(processInfo).forEach(header => {
                 if (listToLength.includes(header)) {
-                    dt[header] = <Button className={styles.tableButton}>{processInfo[header].length}</Button>;
+                    // dt[header] = <Button className={styles.tableButton}>{processInfo[header].length}</Button>;
+                    dt[header] = <TagInspectionModal tagList={processInfo[header]}
+                                                     process={processInfo["process"]}
+                                                     header={header}
+                                                     tagData={this.props.tagData}/>
                 } else if (header === "process") {
                     const res = this.parseProcessNames(processInfo[header]);
                     dt[header] = res.processName;
@@ -466,6 +474,52 @@ class TableOverview extends React.Component {
                  />
              </div>
         )
+    }
+}
+
+class TagInspectionModal extends  React.Component {
+
+    state = {
+        open: false,
+    };
+
+    handleOpen = () => {
+        this.setState({ open: true });
+    };
+
+    handleClose = () => {
+        this.setState({ open: false });
+    };
+
+    render () {
+        return(
+            <div>
+                <Button className={styles.tableButton}  onClick={this.handleOpen}>
+                    {this.props.tagList.length}
+                </Button>
+                <Modal
+                    aria-labelledby="simple-modal-title"
+                    aria-describedby="simple-modal-description"
+                    open={this.state.open}
+                    onClose={this.handleClose}>
+                    <Paper className={styles.tagModal}>
+                        <Typography variant={"title"} gutterBottom>
+                            Showing '{this.props.header}' tags for process '{this.props.process}'
+                            </Typography>
+                        <Divider/>
+                        <List>
+                            {this.props.tagList.map((t) => {
+                                return (
+                                <ListItem key={t}>
+                                    <ListItemText primary={t}/>
+                                </ListItem>
+                                )
+                            })}
+                        </List>
+                    </Paper>
+                </Modal>
+            </div>
+            )
     }
 }
 
