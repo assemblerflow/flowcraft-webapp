@@ -3,6 +3,7 @@ import { Switch, Route } from "react-router-dom";
 import Home from "./Home";
 import {Inspect, InspectHome} from "./Inspect";
 
+import styles from "../styles/main.css"
 
 
 // The Main component renders one of the three provided
@@ -11,7 +12,7 @@ import {Inspect, InspectHome} from "./Inspect";
 // with /roster or /schedule. The / route will only match
 // when the pathname is exactly the string "/"
 const Main = () => (
-  <main>
+  <main className={styles.mainContainer}>
     <Switch>
       <Route exact path="/" component={Home}/>
       <Route exact path="/inspect" component={InspectHome}/>

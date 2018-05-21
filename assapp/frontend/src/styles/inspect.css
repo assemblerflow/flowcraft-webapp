@@ -48,7 +48,7 @@
 }
 
 :local(.paperContainer) {
-    margin-top: 30px;
+    margin-top: 25px;
 }
 
 :local(.headerGrid) {
@@ -56,28 +56,50 @@
     padding: 20px;
 }
 
-:local(.headerPaper) {
-    width: 100%;
+:local(.headerList) {
+    flex-basis: 70%!important;
 }
 
-:local(.headerPaper) {
-    padding: 5px;
+:local(.headerStatus) {
+    flex-basis: 30%!important;
+    min-width: 300px;
+}
+
+:local(.headerItem) {
+    min-width: 200px;
+}
+
+:local(.statusTitle) {
+    font-size: 20px!important;
+    text-align: left;
+    font-weight: bold!important;
+}
+
+:local(.statusValue) {
+    font-size: 20px!important;
+    font-weight: bold!important;
+    text-align: left;
+}
+
+:local(.headerTitle) {
+    font-size: 18px!important;
+    text-align: left;
+    min-width: 200px;
     width: 200px;
-    text-align: center;
+    color: #5b5b5b!important;
+}
+
+:local(.headerValue) {
+    font-size: 20px!important;
+    text-align: left;
+    font-weight: bold!important;
+    color: #000!important;
 }
 
 :local(.cardHeader) {
-    font-size: 14px;
-    font-weight: bold;
-    line-height: 10px;
+    font-size: 16px;
     text-align: left;
-    color: #5b5b5b
-}
-
-:local(.cardValue) {
-    font-size: 18px;
-    font-weight: bold;
-    line-height: 18px;
+    color: #fff
 }
 
 :local(.mainPaper) {

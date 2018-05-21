@@ -3,15 +3,21 @@ import React from "react"
 import ReactTable from "react-table";
 
 //Material UI imports
+import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary"
+import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails"
 import CircularProgress from "@material-ui/core/CircularProgress";
+import ExpansionPanel from "@material-ui/core/ExpansionPanel";
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ListItemText from "@material-ui/core/ListItemText";
 import Typography from "@material-ui/core/Typography";
 import TextField from "@material-ui/core/TextField";
 import green from "@material-ui/core/colors/green";
 import ListItem from "@material-ui/core/ListItem";
+import blue from "@material-ui/core/colors/blue";
 import Tooltip from "@material-ui/core/Tooltip";
 import Divider from "@material-ui/core/Divider";
 import Popover from "@material-ui/core/Popover";
+import red from "@material-ui/core/colors/red";
 import Button from "@material-ui/core/Button";
 import Paper from "@material-ui/core/Paper";
 import Modal from "@material-ui/core/Modal";
@@ -21,6 +27,7 @@ import List from "@material-ui/core/List";
 
 // Other imports
 import axios from "axios";
+import moment from "moment";
 
 // CSS imports
 const styles = require("../styles/inspect.css");
@@ -59,7 +66,6 @@ export class Inspect extends React.Component {
 MAIN APP CONTROLLERS
  */
 
-
 class InspectApp extends React.Component {
 
     constructor(props) {
@@ -79,12 +85,14 @@ class InspectApp extends React.Component {
             .then(
                 (response) => {
                     this.setState({loading: false});
-                    this.setState({headerInfo: {
-                            "pipelineTag": response.data.pipelineTag,
-                            "pipelineName": response.data.pipelineName,
-                            "runStatus": response.data.runStatus,
-                            "numProcesses": response.data.processes.length,
-                        }});
+                    this.setState({
+                        headerInfo: response.data.generalOverview,
+                        runStatus: {
+                            status: response.data.runStatus,
+                            timeStart: response.data.timeStart,
+                            timeStop: response.data.timeStop,
+                        }
+                    });
                     this.setState({tableData: {
                             "data": response.data.tableData,
                             "mappings": response.data.tableMappings
@@ -128,9 +136,10 @@ class InspectApp extends React.Component {
                             // Normal main inspect app
                             <Loader/> :
                             <div>
-                                <HeaderCard headerInfo={this.state.headerInfo}/>
                                 {this.state.tableData.data ?
                                     <div>
+                                        <GeneralOverview headerInfo={this.state.headerInfo}
+                                                         runStatus={this.state.runStatus}/>
                                         <MainTable tableData={this.state.tableData}
                                                    tagData={this.state.tagData}/>
                                         <MainDag/>
@@ -206,28 +215,19 @@ class BadRequestPaper extends React.Component {
 /*
 Header component of the inspection with summary information
  */
-class HeaderCard extends React.Component {
+class GeneralOverview extends React.Component {
     render () {
         return (
-            <PaperContainer title={"Pipeline overview"}>
+            <PaperContainer title={"General overview"}>
+                <Divider/>
                 <Grid container className={styles.headerGrid}
                       justify={"center"}
                       spacing={24}>
-                      <Grid item>
-                          <HeaderPaper header={"Pipeline name"}
-                                       value={this.props.headerInfo.pipelineName}/>
+                      <Grid item className={styles.headerList}>
+                          <HeaderList headerInfo={this.props.headerInfo}/>
                       </Grid>
-                      <Grid item>
-                          <HeaderPaper header={"Pipeline tag"}
-                                       value={this.props.headerInfo.pipelineTag}/>
-                      </Grid>
-                      <Grid item>
-                          <HeaderPaper header={"Number of processes"}
-                                       value={this.props.headerInfo.numProcesses}/>
-                      </Grid>
-                      <Grid item >
-                          <HeaderPaper header={"Run status"}
-                                       value={this.props.headerInfo.runStatus}/>
+                      <Grid item className={styles.headerStatus}>
+                          <StatusPaper runStatus={this.props.runStatus}/>
                       </Grid>
                 </Grid>
             </PaperContainer>
@@ -270,33 +270,107 @@ Main paper components
  */
 
 class PaperContainer extends React.Component {
+
     render () {
         return (
-            <div>
-                <Paper className={styles.paperContainer}>
-                    <Typography gutterBottom align={"center"} variant={"headline"}>{this.props.title}</Typography>
-                    <div>{this.props.children}</div>
-                </Paper>
+            <div className={styles.paperContainer}>
+                <ExpansionPanel defaultExpanded>
+                    <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+                        <Typography variant={"title"}>{this.props.title}</Typography>
+                    </ExpansionPanelSummary>
+                    <Divider/>
+                    <ExpansionPanelDetails>
+                        {this.props.children}
+                    </ExpansionPanelDetails>
+                </ExpansionPanel>
             </div>
         )
     }
 }
 
-/*
-Individual card components
- */
-class HeaderPaper extends React.Component {
+class StatusPaper extends React.Component {
+
+    constructor(props){
+        super(props);
+        this.state = {
+            duration: 0,
+            status: ""
+        };
+    }
+
+    componentDidMount(){
+        this.timerID = setInterval(
+            () => this.getDuration(),
+            1000
+        );
+    }
+
+    componentWillUnmount(){
+        clearInterval(this.timerID);
+    }
+
+    getDuration () {
+
+        const start = moment(this.props.runStatus.timeStart);
+
+        let stop;
+        if (this.props.runStatus.timeStop === "-"){
+            stop = moment();
+        } else {
+            stop = moment(this.props.runStatus.timeStop);
+        }
+
+        const d = stop.diff(start);
+        this.setState({duration: moment.utc(d).format("HH:mm:ss")})
+    }
+
     render () {
+
+        const statusColorMap = {
+            "complete": green[400],
+            "running": blue[300],
+            "aborted": red[300],
+        };
+        const status = this.props.runStatus.status;
+
         return (
+            <Paper style={{padding: 10, backgroundColor: statusColorMap[status]}}>
+                <div style={{marginBottom: 10}}>
+                    <span style={{color: "white"}} className={styles.statusTitle}> Status: {status}</span>
+                </div>
+                <div>
+                    <span className={styles.cardHeader}> Start time: {this.props.runStatus.timeStart}</span>
+                </div>
+                <div>
+                    <span className={styles.cardHeader}> Stop time: {this.props.runStatus.timeStop}</span>
+                </div>
+                <div style={{marginTop: 5}}>
+                    <span style={{fontWeight: "bold"}} className={styles.cardHeader}> Duration: {this.state.duration}</span>
+                </div>
+            </Paper>
+        )
+    }
+}
+
+
+class HeaderList extends React.Component {
+    render () {
+        return(
             <div>
-                <Paper className={styles.headerPaper}>
-                    <p className={styles.cardHeader}>
-                        {this.props.header}
-                    </p>
-                    <p className={styles.cardValue}>
-                        {this.props.value}
-                    </p>
-                </Paper>
+                <Grid container>
+                    {this.props.headerInfo.map((v) => {
+                        return(
+                            <Grid key={v.header} item xs={4} className={styles.headerItem}>
+                                <List><ListItem>
+                                    <ListItemText primary={v.header}
+                                                  secondary={v.value}
+                                                  classes={{primary: styles.headerTitle,
+                                                            secondary: styles.headerValue}}/>
+                                </ListItem></List>
+                            </Grid>
+                        )
+                    })}
+                </Grid>
             </div>
         )
     }

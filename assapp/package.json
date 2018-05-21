@@ -30,6 +30,7 @@
     "css-loader": "^0.28.11",
     "d3": "^5.1.0",
     "material-design-icons": "^3.0.1",
+    "moment": "^2.22.1",
     "react-router-dom": "^4.2.2",
     "react-table": "^6.8.2",
     "style-loader": "^0.21.0",
