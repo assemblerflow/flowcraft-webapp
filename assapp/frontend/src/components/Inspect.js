@@ -99,6 +99,8 @@ class InspectApp extends React.Component {
                     });
                     // Set details data
                     this.setState({detailsData: response.data.generalDetails});
+                    // Set process submission data
+                    this.setState({processData: response.data.processInfo});
                     // Set table data
                     this.setState({
                         tableData: {
@@ -211,7 +213,7 @@ class InspectPannels extends React.Component {
                         <Typography variant={"title"}>Process submission</Typography>
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails>
-                        <div>Nothing</div>
+                        <ProcessSubmission processData={this.props.processData}/>
                     </ExpansionPanelDetails>
                 </ExpansionPanel>
 
@@ -396,6 +398,54 @@ class DetailsOverview extends React.Component {
                     )
                 })}
             </List>
+        )
+    }
+}
+
+/*
+Process submission components
+ */
+
+class ProcessSubmission extends React.Component {
+
+    countSubmissions () {
+
+        let counts = {
+            "submitted": 0,
+            "retry": 0,
+            "failed": 0,
+            "finished": 0
+        };
+
+        for (const [k, v] of Object.entries(this.props.processData)) {
+            for (const header of Object.keys(counts)) {
+                counts[header] += v[header].length
+            }
+        }
+
+        return counts
+    }
+
+    render () {
+
+        const headerMap = {
+            "Submmited": "submitted",
+            "Retrying": "retry",
+            "Failed": "failed",
+            "Completed": "finished"
+        };
+        const counts = this.countSubmissions();
+
+        return (
+            <Grid container justify={"center"} spacing={24}>
+                {Object.entries(headerMap).map(([header, key]) => {
+                    return (
+                        <Grid key={header} item xs={3}>
+                            <div>{counts[key]}</div>
+                        </Grid>
+                    )
+                })}
+            </Grid>
         )
     }
 }
