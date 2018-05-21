@@ -75,8 +75,9 @@ class InspectApp extends React.Component {
             loading: true,
             badRequest: false,
             runID: props.runID,
-            headerInfo: {},
-            headerDetails: {},
+            generalData: {},
+            runStatus: {},
+            detailsData: {},
             tableData: {},
             tagData: {},
         };
@@ -87,20 +88,25 @@ class InspectApp extends React.Component {
             .then(
                 (response) => {
                     this.setState({loading: false});
+                    // Set general overview data
                     this.setState({
-                        headerInfo: response.data.generalOverview,
-                        headerDetails: response.data.generalDetails,
+                        generalData: response.data.generalOverview,
                         runStatus: {
                             status: response.data.runStatus,
                             timeStart: response.data.timeStart,
                             timeStop: response.data.timeStop,
                         }
                     });
-                    this.setState({tableData: {
+                    // Set details data
+                    this.setState({detailsData: response.data.generalDetails});
+                    // Set table data
+                    this.setState({
+                        tableData: {
                             "data": response.data.tableData,
                             "mappings": response.data.tableMappings
-                        }});
-                    this.setState({tagData: response.data.processTags})
+                        },
+                        tagData: response.data.processTags
+                    });
                 },
                 (error) => {
                     this.setState({badRequest: true});
@@ -140,14 +146,7 @@ class InspectApp extends React.Component {
                             <Loader/> :
                             <div>
                                 {this.state.tableData.data ?
-                                    <div>
-                                        <GeneralOverview headerInfo={this.state.headerInfo}
-                                                         headerDetails={this.state.headerDetails}
-                                                         runStatus={this.state.runStatus}/>
-                                        <MainTable tableData={this.state.tableData}
-                                                   tagData={this.state.tagData}/>
-                                        <MainDag/>
-                                    </div>  :
+                                    <InspectPannels {...this.state}/> :
                                     <div>waiting</div>
                                 }
                             </div>
@@ -155,7 +154,6 @@ class InspectApp extends React.Component {
             </div>
         )
     }
-
 }
 
 export class InspectHome extends React.Component {
@@ -173,10 +171,68 @@ export class InspectHome extends React.Component {
                         id="runiD"
                         label="Provide assemblerflow's run ID"
                         fullWidth
-                        margin="normal"
-                        className={styles.textRunId}/>
+                        margin="normal"/>
 
                 </Paper>
+            </div>
+        )
+    }
+}
+
+/*
+MAIN INSPECTION PANEL CONTROLLER
+ */
+
+class InspectPannels extends React.Component {
+    render () {
+        return (
+            <div>
+                <ExpansionPanel defaultExpanded style={{margin: 0}}>
+                    <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+                        <Typography variant={"title"}>General Overview</Typography>
+                    </ExpansionPanelSummary>
+                    <ExpansionPanelDetails>
+                        <GeneralOverview generalData={this.props.generalData}
+                                         runStatus={this.props.runStatus}/>
+                    </ExpansionPanelDetails>
+                </ExpansionPanel>
+
+                <ExpansionPanel style={{marginTop: 0}}>
+                    <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+                        <Typography variant={"title"}>Details</Typography>
+                    </ExpansionPanelSummary>
+                    <ExpansionPanelDetails>
+                        <DetailsOverview detailsData={this.props.detailsData}/>
+                    </ExpansionPanelDetails>
+                </ExpansionPanel>
+
+                <ExpansionPanel defaultExpanded>
+                    <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+                        <Typography variant={"title"}>Process submission</Typography>
+                    </ExpansionPanelSummary>
+                    <ExpansionPanelDetails>
+                        <div>Nothing</div>
+                    </ExpansionPanelDetails>
+                </ExpansionPanel>
+
+                <ExpansionPanel defaultExpanded>
+                    <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+                        <Typography variant={"title"}>Table overview</Typography>
+                    </ExpansionPanelSummary>
+                    <ExpansionPanelDetails>
+                        <MainTable tableData={this.props.tableData}
+                                   tagData={this.props.tagData}/>
+                    </ExpansionPanelDetails>
+                </ExpansionPanel>
+
+                <ExpansionPanel defaultExpanded>
+                    <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+                        <Typography variant={"title"}>DAG overview</Typography>
+                    </ExpansionPanelSummary>
+                    <ExpansionPanelDetails>
+                        <MainDag/>
+                    </ExpansionPanelDetails>
+                </ExpansionPanel>
             </div>
         )
     }
@@ -217,75 +273,22 @@ class BadRequestPaper extends React.Component {
 }
 
 /*
-Main paper components
- */
+GENERAL OVERVIEW
+*/
 
-class PaperContainer extends React.Component {
-
+class GeneralOverview extends  React.Component {
     render () {
         return (
-            <div className={styles.paperContainer}>
-                <ExpansionPanel defaultExpanded>
-                    <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-                        <Typography variant={"title"}>{this.props.title}</Typography>
-                    </ExpansionPanelSummary>
-                    <Divider/>
-                    <ExpansionPanelDetails>
-                        {this.props.children}
-                    </ExpansionPanelDetails>
-                </ExpansionPanel>
-            </div>
-        )
-    }
-}
-
-//
-// GENERAL OVERVIEW
-//
-
-/*
-Header component of the inspection with summary information
- */
-class GeneralOverview extends React.Component {
-    render () {
-        return (
-            <div className={styles.paperContainer}>
-                <ExpansionPanel defaultExpanded>
-                    <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-                        <Typography variant={"title"}>General overview</Typography>
-                    </ExpansionPanelSummary>
-                    <ExpansionPanelDetails>
-                        <Grid container className={styles.headerGrid}
-                              justify={"center"}
-                              spacing={24}>
-                            <Grid item className={styles.headerList}>
-                                <HeaderOverview headerInfo={this.props.headerInfo}
-                                                headerDetails={this.props.headerDetails}/>
-                            </Grid>
-                            <Grid item className={styles.headerStatus}>
-                                <StatusPaper runStatus={this.props.runStatus}/>
-                            </Grid>
-                        </Grid>
-                    </ExpansionPanelDetails>
-                </ExpansionPanel>
-                <ExpansionPanel>
-                    <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-                        <Typography variant={"title"}>Details:</Typography>
-                    </ExpansionPanelSummary>
-                    <ExpansionPanelDetails>
-                        <List component="nav"
-                              dense>
-                            {this.props.headerDetails.map((v) => {
-                                return (
-                                    <ListItem key={v.header}>
-                                        <ListItemText primary={v.header} secondary={v.value}/>
-                                    </ListItem>
-                                )
-                            })}
-                        </List>
-                    </ExpansionPanelDetails>
-                </ExpansionPanel>
-            </div>
+            <Grid container className={styles.headerGrid}
+                  justify={"center"}
+                  spacing={24}>
+                <Grid item className={styles.headerData}>
+                    <HeaderOverview generalData={this.props.generalData}/>
+                </Grid>
+                <Grid item className={styles.headerStatus}>
+                    <StatusPaper runStatus={this.props.runStatus}/>
+                </Grid>
+            </Grid>
         )
     }
 }
@@ -295,7 +298,7 @@ class HeaderOverview extends React.Component {
         return(
             <div>
                 <Grid container>
-                    {this.props.headerInfo.map((v) => {
+                    {this.props.generalData.map((v) => {
                         return(
                             <Grid key={v.header} item xs={4} className={styles.headerItem}>
                                 <List><ListItem>
@@ -359,7 +362,7 @@ class StatusPaper extends React.Component {
         const status = this.props.runStatus.status;
 
         return (
-            <Paper style={{padding: 10, backgroundColor: statusColorMap[status]}}>
+            <Paper elevation={6} style={{padding: 10, backgroundColor: statusColorMap[status]}}>
                 <div style={{marginBottom: 10}}>
                     <span style={{color: "white"}} className={styles.statusTitle}> Status: {status}</span>
                 </div>
@@ -378,18 +381,36 @@ class StatusPaper extends React.Component {
 }
 
 /*
+Header component of the inspection with summary information
+ */
+class DetailsOverview extends React.Component {
+    render () {
+        return (
+            <List component="nav"
+                  dense>
+                {this.props.detailsData.map((v) => {
+                    return (
+                        <ListItem key={v.header}>
+                            <ListItemText primary={v.header} secondary={v.value}/>
+                        </ListItem>
+                    )
+                })}
+            </List>
+        )
+    }
+}
+
+
+/*
 Main table component
 */
 class MainTable extends React.Component {
     render () {
         return (
-            <Paper className={styles.mainPaper}>
-                <h2>Table Overview</h2>
-                 <TableOverview header={this.props.tableData.header}
-                                data={this.props.tableData.data}
-                                mappings={this.props.tableData.mappings}
-                                tagData={this.props.tagData}/>
-            </Paper>
+            <TableOverview header={this.props.tableData.header}
+                           data={this.props.tableData.data}
+                           mappings={this.props.tableData.mappings}
+                           tagData={this.props.tagData}/>
         )
     }
 }
@@ -597,7 +618,7 @@ class TableOverview extends React.Component {
     render () {
 
          return (
-             <div className={styles.tableRoot}>
+             <div className={styles.mainPaper}>
                  <ReactTable
                      data={this.prepareData(this.state.data)}
                      columns={this.state.columns}

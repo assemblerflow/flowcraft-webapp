@@ -18,7 +18,7 @@ const Header = (props) => {
     const {classes} = props;
 
     return (
-        <div>
+        <div style={{ marginBottom: 25}}>
             <AppBar position={"static"} color="default">
                 <Toolbar>
                     <IconButton>
