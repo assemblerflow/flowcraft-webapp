@@ -118,7 +118,6 @@ class InspectApp extends React.Component {
     }
 
     render () {
-        console.log(this.state.tagData)
         return (
             <div>
                 {
@@ -131,8 +130,11 @@ class InspectApp extends React.Component {
                             <div>
                                 <HeaderCard headerInfo={this.state.headerInfo}/>
                                 {this.state.tableData.data ?
-                                    <MainPaper tableData={this.state.tableData}
-                                               tagData={this.state.tagData}/> :
+                                    <div>
+                                        <MainTable tableData={this.state.tableData}
+                                                   tagData={this.state.tagData}/>
+                                        <MainDag/>
+                                    </div>  :
                                     <div>waiting</div>
                                 }
                             </div>
@@ -207,28 +209,45 @@ Header component of the inspection with summary information
 class HeaderCard extends React.Component {
     render () {
         return (
-            <div>
-                <Grid container className={styles.headerRoot}
+            <PaperContainer title={"Pipeline overview"}>
+                <Grid container className={styles.headerGrid}
                       justify={"center"}
                       spacing={24}>
-                    <Grid item>
-                        <HeaderPaper header={"Pipeline name"}
-                                     value={this.props.headerInfo.pipelineName}/>
-                    </Grid>
-                    <Grid item>
-                        <HeaderPaper header={"Pipeline tag"}
-                                     value={this.props.headerInfo.pipelineTag}/>
-                    </Grid>
-                    <Grid item>
-                        <HeaderPaper header={"Number of processes"}
-                                     value={this.props.headerInfo.numProcesses}/>
-                    </Grid>
-                    <Grid item >
-                        <HeaderPaper header={"Run status"}
-                                     value={this.props.headerInfo.runStatus}/>
-                    </Grid>
+                      <Grid item>
+                          <HeaderPaper header={"Pipeline name"}
+                                       value={this.props.headerInfo.pipelineName}/>
+                      </Grid>
+                      <Grid item>
+                          <HeaderPaper header={"Pipeline tag"}
+                                       value={this.props.headerInfo.pipelineTag}/>
+                      </Grid>
+                      <Grid item>
+                          <HeaderPaper header={"Number of processes"}
+                                       value={this.props.headerInfo.numProcesses}/>
+                      </Grid>
+                      <Grid item >
+                          <HeaderPaper header={"Run status"}
+                                       value={this.props.headerInfo.runStatus}/>
+                      </Grid>
                 </Grid>
-            </div>
+            </PaperContainer>
+        )
+    }
+}
+
+/*
+Main table component
+*/
+class MainTable extends React.Component {
+    render () {
+        return (
+            <Paper className={styles.mainPaper}>
+                <h2>Table Overview</h2>
+                 <TableOverview header={this.props.tableData.header}
+                                data={this.props.tableData.data}
+                                mappings={this.props.tableData.mappings}
+                                tagData={this.props.tagData}/>
+            </Paper>
         )
     }
 }
@@ -236,25 +255,29 @@ class HeaderCard extends React.Component {
 /*
 Table and DAG controller
  */
-class MainPaper extends React.Component {
+class MainDag extends React.Component {
     render () {
         return (
-            <Grid container spacing={24} className={styles.headerRoot}>
-                <Grid item xs={12} md={12}>
-                    <Paper xs={12} md={12} className={styles.mainPaper}>
-                        <h2>Table Overview</h2>
-                        <TableOverview header={this.props.tableData.header}
-                                       data={this.props.tableData.data}
-                                       mappings={this.props.tableData.mappings}
-                                       tagData={this.props.tagData}/>
-                    </Paper>
-                </Grid>
-                <Grid item xs={12} md={12}>
-                    <Paper xs={12} md={12} className={styles.mainPaper}>
-                        <h2>DAG Overview</h2>
-                    </Paper>
-                </Grid>
-            </Grid>
+            <Paper xs={12} md={6} className={styles.mainPaper}>
+                <h2>DAG Overview</h2>
+            </Paper>
+        )
+    }
+}
+
+/*
+Main paper components
+ */
+
+class PaperContainer extends React.Component {
+    render () {
+        return (
+            <div>
+                <Paper className={styles.paperContainer}>
+                    <Typography gutterBottom align={"center"} variant={"headline"}>{this.props.title}</Typography>
+                    <div>{this.props.children}</div>
+                </Paper>
+            </div>
         )
     }
 }
@@ -406,22 +429,26 @@ class TableOverview extends React.Component {
                 className: styles.tableCell
             },
             {
-                Header: <Tooltip id="pname" title="Process name"><div>Process</div></Tooltip>,
+                // Header: <Tooltip id="pname" title="Process name"><div>Process</div></Tooltip>,
+                Header: "Process",
                 accessor: "process",
                 minWidth: 180,
                 className: styles.tableProcess
             }, {
-                Header:  <Tooltip id="running" title="Submitted/Running processes"><div>Running</div></Tooltip>,
+                // Header:  <Tooltip id="running" title="Submitted/Running processes"><div>Running</div></Tooltip>,
+                Header: "Running",
                 accessor: "running",
                 minWidth: mainWidth,
                 className: styles.tableCell
             }, {
-                Header:  <Tooltip id="completed" title="Completed processes"><div>Complete</div></Tooltip>,
+                // Header:  <Tooltip id="completed" title="Completed processes"><div>Complete</div></Tooltip>,
+                Header: "Complete",
                 accessor: "complete",
                 minWidth: mainWidth,
                 className: styles.tableCell
             }, {
-                Header:  <Tooltip id="error" title="Process exited with error"><div>Error</div></Tooltip>,
+                // Header:  <Tooltip id="error" title="Process exited with error"><div>Error</div></Tooltip>,
+                Header: "Error",
                 accessor: "error",
                 minWidth: mainWidth,
                 className: styles.tableCell

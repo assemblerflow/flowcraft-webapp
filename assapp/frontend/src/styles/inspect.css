@@ -47,9 +47,17 @@
     margin: auto;
 }
 
-:local(.headerRoot) {
+:local(.paperContainer) {
+    margin-top: 30px;
+}
+
+:local(.headerGrid) {
     flex-grow: 1;
     padding: 20px;
+}
+
+:local(.headerPaper) {
+    width: 100%;
 }
 
 :local(.headerPaper) {

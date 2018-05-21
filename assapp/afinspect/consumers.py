@@ -7,10 +7,10 @@ class StatusConsumer(WebsocketConsumer):
 
     def connect(self):
 
-        self.room_name = self.scope["url_route"]["kwargs"]["run_id"]
+        self.run_id = self.scope["url_route"]["kwargs"]["run_id"]
 
         async_to_sync(self.channel_layer.group_add)(
-            self.room_name,
+            self.run_id,
             self.channel_name
         )
 
@@ -18,7 +18,7 @@ class StatusConsumer(WebsocketConsumer):
 
     def disconnect(self, code):
         async_to_sync(self.channel_layer.group_discard)(
-            self.room_name,
+            self.run_id,
             self.channel_name
         )
         pass
@@ -29,7 +29,7 @@ class StatusConsumer(WebsocketConsumer):
         print(message)
 
         async_to_sync(self.channel_layer.group_send)(
-            self.room_name,
+            self.run_id,
             {
                 "type": "message",
                 "message": message
