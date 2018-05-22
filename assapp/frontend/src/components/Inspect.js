@@ -666,13 +666,13 @@ class TableOverview extends React.Component {
             {
                 Header: <Tooltip id="lane" title="Process lane"><div>Lane</div></Tooltip>,
                 accessor: "lane",
-                minWidth: 25,
+                minWidth: 40,
                 className: styles.tableCell
             },
             {
                 Header: <Tooltip id="pid" title="Process Identifier"><div>ID</div></Tooltip>,
                 accessor: "pid",
-                minWidth: 25,
+                minWidth: 30,
                 className: styles.tableCell
             },
             {
@@ -737,7 +737,7 @@ class TableOverview extends React.Component {
     }
 
     render () {
-
+        console.log(this.props.tagData)
          return (
              <div className={styles.mainPaper}>
                  <ReactTable
