@@ -466,19 +466,6 @@ class MainTable extends React.Component {
 }
 
 /*
-Table and DAG controller
- */
-class MainDag extends React.Component {
-    render () {
-        return (
-            <Paper xs={12} md={6} className={styles.mainPaper}>
-                <h2>DAG Overview</h2>
-            </Paper>
-        )
-    }
-}
-
-/*
 Table overview component
  */
 
@@ -787,5 +774,17 @@ class WarningPopover extends React.Component {
         )
     }
 }
+
+/*
+Table and DAG controller
+ */
+class MainDag extends React.Component {
+    render () {
+        return (
+            <div>GRANDA DAG!</div>
+        )
+    }
+}
+
 
 // export default withStyles(styles)({Inspect, InspectHome});
