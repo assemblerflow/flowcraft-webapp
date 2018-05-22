@@ -366,6 +366,8 @@ class StatusPaper extends React.Component {
             "aborted": red[300],
         };
         const status = this.props.runStatus.status.value;
+        const timeStart = moment(this.props.runStatus.timeStart).format("D/M/YYYY, h:mm:ss");
+        const timeStop = moment(this.props.runStatus.timeStart).format("D/M/YYYY, h:mm:ss");
 
         return (
             <Paper elevation={6} style={{padding: 10, backgroundColor: statusColorMap[status]}}>
@@ -373,10 +375,10 @@ class StatusPaper extends React.Component {
                     <span style={{color: "white"}} className={styles.statusTitle}> Status: {status}</span>
                 </div>
                 <div>
-                    <span className={styles.cardHeader}> Start time: {this.props.runStatus.timeStart}</span>
+                    <span className={styles.cardHeader}> Start time: {timeStart}</span>
                 </div>
                 <div>
-                    <span className={styles.cardHeader}> Stop time: {this.props.runStatus.timeStop}</span>
+                    <span className={styles.cardHeader}> Stop time: {timeStop}</span>
                 </div>
                 <div style={{marginTop: 10}}>
                     <span style={{fontWeight: "bold"}} className={styles.cardHeader}> Duration: {this.state.duration}</span>
