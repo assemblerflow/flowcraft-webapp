@@ -43,7 +43,10 @@
     margin: auto;
 }
 
-:local(.panelHeader) {
+:local(.logModal) {
+    padding: 10px;
+    overflow: auto;
+    max-height: 95%;
 }
 
 :local(.panelHeaderTitle) {

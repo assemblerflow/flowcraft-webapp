@@ -365,7 +365,7 @@ class StatusPaper extends React.Component {
             "running": blue[300],
             "aborted": red[300],
         };
-        const status = this.props.runStatus.status;
+        const status = this.props.runStatus.status.value;
 
         return (
             <Paper elevation={6} style={{padding: 10, backgroundColor: statusColorMap[status]}}>
@@ -378,10 +378,59 @@ class StatusPaper extends React.Component {
                 <div>
                     <span className={styles.cardHeader}> Stop time: {this.props.runStatus.timeStop}</span>
                 </div>
-                <div style={{marginTop: 5}}>
+                <div style={{marginTop: 10}}>
                     <span style={{fontWeight: "bold"}} className={styles.cardHeader}> Duration: {this.state.duration}</span>
+                    {status === "aborted" &&
+                        <ViewLogModal runStatus={this.props.runStatus.status}/>}
                 </div>
             </Paper>
+        )
+    }
+}
+
+/*
+Button and modal for displaying error logs
+ */
+class ViewLogModal extends React.Component {
+
+    state = {
+        open: false,
+    };
+
+    handleOpen = () => {
+        this.setState({ open: true });
+    };
+
+    handleClose = () => {
+        this.setState({ open: false });
+    };
+
+    render () {
+        return (
+            <span>
+                <Button variant={"raised"}
+                        size={"small"}
+                        style={{float: "right", marginTop: "-5px"}}
+                        onClick={this.handleOpen}>
+                    View Log
+                </Button>
+                <Modal aria-labelledby="simple-modal-title"
+                       aria-describedby="simple-modal-description"
+                       open={this.state.open}
+                       onClose={this.handleClose}>
+                    <Paper className={styles.tagModal}>
+                        <Typography variant={"title"} gutterBottom>
+                            Abort cause: {this.props.runStatus.abortCause}
+                        </Typography>
+                        <Divider/>
+                        <div className={styles.logModal}>
+                            <pre>
+                                {this.props.runStatus.logLines.join("\n")}
+                            </pre>
+                        </div>
+                    </Paper>
+                </Modal>
+            </span>
         )
     }
 }
