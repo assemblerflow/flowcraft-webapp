@@ -507,7 +507,7 @@ class ProcessSubmission extends React.Component {
             <Grid container justify={"center"} spacing={24}>
                 {Object.entries(headerMap).map(([header, key]) => {
                     return (
-                        <Grid key={header} item xs={3}>
+                        <Grid key={header} item xs={3} style={{minWidth: 200}}>
                             <SubmissionCard header={header}
                                             value={counts[key.header]}
                                             color={key.color}/>
