@@ -12,19 +12,23 @@ import ListSubheader from "@material-ui/core/ListSubheader";
 import ListItemText from "@material-ui/core/ListItemText";
 import Typography from "@material-ui/core/Typography";
 import TextField from "@material-ui/core/TextField";
-import green from "@material-ui/core/colors/green";
 import ListItem from "@material-ui/core/ListItem";
-import blue from "@material-ui/core/colors/blue";
 import Tooltip from "@material-ui/core/Tooltip";
 import Divider from "@material-ui/core/Divider";
 import Popover from "@material-ui/core/Popover";
-import red from "@material-ui/core/colors/red";
 import Button from "@material-ui/core/Button";
 import Paper from "@material-ui/core/Paper";
 import Modal from "@material-ui/core/Modal";
 import Grid from "@material-ui/core/Grid";
 import Icon from "@material-ui/core/Icon";
 import List from "@material-ui/core/List";
+
+// Color imports
+import orange from "@material-ui/core/colors/orange";
+import green from "@material-ui/core/colors/green";
+import blue from "@material-ui/core/colors/blue";
+import red from "@material-ui/core/colors/red";
+
 
 // Other imports
 import axios from "axios";
@@ -190,8 +194,8 @@ class InspectPannels extends React.Component {
         return (
             <div>
                 <ExpansionPanel defaultExpanded style={{margin: 0}}>
-                    <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-                        <Typography variant={"title"}>General Overview</Typography>
+                    <ExpansionPanelSummary classes={{content: styles.panelHeader}} expandIcon={<ExpandMoreIcon />}>
+                        <Typography className={styles.panelHeaderTitle} variant={"title"}>General Overview</Typography>
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails>
                         <GeneralOverview generalData={this.props.generalData}
@@ -200,8 +204,8 @@ class InspectPannels extends React.Component {
                 </ExpansionPanel>
 
                 <ExpansionPanel style={{marginTop: 0}}>
-                    <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-                        <Typography variant={"title"}>Details</Typography>
+                    <ExpansionPanelSummary classes={{content: styles.panelHeader}} expandIcon={<ExpandMoreIcon />}>
+                        <Typography className={styles.panelHeaderTitle} variant={"title"}>Details</Typography>
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails>
                         <DetailsOverview detailsData={this.props.detailsData}/>
@@ -209,8 +213,8 @@ class InspectPannels extends React.Component {
                 </ExpansionPanel>
 
                 <ExpansionPanel defaultExpanded>
-                    <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-                        <Typography variant={"title"}>Process submission</Typography>
+                    <ExpansionPanelSummary classes={{content: styles.panelHeader}} expandIcon={<ExpandMoreIcon />}>
+                        <Typography className={styles.panelHeaderTitle} variant={"title"}>Process submission</Typography>
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails>
                         <ProcessSubmission processData={this.props.processData}/>
@@ -218,8 +222,8 @@ class InspectPannels extends React.Component {
                 </ExpansionPanel>
 
                 <ExpansionPanel defaultExpanded>
-                    <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-                        <Typography variant={"title"}>Table overview</Typography>
+                    <ExpansionPanelSummary classes={{content: styles.panelHeader}} expandIcon={<ExpandMoreIcon />}>
+                        <Typography className={styles.panelHeaderTitle} variant={"title"}>Table overview</Typography>
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails>
                         <MainTable tableData={this.props.tableData}
@@ -228,8 +232,8 @@ class InspectPannels extends React.Component {
                 </ExpansionPanel>
 
                 <ExpansionPanel defaultExpanded>
-                    <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-                        <Typography variant={"title"}>DAG overview</Typography>
+                    <ExpansionPanelSummary classes={{content: styles.panelHeader}} expandIcon={<ExpandMoreIcon />}>
+                        <Typography className={styles.panelHeaderTitle} variant={"title"}>DAG overview</Typography>
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails>
                         <MainDag/>
@@ -429,10 +433,22 @@ class ProcessSubmission extends React.Component {
     render () {
 
         const headerMap = {
-            "Submmited": "submitted",
-            "Retrying": "retry",
-            "Failed": "failed",
-            "Completed": "finished"
+            "Submmited": {
+                "header": "submitted",
+                "color": blue[300]
+            },
+            "Retrying": {
+                "header": "retry",
+                "color": orange[300]
+            },
+            "Failed": {
+                "header": "failed",
+                "color": red[300]
+            },
+            "Completed": {
+                "header": "finished",
+                "color": green[300]
+            }
         };
         const counts = this.countSubmissions();
 
@@ -441,11 +457,28 @@ class ProcessSubmission extends React.Component {
                 {Object.entries(headerMap).map(([header, key]) => {
                     return (
                         <Grid key={header} item xs={3}>
-                            <div>{counts[key]}</div>
+                            <SubmissionCard header={header}
+                                            value={counts[key.header]}
+                                            color={key.color}/>
                         </Grid>
                     )
                 })}
             </Grid>
+        )
+    }
+}
+
+class SubmissionCard extends React.Component {
+    render () {
+        return (
+            <div>
+                <Typography style={{color: this.props.color}} className={styles.submissionHeader}>
+                    {this.props.header}
+                </Typography>
+                <Typography style={{color: this.props.color}} className={styles.submissionValue}>
+                    {this.props.value}
+                </Typography>
+            </div>
         )
     }
 }

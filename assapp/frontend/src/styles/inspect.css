@@ -43,6 +43,14 @@
     margin: auto;
 }
 
+:local(.panelHeader) {
+}
+
+:local(.panelHeaderTitle) {
+    font-weight: bold!important;
+    color: #7e7e7e!important;
+}
+
 :local(.headerGrid) {
     flex-grow: 1;
     padding: 20px;
@@ -86,6 +94,17 @@
     font-size: 16px;
     text-align: left;
     color: #fff
+}
+
+:local(.submissionHeader) {
+    font-size: 18px!important;
+    text-align: left;
+    font-weight: bold!important;
+    color: #5b5b5b!important;
+}
+:local(.submissionValue) {
+    font-size: 40px!important;
+    text-align: center;
 }
 
 :local(.mainPaper) {
