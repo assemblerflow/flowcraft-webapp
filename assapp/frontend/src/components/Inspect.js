@@ -369,7 +369,7 @@ class StatusPaper extends React.Component {
 
         return (
             <Paper elevation={6} style={{padding: 10, backgroundColor: statusColorMap[status]}}>
-                <div style={{marginBottom: 10}}>
+                <div style={{marginBottom: 5}}>
                     <span style={{color: "white"}} className={styles.statusTitle}> Status: {status}</span>
                 </div>
                 <div>
