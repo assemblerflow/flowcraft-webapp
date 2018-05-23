@@ -8,23 +8,29 @@ import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails"
 import CircularProgress from "@material-ui/core/CircularProgress";
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import ListSubheader from "@material-ui/core/ListSubheader";
 import ListItemText from "@material-ui/core/ListItemText";
 import Typography from "@material-ui/core/Typography";
 import TextField from "@material-ui/core/TextField";
-import green from "@material-ui/core/colors/green";
+import SwipeableViews from "react-swipeable-views";
 import ListItem from "@material-ui/core/ListItem";
-import blue from "@material-ui/core/colors/blue";
 import Tooltip from "@material-ui/core/Tooltip";
 import Divider from "@material-ui/core/Divider";
 import Popover from "@material-ui/core/Popover";
-import red from "@material-ui/core/colors/red";
 import Button from "@material-ui/core/Button";
 import Paper from "@material-ui/core/Paper";
 import Modal from "@material-ui/core/Modal";
 import Grid from "@material-ui/core/Grid";
 import Icon from "@material-ui/core/Icon";
 import List from "@material-ui/core/List";
+import Tabs from "@material-ui/core/Tabs";
+import Tab from "@material-ui/core/Tab";
+
+// Color imports
+import orange from "@material-ui/core/colors/orange";
+import green from "@material-ui/core/colors/green";
+import blue from "@material-ui/core/colors/blue";
+import red from "@material-ui/core/colors/red";
+
 
 // Other imports
 import axios from "axios";
@@ -190,8 +196,8 @@ class InspectPannels extends React.Component {
         return (
             <div>
                 <ExpansionPanel defaultExpanded style={{margin: 0}}>
-                    <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-                        <Typography variant={"title"}>General Overview</Typography>
+                    <ExpansionPanelSummary classes={{content: styles.panelHeader}} expandIcon={<ExpandMoreIcon />}>
+                        <Typography className={styles.panelHeaderTitle} variant={"title"}>General Overview</Typography>
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails>
                         <GeneralOverview generalData={this.props.generalData}
@@ -200,8 +206,8 @@ class InspectPannels extends React.Component {
                 </ExpansionPanel>
 
                 <ExpansionPanel style={{marginTop: 0}}>
-                    <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-                        <Typography variant={"title"}>Details</Typography>
+                    <ExpansionPanelSummary classes={{content: styles.panelHeader}} expandIcon={<ExpandMoreIcon />}>
+                        <Typography className={styles.panelHeaderTitle} variant={"title"}>Details</Typography>
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails>
                         <DetailsOverview detailsData={this.props.detailsData}/>
@@ -209,8 +215,8 @@ class InspectPannels extends React.Component {
                 </ExpansionPanel>
 
                 <ExpansionPanel defaultExpanded>
-                    <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-                        <Typography variant={"title"}>Process submission</Typography>
+                    <ExpansionPanelSummary classes={{content: styles.panelHeader}} expandIcon={<ExpandMoreIcon />}>
+                        <Typography className={styles.panelHeaderTitle} variant={"title"}>Process submission</Typography>
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails>
                         <ProcessSubmission processData={this.props.processData}/>
@@ -218,18 +224,19 @@ class InspectPannels extends React.Component {
                 </ExpansionPanel>
 
                 <ExpansionPanel defaultExpanded>
-                    <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-                        <Typography variant={"title"}>Table overview</Typography>
+                    <ExpansionPanelSummary classes={{content: styles.panelHeader}} expandIcon={<ExpandMoreIcon />}>
+                        <Typography className={styles.panelHeaderTitle} variant={"title"}>Table overview</Typography>
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails>
                         <MainTable tableData={this.props.tableData}
-                                   tagData={this.props.tagData}/>
+                                   tagData={this.props.tagData}
+                                   processData={this.props.processData}/>
                     </ExpansionPanelDetails>
                 </ExpansionPanel>
 
                 <ExpansionPanel defaultExpanded>
-                    <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-                        <Typography variant={"title"}>DAG overview</Typography>
+                    <ExpansionPanelSummary classes={{content: styles.panelHeader}} expandIcon={<ExpandMoreIcon />}>
+                        <Typography className={styles.panelHeaderTitle} variant={"title"}>DAG overview</Typography>
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails>
                         <MainDag/>
@@ -361,23 +368,74 @@ class StatusPaper extends React.Component {
             "running": blue[300],
             "aborted": red[300],
         };
-        const status = this.props.runStatus.status;
+        const status = this.props.runStatus.status.value;
+        const timeStart = moment(this.props.runStatus.timeStart).format("D/M/YYYY, h:mm:ss");
+        const timeStop = moment(this.props.runStatus.timeStart).format("D/M/YYYY, h:mm:ss");
 
         return (
             <Paper elevation={6} style={{padding: 10, backgroundColor: statusColorMap[status]}}>
-                <div style={{marginBottom: 10}}>
+                <div style={{marginBottom: 5}}>
                     <span style={{color: "white"}} className={styles.statusTitle}> Status: {status}</span>
                 </div>
                 <div>
-                    <span className={styles.cardHeader}> Start time: {this.props.runStatus.timeStart}</span>
+                    <span className={styles.cardHeader}> Start time: {timeStart}</span>
                 </div>
                 <div>
-                    <span className={styles.cardHeader}> Stop time: {this.props.runStatus.timeStop}</span>
+                    <span className={styles.cardHeader}> Stop time: {timeStop}</span>
                 </div>
-                <div style={{marginTop: 5}}>
+                <div style={{marginTop: 10}}>
                     <span style={{fontWeight: "bold"}} className={styles.cardHeader}> Duration: {this.state.duration}</span>
+                    {status === "aborted" &&
+                        <ViewLogModal runStatus={this.props.runStatus.status}/>}
                 </div>
             </Paper>
+        )
+    }
+}
+
+/*
+Button and modal for displaying error logs
+ */
+class ViewLogModal extends React.Component {
+
+    state = {
+        open: false,
+    };
+
+    handleOpen = () => {
+        this.setState({ open: true });
+    };
+
+    handleClose = () => {
+        this.setState({ open: false });
+    };
+
+    render () {
+        return (
+            <span>
+                <Button variant={"raised"}
+                        size={"small"}
+                        style={{float: "right", marginTop: "-5px"}}
+                        onClick={this.handleOpen}>
+                    View Log
+                </Button>
+                <Modal aria-labelledby="simple-modal-title"
+                       aria-describedby="simple-modal-description"
+                       open={this.state.open}
+                       onClose={this.handleClose}>
+                    <Paper className={styles.tagModal}>
+                        <Typography variant={"title"} gutterBottom>
+                            Abort cause: {this.props.runStatus.abortCause}
+                        </Typography>
+                        <Divider/>
+                        <div className={styles.logModal}>
+                            <pre>
+                                {this.props.runStatus.logLines.join("\n")}
+                            </pre>
+                        </div>
+                    </Paper>
+                </Modal>
+            </span>
         )
     }
 }
@@ -429,10 +487,22 @@ class ProcessSubmission extends React.Component {
     render () {
 
         const headerMap = {
-            "Submmited": "submitted",
-            "Retrying": "retry",
-            "Failed": "failed",
-            "Completed": "finished"
+            "Submmited": {
+                "header": "submitted",
+                "color": blue[300]
+            },
+            "Retrying": {
+                "header": "retry",
+                "color": orange[300]
+            },
+            "Failed": {
+                "header": "failed",
+                "color": red[300]
+            },
+            "Completed": {
+                "header": "finished",
+                "color": green[300]
+            }
         };
         const counts = this.countSubmissions();
 
@@ -440,12 +510,29 @@ class ProcessSubmission extends React.Component {
             <Grid container justify={"center"} spacing={24}>
                 {Object.entries(headerMap).map(([header, key]) => {
                     return (
-                        <Grid key={header} item xs={3}>
-                            <div>{counts[key]}</div>
+                        <Grid key={header} item xs={3} style={{minWidth: 200}}>
+                            <SubmissionCard header={header}
+                                            value={counts[key.header]}
+                                            color={key.color}/>
                         </Grid>
                     )
                 })}
             </Grid>
+        )
+    }
+}
+
+class SubmissionCard extends React.Component {
+    render () {
+        return (
+            <div>
+                <Typography style={{color: this.props.color}} className={styles.submissionHeader}>
+                    {this.props.header}
+                </Typography>
+                <Typography style={{color: this.props.color}} className={styles.submissionValue}>
+                    {this.props.value}
+                </Typography>
+            </div>
         )
     }
 }
@@ -460,7 +547,8 @@ class MainTable extends React.Component {
             <TableOverview header={this.props.tableData.header}
                            data={this.props.tableData.data}
                            mappings={this.props.tableData.mappings}
-                           tagData={this.props.tagData}/>
+                           tagData={this.props.tagData}
+                           processData={this.props.processData}/>
         )
     }
 }
@@ -537,7 +625,8 @@ class TableOverview extends React.Component {
                     dt[header] = <TagInspectionModal tagList={processInfo[header]}
                                                      process={processInfo["process"]}
                                                      header={header}
-                                                     tagData={this.props.tagData}/>
+                                                     tagData={this.props.tagData}
+                                                     processData={this.props.processData}/>
                 } else if (header === "process") {
                     const res = this.parseProcessNames(processInfo[header]);
                     dt[header] = res.processName;
@@ -582,13 +671,13 @@ class TableOverview extends React.Component {
             {
                 Header: <Tooltip id="lane" title="Process lane"><div>Lane</div></Tooltip>,
                 accessor: "lane",
-                minWidth: 25,
+                minWidth: 40,
                 className: styles.tableCell
             },
             {
                 Header: <Tooltip id="pid" title="Process Identifier"><div>ID</div></Tooltip>,
                 accessor: "pid",
-                minWidth: 25,
+                minWidth: 30,
                 className: styles.tableCell
             },
             {
@@ -653,7 +742,6 @@ class TableOverview extends React.Component {
     }
 
     render () {
-
          return (
              <div className={styles.mainPaper}>
                  <ReactTable
@@ -697,21 +785,163 @@ class TagInspectionModal extends  React.Component {
                             Showing '{this.props.header}' tags for process '{this.props.process}'
                             </Typography>
                         <Divider/>
-                        <List>
-                            {this.props.tagList.map((t) => {
-                                return (
-                                <ListItem key={t}>
-                                    <ListItemText primary={t}/>
-                                </ListItem>
-                                )
-                            })}
-                        </List>
+                        <TagTabs header={this.props.header}
+                                 processData={this.props.processData[this.props.process]}
+                                 tagData={this.props.tagData[this.props.process]}/>
                     </Paper>
                 </Modal>
             </div>
             )
     }
 }
+
+
+class TagTabs extends React.Component {
+
+    constructor(props){
+        super(props);
+        const tabMap = {
+            "running": 0,
+            "complete": 1,
+            "error": 2
+        };
+
+        this.state = {
+            value: tabMap[props.header],
+            running: props.processData["submitted"],
+            complete: props.processData["finished"],
+            error: props.processData["failed"],
+            tagData: props.tagData
+        }
+    }
+
+    static getDerivedStateFromProps(nextProps, prevState) {
+        if (nextProps.processData["submitted"] !== prevState.running) {
+            return {
+                running: nextProps.processData["submitted"],
+                complete: nextProps.processData["finished"],
+                error: nextProps.processData["failed"],
+                tagData: nextProps.tagData
+            }
+        } else {
+            return null
+        }
+    }
+
+    handleChange = (event, value) => {
+        this.setState({
+            value,
+            running: this.props.processData["submitted"],
+            complete: this.props.processData["finished"],
+            error: this.props.processData["failed"]
+        });
+    };
+
+    handleChangeIndex = index => {
+        this.setState({value: index});
+
+    };
+
+    render () {
+        return (
+            <div>
+                <Tabs value={this.state.value}
+                      onChange={this.handleChange}
+                      indicatorColor="primary"
+                      textColor="primary"
+                      centered>
+                    <Tab label={"Running"}/>
+                    <Tab label={"Complete"}/>
+                    <Tab label={"Error"}/>
+                </Tabs>
+                <SwipeableViews index={this.state.value}
+                                onChangeIndex={this.handleChangeIndex}>
+                    <TagTable tags={this.state.running}
+                              tagData={this.state.tagData}/>
+                    <TagTable tags={this.state.complete}
+                              tagData={this.state.tagData}/>
+                    <TagTable tags={this.state.error}
+                              tagData={this.state.tagData}/>
+                </SwipeableViews>
+            </div>
+        )
+    }
+}
+
+class TagTable extends React.Component {
+
+    constructor(props){
+        super(props);
+        this.state = {
+            "tags": props.tags,
+            "tagData": props.tagData,
+            "columns": this.prepareColumns()
+        }
+    }
+
+    static getDerivedStateFromProps(nextProps, prevState) {
+        if (nextProps.tags && nextProps.tags !== prevState.tags) {
+            return {
+                tags: nextProps.tags,
+                tagData: nextProps.tagData
+            }
+        } else {
+            return null
+        }
+    }
+
+    prepareData(tags) {
+
+        const headers = ["workdir", "start"];
+
+        return tags.map((sample) => {
+            let dt = {"sample": sample};
+            headers.forEach((header) => {
+                if (this.state.tagData.hasOwnProperty(sample)){
+                    dt[header] = this.state.tagData[sample][header]
+                }
+            });
+            return dt;
+        });
+    }
+
+    prepareColumns() {
+        return [
+            {
+                Header: "Sample",
+                accessor: "sample",
+                minWidth: 90,
+            },
+            {
+                Header: "Work dir",
+                accessor: "workdir",
+                minWidth: 90,
+            },
+            {
+                Header: "Time start",
+                accessor: "start",
+                minWidth: 90,
+            },
+            {
+                Header: "Time stop",
+                accessor: "stop",
+                minWidth: 90
+            }
+        ]
+    }
+
+    render () {
+
+        return (
+            <ReactTable data={this.prepareData(this.props.tags)}
+                        columns={this.state.columns}
+                        className="-striped -highlight styles.logModal"
+                        style={{maxHeight: "90%", margin: 20}}
+                        defaultPageSize={this.state.tags.length <= 14 ? this.state.tags.length : 14}/>
+        )
+    }
+}
+
 
 class WarningPopover extends React.Component {
 
