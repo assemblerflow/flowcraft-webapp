@@ -37,7 +37,11 @@ import axios from "axios";
 import moment from "moment";
 
 // CSS imports
-const styles = require("../styles/inspect.css");
+const styles = require("../styles/inspect.css")
+
+// TreeDag import
+
+import TreeDag from "./treeDag";
 
 /*
 ENTRY POINT FOR inspect
@@ -84,8 +88,10 @@ class InspectApp extends React.Component {
             generalData: {},
             runStatus: {},
             detailsData: {},
+            processData: {},
             tableData: {},
             tagData: {},
+            treeDag: {}
         };
     }
 
@@ -93,27 +99,29 @@ class InspectApp extends React.Component {
         axios.get(`api/status?run_id=${this.state.runID}`)
             .then(
                 (response) => {
+                    const dataStatus = response.data.status;
                     this.setState({loading: false});
                     // Set general overview data
                     this.setState({
-                        generalData: response.data.generalOverview,
+                        generalData: dataStatus.generalOverview,
                         runStatus: {
-                            status: response.data.runStatus,
-                            timeStart: response.data.timeStart,
-                            timeStop: response.data.timeStop,
-                        }
+                            status: dataStatus.runStatus,
+                            timeStart: dataStatus.timeStart,
+                            timeStop: dataStatus.timeStop,
+                        },
+                        treeDag: response.data.dag
                     });
                     // Set details data
-                    this.setState({detailsData: response.data.generalDetails});
+                    this.setState({detailsData: dataStatus.generalDetails});
                     // Set process submission data
-                    this.setState({processData: response.data.processInfo});
+                    this.setState({processData: dataStatus.processInfo});
                     // Set table data
                     this.setState({
                         tableData: {
-                            "data": response.data.tableData,
-                            "mappings": response.data.tableMappings
+                            "data": dataStatus.tableData,
+                            "mappings": dataStatus.tableMappings
                         },
-                        tagData: response.data.processTags
+                        tagData: dataStatus.processTags
                     });
                 },
                 (error) => {
@@ -239,7 +247,8 @@ class InspectPannels extends React.Component {
                         <Typography className={styles.panelHeaderTitle} variant={"title"}>DAG overview</Typography>
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails>
-                        <MainDag/>
+                        <MainDag treeDag={this.props.treeDag} processData={this.props.processData}
+                                 runStatus = {this.props.runStatus}/>
                     </ExpansionPanelDetails>
                 </ExpansionPanel>
             </div>
@@ -1011,7 +1020,8 @@ Table and DAG controller
 class MainDag extends React.Component {
     render () {
         return (
-            <div>GRANDA DAG!</div>
+            <TreeDag data={this.props.treeDag} processData={this.props.processData}
+                     runStatus = {this.props.runStatus}/>
         )
     }
 }

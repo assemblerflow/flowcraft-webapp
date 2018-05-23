@@ -18,7 +18,7 @@ class Status(View):
 
         f = models.Status.objects.get(run_id=request.GET.get("run_id"))
 
-        return JsonResponse(f.status_json)
+        return JsonResponse({"status": f.status_json, "dag": f.dag_json})
 
     def put(self, request):
 

@@ -1,22 +1,98 @@
-import React, { Component } from "react";
+import React, {Component} from "react";
 import "../styles/treeDag.css"
-import {tree, hierarchy} from "d3-hierarchy";
+import {hierarchy, tree} from "d3-hierarchy";
 import {select, selectAll} from "d3-selection";
-import {max, event, zoom} from "d3";
+import {event, max, zoom} from "d3";
+// Color imports
+import green from "@material-ui/core/colors/green";
+import blue from "@material-ui/core/colors/blue";
+import grey from "@material-ui/core/colors/grey"
+
+
+// Set the dimensions and margins of the diagram
+const margin = {top: 20, right: 20, bottom: 20, left: 20},
+    width = window.innerWidth,
+    height = 500;
+
+const div = select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+
+/**
+ * This function creates a tooltip with the node/process information
+ * on mouse over in the respective node
+ *
+ * @param {Object} d - stores information of the node data (containing
+ * name, input, output, etc) and parent info for this node
+ */
+const mouseover = (d) => {
+    //console.log(d)
+    div.transition()
+        .duration(200)
+        .style("opacity", .9);
+    div.html(`<b>pid:</b> ${d.data.process.pid},<br>
+            <b>lane:</b> ${d.data.process.lane},<br>
+            <b>input:</b> ${d.data.process.input},<br>
+            <b>output:</b> ${d.data.process.output},<br>
+            <b>directives:</b><br>
+            ${d.data.process.directives}
+            `)
+    //             .style("left", (d3.event.pageX) + "px")
+        .style("left", (event.pageX) + "px")
+        .style("top", (event.pageY - 28) + "px")
+        .style("text-align", "left")
+};
+
+/**
+ * Function that hides the tooltip
+ * @param {Object} d - stores information of the node data (containing
+ * name, input, output, etc) and parent info for this node
+ */
+const mouseout = (d) => {
+    div.transition()
+        .duration(500)
+        .style("opacity", 0)
+};
+
 
 class TreeDag extends Component {
 
     constructor(props) {
-        super(props)
+        super(props);
+
+        this.i = 0;
+
+        this.root = hierarchy(props.data, (d) => { return d.children });
+        // Assigns parent, children, height, depth
+        this.root.x0 = height / 2;
+        this.root.y0 = 0;
+
+        // declares a tree layout and assigns the size
+        const treemap = tree().size([height, width]);
+
+        // Assigns the x and y position for the nodes
+        const treeData = treemap(this.root);
+
+
+        // Compute the new tree layout.
+        this.nodes = treeData.descendants().filter( (d) => {
+            return d.depth
+        });
+        this.links = treeData.descendants().slice(1).filter( (d) => {
+            return d.depth !== 1
+        });
+
+
     }
 
-    // this is required for the initial DAG rendering
+    // this is required for the initial DAG rendering. It will create the d3 instance as well as update the node colors
     componentDidMount() {
-        this.createDagViz()
+        this.createDagViz();
+        this.updateDagViz()
     }
 
-    // tjis will make updates to the DAG
-    componentWillReceiveProps() {
+    // this will be triggered every time the props of this component are updated. It will update node colors
+    componentDidUpdate() {
         this.updateDagViz()
     }
 
@@ -32,71 +108,10 @@ class TreeDag extends Component {
      */
     createDagViz() {
 
-        const mountNode = this.node;
-
-        /**
-         * This function creates a tooltip with the node/process information
-         * on mouse over in the respective node
-         *
-         * @param {Object} d - stores information of the node data (containing
-         * name, input, output, etc) and parent info for this node
-         */
-        const mouseover = (d) => {
-            div.transition()
-                .duration(200)
-                .style("opacity", .9);
-            div.html(`<b>pid:</b> ${d.data.process.pid},<br>
-            <b>lane:</b> ${d.data.process.lane},<br>
-            <b>input:</b> ${d.data.process.input},<br>
-            <b>output:</b> ${d.data.process.output},<br>
-            <b>directives:</b><br>
-            ${d.data.process.directives}
-            `)
-            //             .style("left", (d3.event.pageX) + "px")
-                .style("left", (event.pageX) + "px")
-                .style("top", (event.pageY - 28) + "px")
-                .style("text-align", "left")
-        };
-
-        /**
-         * Function that hides the tooltip
-         * @param {Object} d - stores information of the node data (containing
-         * name, input, output, etc) and parent info for this node
-         */
-        const mouseout = (d) => {
-            div.transition()
-                .duration(500)
-                .style("opacity", 0)
-        };
-
-        // Set the dimensions and margins of the diagram
-        const margin = {top: 20, right: 20, bottom: 20, left: 20},
-            width = this.props.size[0],
-            height = this.props.size[1];
-
-        const div = select("body").append("div")
-            .attr("class", "tooltip")
-            .style("opacity", 0);
-
-        let i = 0;
-            // duration = 750;
-
-        let root;
-        // Assigns parent, children, height, depth
-        root = hierarchy(this.props.data, (d) => { return d.children });
-        root.x0 = height / 2;
-        root.y0 = 0;
-
-        // declares a tree layout and assigns the size
-        const treemap = tree().size([height, width]);
-
-        // Assigns the x and y position for the nodes
-        const treeData = treemap(root);
-
         // append the svg object to the body of the page
         // appends a 'group' element to 'svg'
         // moves the 'group' element to the top left margin
-        const svg = select(mountNode)
+        const svg = select(this.node)
             .attr("width", width + margin.right + margin.left)
             .attr("height", height + margin.top + margin.bottom)
             .call(zoom().on("zoom", function () {
@@ -137,44 +152,30 @@ class TreeDag extends Component {
              * @param {Object} d - stores information of the node data (containing
              * name, input, output, etc) and parent info for this node
              */
-            const click = (d) => {
-                if (d.children) {
-                    d._children = d.children;
-                    d.children = null
-                } else {
-                    d.children = d._children;
-                    d._children = null
-                }
-                update(d)
-            };
-
-            // Compute the new tree layout.
-            let nodes = treeData.descendants(),
-                links = treeData.descendants().slice(1);
-
-            // hide root node
-            nodes = nodes.filter( (d) => {
-                return d.depth
-            });
-
-            // hide links to root
-            links = links.filter( (d) => {
-                return d.depth !== 1
-            });
+            // const click = (d) => {
+            //     if (d.children) {
+            //         d._children = d.children;
+            //         d.children = null
+            //     } else {
+            //         d.children = d._children;
+            //         d._children = null
+            //     }
+            //     update(d)
+            // };
 
             // ****************** Nodes section ***************************
 
             // Update the nodes...
-            const node = svg.selectAll('g.node')
-                .data(nodes, (d) => { return d.id || (d.id = ++i) });
+            const nodeGraph = svg.selectAll('g.node')
+                .data(this.nodes, (d) => { return d.id || (d.id = ++this.i) });
 
             // Enter any new modes at the parent's previous position.
-            const nodeEnter = node.enter().append('g')
+            const nodeEnter = nodeGraph.enter().append('g')
                 .attr('class', 'node')
                 .attr("transform", (d) => {
                     return "translate(" + source.y0 + "," + source.x0 + ")"
                 })
-                .on('click', click)
+                // .on('click', click)
                 .on("mouseover", mouseover)
                 .on("mouseout", mouseout)
 
@@ -182,9 +183,6 @@ class TreeDag extends Component {
             nodeEnter.append('circle')
                 .attr('class', 'node')
                 .attr('r', 1e-6);
-            // .style("fill", (d) => {
-            //   return d._children ? "lightsteelblue" : "#fff"
-            // })
 
             // Add labels for the nodes
             nodeEnter.append('text')
@@ -199,10 +197,10 @@ class TreeDag extends Component {
                 n => n.getComputedTextLength());
 
             // Normalize for fixed-depth, according to max_width
-            nodes.forEach( (d) => { d.y = d.depth * maxTextWidth} );
+            this.nodes.forEach( (d) => { d.y = d.depth * maxTextWidth} );
 
             // UPDATE
-            const nodeUpdate = nodeEnter.merge(node);
+            const nodeUpdate = nodeEnter.merge(nodeGraph);
 
             // Transition to the proper position for the node
             nodeUpdate.transition()
@@ -215,13 +213,13 @@ class TreeDag extends Component {
             nodeUpdate.select('circle.node')
                 .attr('r', 10)
                 .style("fill", (d) => {
-                    return d._children ? "#ffad6b" : "lightsteelblue"
+                    return grey[300]
                 })
                 .attr('cursor', 'pointer');
 
 
             // Remove any exiting nodes
-            const nodeExit = node.exit().transition()
+            const nodeExit = nodeGraph.exit().transition()
             // .duration(duration)
                 .attr("transform", (d) => {
                     return "translate(" + source.y + "," + source.x + ")"
@@ -240,7 +238,7 @@ class TreeDag extends Component {
 
             // Update the links...
             const link = svg.selectAll('path.link')
-                .data(links, (d) => { return d.id });
+                .data(this.links, (d) => { return d.id });
 
             // Enter any new links at the parent's previous position.
             const linkEnter = link.enter().insert('path', "g")
@@ -268,24 +266,80 @@ class TreeDag extends Component {
                 .remove();
 
             // Store the old positions for transition.
-            nodes.forEach( (d) => {
+            this.nodes.forEach( (d) => {
                 d.x0 = d.x;
                 d.y0 = d.y
             })
 
         };
 
-        update(root)
+        update(this.root)
+
+    }
+
+
+    /**
+     * Function that is used to check if node name matches any process status changes available in
+     * this.props.processData
+     * @param {String} name - The name of the node which contains the processes called through the pipeline string and
+     * their pid.
+     * @returns {*} - returns a string with the status of the main process. If the main process has two subprocesses
+     * that that has the same letter then the return value will be the one letter. E.g. array
+     * checkAllBarrier = ["W","W"], then the returning value will be "W". However, if any "R" is found within the
+     * checkAllBarrier array then the returning value will always be "R". If some processes are complete but others
+     * are waiting this will return false which will not update node color.
+     */
+    checkBarrier(name) {
+
+        // skips first node that is root
+        if (name !== "root") {
+
+            const laneString = name.split("_").slice(-2).join("_");
+
+            // a variable that is used to check if all barriers from a lane return the same flag
+            let checkAllBarriers = []
+
+            Object.keys(this.props.processData).forEach((key) => {
+
+                if (key.includes(laneString)) {
+                    checkAllBarriers.push(this.props.processData[key].barrier)
+                }
+            });
+
+            // if some process within the main process is running them set status to running, otherwise set the
+            // status if all processes are waiting or complete
+            return (checkAllBarriers.indexOf("R") > -1) ? "R" :
+                checkAllBarriers.reduce( (a, b) => {
+                    return (a === b) ? a : false;
+                });
+
+        }
 
     }
 
     updateDagViz() {
-        console.log("yey update")
+
+        // first fetches d3 svg associated variables that are needed to update nodes
+        const svg = select(this.node);
+
+        const nodeGraph = svg.selectAll('g.node').data(this.nodes, (d) => { return d.id || (d.id = ++this.i) })
+
+        const nodeEnter = nodeGraph.enter().append('g');
+
+        const nodeUpdate = nodeEnter.merge(nodeGraph);
+
+        // Update the node attributes and style
+        nodeUpdate.select('circle.node')
+            .style("fill", (d) => {
+                const nodeStatus = this.checkBarrier(d.data.name);
+                return (nodeStatus === "C") ? green[500] : (nodeStatus === "R") ? blue[300] : grey[300]
+            })
+
     }
 
     render() {
         return <svg ref={node => this.node = node}></svg>
-    }div
+    }
 
 }
 

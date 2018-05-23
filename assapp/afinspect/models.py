@@ -8,3 +8,4 @@ class Status(models.Model):
     run_id = models.CharField(max_length=1024)
     timestamp = models.DateTimeField(auto_now=True)
     status_json = JSONField(blank=True, default={})
+    dag_json = JSONField(blank=True, default={})
