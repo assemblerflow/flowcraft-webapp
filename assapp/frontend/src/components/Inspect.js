@@ -919,8 +919,11 @@ class TagTable extends React.Component {
                 if (this.state.tagData.hasOwnProperty(sample)){
                     // Handle special log case
                     if (header === "log") {
+                        const content = this.state.tagData[sample][header] ?
+                            this.state.tagData[sample][header] :
+                            "Log information is unavailable";
                         dt[header] = <ViewLogModal title={`Log file for sample ${sample}`}
-                                                   content={this.state.tagData[sample][header]}
+                                                   content={content}
                                                    buttonStyle={{width: "100%"}}/>
                     } else {
                         dt[header] = this.state.tagData[sample][header]
