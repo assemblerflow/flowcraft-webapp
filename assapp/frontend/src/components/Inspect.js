@@ -379,7 +379,7 @@ class StatusPaper extends React.Component {
         };
         const status = this.props.runStatus.status.value;
         const timeStart = moment(this.props.runStatus.timeStart).format("D/M/YYYY, h:mm:ss");
-        const timeStop = moment(this.props.runStatus.timeStart).format("D/M/YYYY, h:mm:ss");
+        const timeStop = moment(this.props.runStatus.timeStop).format("D/M/YYYY, h:mm:ss");
 
         return (
             <Paper elevation={6} style={{padding: 10, backgroundColor: statusColorMap[status]}}>
