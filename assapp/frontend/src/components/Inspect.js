@@ -874,13 +874,13 @@ class TagTabs extends React.Component {
                     <SwipeableViews index={this.state.value}
                                     onChangeIndex={this.handleChangeIndex}>
                         <TagTable tags={this.state.running}
-                                  header={this.state.header}
+                                  header={"running"}
                                   tagData={this.state.tagData} />
                         <TagTable tags={this.state.complete}
-                                  header={this.state.header}
+                                  header={"complete"}
                                   tagData={this.state.tagData}/>
                         <TagTable tags={this.state.error}
-                                  header={this.state.header}
+                                  header={"error"}
                                   tagData={this.state.tagData}/>
                     </SwipeableViews>
                 </div>
@@ -914,7 +914,8 @@ class TagTable extends React.Component {
 
     prepareData(tags) {
 
-        const headers = ["workdir", "start", "log"];
+        const headers = ["workdir", "start", "realtime", "rss", "rchar",
+            "wchar", "log"];
 
         return tags.map((sample) => {
             let dt = {"sample": sample};
@@ -950,22 +951,45 @@ class TagTable extends React.Component {
                 Header: "Work dir",
                 accessor: "workdir",
                 minWidth: 90,
+                className: styles.tableCell
             },
             {
                 Header: "Time start",
                 accessor: "start",
                 minWidth: 90,
+                className: styles.tableCell
             },
             {
-                Header: "Time stop",
-                accessor: "stop",
-                minWidth: 90
+                Header: "Duration",
+                accessor: "realtime",
+                className: styles.tableCell,
+                show: this.props.header === "complete"
+            },
+            {
+                Header: "Max memory",
+                accessor: "rss",
+                className: styles.tableCell,
+                show: this.props.header === "complete"
+            },
+            {
+                Header: "Disk read",
+                accessor: "rchar",
+                className: styles.tableCell,
+                show: this.props.header === "complete"
+            },
+            {
+                Header: "Disk write",
+                accessor: "wchar",
+                className: styles.tableCell,
+                show: this.props.header === "complete"
             },
             {
                 Header: "Log",
                 accessor: "log",
                 minWidth: 100,
                 width: 100,
+                className: styles.tableCell,
+                show: this.props.header === "error"
             }
         ]
     }
