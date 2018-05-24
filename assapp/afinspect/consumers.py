@@ -32,7 +32,7 @@ class StatusConsumer(WebsocketConsumer):
             self.run_id,
             {
                 "type": "message",
-                "message": message
+                "message": "ping"
             }
         )
         print("Message sent")

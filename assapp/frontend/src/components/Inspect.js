@@ -894,7 +894,6 @@ class TagTable extends React.Component {
             "columns": this.prepareColumns(),
             "header": props.header
         };
-        console.log(props.tagData)
     }
 
     static getDerivedStateFromProps(nextProps, prevState) {
@@ -919,12 +918,13 @@ class TagTable extends React.Component {
                 if (this.state.tagData.hasOwnProperty(sample)){
                     // Handle special log case
                     if (header === "log") {
-                        const content = this.state.tagData[sample][header] ?
-                            this.state.tagData[sample][header].join("\n") :
-                            "Log information is unavailable";
-                        dt[header] = <ViewLogModal title={`Log file for sample ${sample}`}
-                                                   content={content}
-                                                   buttonStyle={{width: "100%"}}/>
+                        if (this.state.tagData[sample][header]){
+                            dt[header] = <ViewLogModal title={`Log file for sample ${sample}`}
+                                                       content={this.state.tagData[sample][header].join("\n")}
+                                                       buttonStyle={{width: "100%"}}/>;
+                        } else {
+                            dt[header] = "";
+                        }
                     } else {
                         dt[header] = this.state.tagData[sample][header]
                     }
