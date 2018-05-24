@@ -43,12 +43,6 @@
     margin: auto;
 }
 
-:local(.logModal) {
-    padding: 10px;
-    overflow: auto;
-    max-height: 95%;
-}
-
 :local(.panelHeaderTitle) {
     font-weight: bold!important;
     color: #7e7e7e!important;
@@ -156,6 +150,12 @@
     margin: 10px;
 }
 
+:local(.logModal) {
+    padding: 10px;
+    overflow: auto;
+    max-height: 90%;
+}
+
 :local(.tagModal){
     position: absolute;
     top:0;
@@ -163,7 +163,7 @@
     left: 0;
     right: 0;
     width: 70%;
-    height: 70%;
+    height: 90%;
     margin: auto;
     padding: 10px;
 }

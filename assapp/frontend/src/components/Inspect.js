@@ -396,7 +396,9 @@ class StatusPaper extends React.Component {
                 <div style={{marginTop: 10}}>
                     <span style={{fontWeight: "bold"}} className={styles.cardHeader}> Duration: {this.state.duration}</span>
                     {status === "aborted" &&
-                        <ViewLogModal runStatus={this.props.runStatus.status}/>}
+                        <ViewLogModal title={this.props.runStatus.status.abortCause}
+                                      content={this.props.runStatus.status.logLines}
+                                      buttonStyle={{float: "right", marginTop: "-5px"}}/>}
                 </div>
             </Paper>
         )
@@ -425,7 +427,7 @@ class ViewLogModal extends React.Component {
             <span>
                 <Button variant={"raised"}
                         size={"small"}
-                        style={{float: "right", marginTop: "-5px"}}
+                        style={this.props.buttonStyle}
                         onClick={this.handleOpen}>
                     View Log
                 </Button>
@@ -435,12 +437,12 @@ class ViewLogModal extends React.Component {
                        onClose={this.handleClose}>
                     <Paper className={styles.tagModal}>
                         <Typography variant={"title"} gutterBottom>
-                            Abort cause: {this.props.runStatus.abortCause}
+                            {this.props.title}
                         </Typography>
                         <Divider/>
                         <div className={styles.logModal}>
                             <pre>
-                                {this.props.runStatus.logLines.join("\n")}
+                                {this.props.content.join("\n")}
                             </pre>
                         </div>
                     </Paper>
@@ -821,7 +823,8 @@ class TagTabs extends React.Component {
             running: props.processData["submitted"],
             complete: props.processData["finished"],
             error: props.processData["failed"],
-            tagData: props.tagData
+            tagData: props.tagData,
+            header: props.header,
         }
     }
 
@@ -867,10 +870,13 @@ class TagTabs extends React.Component {
                 <SwipeableViews index={this.state.value}
                                 onChangeIndex={this.handleChangeIndex}>
                     <TagTable tags={this.state.running}
-                              tagData={this.state.tagData}/>
+                              header={this.state.header}
+                              tagData={this.state.tagData} />
                     <TagTable tags={this.state.complete}
+                              header={this.state.header}
                               tagData={this.state.tagData}/>
                     <TagTable tags={this.state.error}
+                              header={this.state.header}
                               tagData={this.state.tagData}/>
                 </SwipeableViews>
             </div>
@@ -885,8 +891,10 @@ class TagTable extends React.Component {
         this.state = {
             "tags": props.tags,
             "tagData": props.tagData,
-            "columns": this.prepareColumns()
-        }
+            "columns": this.prepareColumns(),
+            "header": props.header
+        };
+        console.log(props.tagData)
     }
 
     static getDerivedStateFromProps(nextProps, prevState) {
@@ -902,13 +910,21 @@ class TagTable extends React.Component {
 
     prepareData(tags) {
 
-        const headers = ["workdir", "start"];
+        const headers = ["workdir", "start", "log"];
 
         return tags.map((sample) => {
             let dt = {"sample": sample};
             headers.forEach((header) => {
+                // Skip entries on in the header
                 if (this.state.tagData.hasOwnProperty(sample)){
-                    dt[header] = this.state.tagData[sample][header]
+                    // Handle special log case
+                    if (header === "log") {
+                        dt[header] = <ViewLogModal title={`Log file for sample ${sample}`}
+                                                   content={this.state.tagData[sample][header]}
+                                                   buttonStyle={{width: "100%"}}/>
+                    } else {
+                        dt[header] = this.state.tagData[sample][header]
+                    }
                 }
             });
             return dt;
@@ -936,6 +952,12 @@ class TagTable extends React.Component {
                 Header: "Time stop",
                 accessor: "stop",
                 minWidth: 90
+            },
+            {
+                Header: "Log",
+                accessor: "log",
+                minWidth: 100,
+                width: 100,
             }
         ]
     }
