@@ -860,7 +860,7 @@ class TagTabs extends React.Component {
 
     render () {
         return (
-            <div>
+            <div style={{height: "90%", maxHeight: "90%", padding: 10}}>
                 <Tabs value={this.state.value}
                       onChange={this.handleChange}
                       indicatorColor="primary"
@@ -870,18 +870,20 @@ class TagTabs extends React.Component {
                     <Tab label={"Complete"}/>
                     <Tab label={"Error"}/>
                 </Tabs>
-                <SwipeableViews index={this.state.value}
-                                onChangeIndex={this.handleChangeIndex}>
-                    <TagTable tags={this.state.running}
-                              header={this.state.header}
-                              tagData={this.state.tagData} />
-                    <TagTable tags={this.state.complete}
-                              header={this.state.header}
-                              tagData={this.state.tagData}/>
-                    <TagTable tags={this.state.error}
-                              header={this.state.header}
-                              tagData={this.state.tagData}/>
-                </SwipeableViews>
+                <div style={{overflow: "auto", height: "95%"}}>
+                    <SwipeableViews index={this.state.value}
+                                    onChangeIndex={this.handleChangeIndex}>
+                        <TagTable tags={this.state.running}
+                                  header={this.state.header}
+                                  tagData={this.state.tagData} />
+                        <TagTable tags={this.state.complete}
+                                  header={this.state.header}
+                                  tagData={this.state.tagData}/>
+                        <TagTable tags={this.state.error}
+                                  header={this.state.header}
+                                  tagData={this.state.tagData}/>
+                    </SwipeableViews>
+                </div>
             </div>
         )
     }
@@ -974,8 +976,9 @@ class TagTable extends React.Component {
             <ReactTable data={this.prepareData(this.props.tags)}
                         columns={this.state.columns}
                         className="-striped -highlight styles.logModal"
-                        style={{maxHeight: "90%", margin: 20}}
-                        defaultPageSize={this.state.tags.length <= 14 ? this.state.tags.length : 14}/>
+                        style={{ margin: 20}}
+                        // defaultPageSize={this.state.tags.length <= 14 ? this.state.tags.length : 14}
+            />
         )
     }
 }
