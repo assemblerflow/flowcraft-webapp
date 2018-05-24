@@ -30,6 +30,7 @@ import orange from "@material-ui/core/colors/orange";
 import green from "@material-ui/core/colors/green";
 import blue from "@material-ui/core/colors/blue";
 import red from "@material-ui/core/colors/red";
+import grey from "@material-ui/core/colors/grey";
 
 
 // Other imports
@@ -246,9 +247,11 @@ class InspectPannels extends React.Component {
                     <ExpansionPanelSummary classes={{content: styles.panelHeader}} expandIcon={<ExpandMoreIcon />}>
                         <Typography className={styles.panelHeaderTitle} variant={"title"}>DAG overview</Typography>
                     </ExpansionPanelSummary>
-                    <ExpansionPanelDetails>
+                    <ExpansionPanelDetails style={{display: "block"}}>
                         <MainDag treeDag={this.props.treeDag} processData={this.props.processData}
                                  runStatus = {this.props.runStatus}/>
+                        <DagLegend></DagLegend>
+
                     </ExpansionPanelDetails>
                 </ExpansionPanel>
             </div>
@@ -1048,9 +1051,56 @@ class MainDag extends React.Component {
         return (
             <TreeDag data={this.props.treeDag} processData={this.props.processData}
                      runStatus = {this.props.runStatus}/>
+
         )
     }
 }
+
+
+/**
+ * Legend for DAG
+ */
+class DagLegend extends React.Component{
+
+    constructor() {
+        super();
+
+        this.legendObj = {
+            "Waiting": grey[300],
+            "Queued": blue[100],
+            "Running": blue[300],
+            "Completed": green[500],
+            "Aborted": red[300]
+        }
+    }
+
+    render() {
+        return(
+        <div>
+            <Grid container justify={"center"} spacing={24}>
+                {Object.keys(this.legendObj).map( (k) => {
+                    return (
+                        <Grid item key={k}>
+                            <Grid container>
+                                <Grid item xs={4}>
+                                    <Icon size={30} style={{color: this.legendObj[k]}}>lens
+                                    </Icon>
+                                </Grid>
+                                <Grid item xs={8}>
+                                    <Typography align={"left"} style={{lineHeight: "25px"}}>{k}</Typography>
+                                </Grid>
+                            </Grid>
+                        </Grid>
+                    )
+                })}
+            </Grid>
+        </div>
+        )
+    }
+}
+
+
+
 
 
 // export default withStyles(styles)({Inspect, InspectHome});

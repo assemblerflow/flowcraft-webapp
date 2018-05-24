@@ -1,12 +1,18 @@
 import React, {Component} from "react";
 import "../styles/treeDag.css"
+
+// D3 related imports
 import {hierarchy, tree} from "d3-hierarchy";
 import {select, selectAll} from "d3-selection";
+const d3 = require("d3");
 import {event, max, zoom} from "d3";
+import { legendColor } from 'd3-svg-legend';
+
 // Color imports
 import green from "@material-ui/core/colors/green";
 import blue from "@material-ui/core/colors/blue";
-import grey from "@material-ui/core/colors/grey"
+import grey from "@material-ui/core/colors/grey";
+import red from "@material-ui/core/colors/red";
 
 
 // Set the dimensions and margins of the diagram
@@ -123,6 +129,30 @@ class TreeDag extends Component {
                 + margin.left + "," + margin.top + ")"
             );
 
+        // /**
+        //  * Variable that defines the scale to be used by d3 legend
+        //   */
+        // const ordinal = d3.scaleOrdinal()
+        //     .domain(["Waiting", "Queued", "Running", "Completed", "Aborted"])
+        //     .range([grey[300], blue[100], blue[300], green[500], red[300]]);
+        //
+        // // appends the legend element to the svg
+        // svg.append("g")
+        //     .attr("class", "legendOrdinal")
+        //     // subtracts 120 to the height in order to place the full legend
+        //     .attr("transform", `translate(10,${height-120})`);
+        //
+        // // sets the color symbols in legend
+        // const legendOrdinal = legendColor()
+        //     .shape("path", d3.symbol().type(d3.symbolCircle).size(150)())
+        //     .shapePadding(10)
+        //     .cellFilter(function(d){ return d.label !== "e" })
+        //     .scale(ordinal);
+        //
+        // // adds the legendOrdinal to the element with that will be used to place the legend itself
+        // svg.select(".legendOrdinal")
+        //     .call(legendOrdinal);
+
         /**
          * Function that updates the graph on load and on node clicks
          *
@@ -177,7 +207,7 @@ class TreeDag extends Component {
                 })
                 // .on('click', click)
                 .on("mouseover", mouseover)
-                .on("mouseout", mouseout)
+                .on("mouseout", mouseout);
 
             // Add Circle for the nodes
             nodeEnter.append('circle')
@@ -211,7 +241,7 @@ class TreeDag extends Component {
 
             // Update the node attributes and style
             nodeUpdate.select('circle.node')
-                .attr('r', 10)
+                .attr('r', 14)
                 .style("fill", (d) => {
                     return grey[300]
                 })
