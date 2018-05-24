@@ -197,7 +197,7 @@ class TreeDag extends Component {
                 n => n.getComputedTextLength());
 
             // Normalize for fixed-depth, according to max_width
-            this.nodes.forEach( (d) => { d.y = d.depth * maxTextWidth} );
+            this.nodes.forEach( (d) => { d.y = d.depth * maxTextWidth } );
 
             // UPDATE
             const nodeUpdate = nodeEnter.merge(nodeGraph);
@@ -287,7 +287,8 @@ class TreeDag extends Component {
      * that that has the same letter then the return value will be the one letter. E.g. array
      * checkAllBarrier = ["W","W"], then the returning value will be "W". However, if any "R" is found within the
      * checkAllBarrier array then the returning value will always be "R". If some processes are complete but others
-     * are waiting this will return false which will not update node color.
+     * are waiting this will return false which will not update node color. It also returns "Q" when there are
+     * sub processes Waiting and some are already completed
      */
     checkBarrier(name) {
 
@@ -308,8 +309,9 @@ class TreeDag extends Component {
 
             // if some process within the main process is running them set status to running, otherwise set the
             // status if all processes are waiting or complete
-            return (checkAllBarriers.indexOf("R") > -1) ? "R" :
-                checkAllBarriers.reduce( (a, b) => {
+            return (checkAllBarriers.includes("R")) ? "R" :
+                (checkAllBarriers.includes("W") && checkAllBarriers.includes("C")) ? "Q" :
+                    checkAllBarriers.reduce( (a, b) => {
                     return (a === b) ? a : false;
                 });
 
@@ -332,7 +334,9 @@ class TreeDag extends Component {
         nodeUpdate.select('circle.node')
             .style("fill", (d) => {
                 const nodeStatus = this.checkBarrier(d.data.name);
-                return (nodeStatus === "C") ? green[500] : (nodeStatus === "R") ? blue[300] : grey[300]
+                return (nodeStatus === "C") ? green[500] :
+                    (nodeStatus === "R") ? blue[300] :
+                        (nodeStatus === "Q") ? blue[100] : grey[300]
             })
 
     }
