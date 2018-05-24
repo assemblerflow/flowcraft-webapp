@@ -15,66 +15,29 @@ import grey from "@material-ui/core/colors/grey";
 import red from "@material-ui/core/colors/red";
 
 
-// Set the dimensions and margins of the diagram
-const margin = {top: 20, right: 20, bottom: 20, left: 20},
-    width = window.innerWidth,
-    height = 500;
-
 const div = select("body").append("div")
     .attr("class", "tooltip")
     .style("opacity", 0);
-
-/**
- * This function creates a tooltip with the node/process information
- * on mouse over in the respective node
- *
- * @param {Object} d - stores information of the node data (containing
- * name, input, output, etc) and parent info for this node
- */
-const mouseover = (d) => {
-    //console.log(d)
-    div.transition()
-        .duration(200)
-        .style("opacity", .9);
-    div.html(`<b>pid:</b> ${d.data.process.pid},<br>
-            <b>lane:</b> ${d.data.process.lane},<br>
-            <b>input:</b> ${d.data.process.input},<br>
-            <b>output:</b> ${d.data.process.output},<br>
-            <b>directives:</b><br>
-            ${d.data.process.directives}
-            `)
-    //             .style("left", (d3.event.pageX) + "px")
-        .style("left", (event.pageX) + "px")
-        .style("top", (event.pageY - 28) + "px")
-        .style("text-align", "left")
-};
-
-/**
- * Function that hides the tooltip
- * @param {Object} d - stores information of the node data (containing
- * name, input, output, etc) and parent info for this node
- */
-const mouseout = (d) => {
-    div.transition()
-        .duration(500)
-        .style("opacity", 0)
-};
-
 
 class TreeDag extends Component {
 
     constructor(props) {
         super(props);
 
+        // Set the dimensions and margins of the diagram
+        this.margin = {top: 20, right: 20, bottom: 20, left: 20};
+        this.width = window.innerWidth;
+        this.height = 500;
+
         this.i = 0;
 
         this.root = hierarchy(props.data, (d) => { return d.children });
         // Assigns parent, children, height, depth
-        this.root.x0 = height / 2;
+        this.root.x0 = this.height / 2;
         this.root.y0 = 0;
 
         // declares a tree layout and assigns the size
-        const treemap = tree().size([height, width]);
+        const treemap = tree().size([this.height, this.width]);
 
         // Assigns the x and y position for the nodes
         const treeData = treemap(this.root);
@@ -107,6 +70,41 @@ class TreeDag extends Component {
     }
 
     /**
+     * This function creates a tooltip with the node/process information
+     * on mouse over in the respective node
+     *
+     * @param {Object} d - stores information of the node data (containing
+     * name, input, output, etc) and parent info for this node
+     */
+    mouseover(d) {
+        div.transition()
+            .duration(200)
+            .style("opacity", .9);
+        div.html(`<b>pid:</b> ${d.data.process.pid},<br>
+            <b>lane:</b> ${d.data.process.lane},<br>
+            <b>input:</b> ${d.data.process.input},<br>
+            <b>output:</b> ${d.data.process.output},<br>
+            <b>directives:</b><br>
+            ${d.data.process.directives}
+            `)
+        //             .style("left", (d3.event.pageX) + "px")
+            .style("left", (event.pageX) + "px")
+            .style("top", (event.pageY - 28) + "px")
+            .style("text-align", "left")
+    };
+
+    /**
+     * Function that hides the tooltip
+     * @param {Object} d - stores information of the node data (containing
+     * name, input, output, etc) and parent info for this node
+     */
+    mouseout(d) {
+        div.transition()
+            .duration(500)
+            .style("opacity", 0)
+    };
+
+    /**
      * Let d3 live! Function that enables d3 through react. It just has to make
      * sure that this.node is passed to svg element of d3, then everything else
      * is handled by d3 itself. This approach enables transitions from d3 while
@@ -118,15 +116,15 @@ class TreeDag extends Component {
         // appends a 'group' element to 'svg'
         // moves the 'group' element to the top left margin
         const svg = select(this.node)
-            .attr("width", width + margin.right + margin.left)
-            .attr("height", height + margin.top + margin.bottom)
-            .call(zoom().on("zoom", function () {
+            .attr("width", this.width + this.margin.right + this.margin.left)
+            .attr("height", this.height + this.margin.top + this.margin.bottom)
+            .call(zoom().on("zoom", () => {
                 svg.attr("transform", event.transform)
             }))
             .on("dblclick.zoom", null)
             .append("g")
             .attr("transform", "translate("
-                + margin.left + "," + margin.top + ")"
+                + this.margin.left + "," + this.margin.top + ")"
             );
 
         // /**
@@ -206,8 +204,8 @@ class TreeDag extends Component {
                     return "translate(" + source.y0 + "," + source.x0 + ")"
                 })
                 // .on('click', click)
-                .on("mouseover", mouseover)
-                .on("mouseout", mouseout);
+                .on("mouseover", this.mouseover)
+                .on("mouseout", this.mouseout);
 
             // Add Circle for the nodes
             nodeEnter.append('circle')
