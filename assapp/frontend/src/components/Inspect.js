@@ -397,7 +397,7 @@ class StatusPaper extends React.Component {
                     <span style={{fontWeight: "bold"}} className={styles.cardHeader}> Duration: {this.state.duration}</span>
                     {status === "aborted" &&
                         <ViewLogModal title={this.props.runStatus.status.abortCause}
-                                      content={this.props.runStatus.status.logLines}
+                                      content={this.props.runStatus.status.logLines.join("\n")}
                                       buttonStyle={{float: "right", marginTop: "-5px"}}/>}
                 </div>
             </Paper>
@@ -442,7 +442,7 @@ class ViewLogModal extends React.Component {
                         <Divider/>
                         <div className={styles.logModal}>
                             <pre>
-                                {this.props.content.join("\n")}
+                                {this.props.content}
                             </pre>
                         </div>
                     </Paper>
@@ -920,7 +920,7 @@ class TagTable extends React.Component {
                     // Handle special log case
                     if (header === "log") {
                         const content = this.state.tagData[sample][header] ?
-                            this.state.tagData[sample][header] :
+                            this.state.tagData[sample][header].join("\n") :
                             "Log information is unavailable";
                         dt[header] = <ViewLogModal title={`Log file for sample ${sample}`}
                                                    content={content}
