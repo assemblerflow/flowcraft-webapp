@@ -32,6 +32,10 @@ import blue from "@material-ui/core/colors/blue";
 import red from "@material-ui/core/colors/red";
 import grey from "@material-ui/core/colors/grey";
 
+// Highcharts imports
+const ReactHighcharts = require("react-highcharts");
+
+
 // Other imports
 import axios from "axios";
 import moment from "moment";
@@ -39,7 +43,7 @@ import prismjs from "prismjs";
 import PrismCode from "react-prism";
 
 // CSS imports
-const styles = require("../styles/inspect.css")
+const styles = require("../styles/inspect.css");
 
 // TreeDag import
 
@@ -754,6 +758,25 @@ const sortIgnoreNA = (a, b) => {
 
 };
 
+class MyComponent extends React.Component {
+    componentDidMount() {
+        let chart = this.refs.chart.getChart();
+        chart.series[0].addPoint({x: 10, y: 12});
+    }
+
+    render() {
+        let config = {
+            xAxis: {
+                categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+            },
+            series: [{
+                data: [29.9, 71.5, 106.4, 129.2, 144.0, 176.0, 135.6, 148.5, 216.4, 194.1, 295.6, 454.4]
+            }]
+        };
+        return <ReactHighcharts config={config} ref="chart"></ReactHighcharts>;
+    }
+}
+
 class TableOverview extends React.Component {
 
     constructor(props) {
@@ -763,7 +786,6 @@ class TableOverview extends React.Component {
             "data": props.data,
             "columns": this.prepareColumns()
         };
-
     }
 
     static getDerivedStateFromProps(nextProps, prevState) {
@@ -804,6 +826,7 @@ class TableOverview extends React.Component {
     prepareData(data) {
 
         const listToLength = ["running", "complete", "error"];
+        const plotButtons = ["maxMem", "avgRead", "avgWrite"];
 
         return data.map(processInfo => {
             let dt = {};
@@ -820,14 +843,18 @@ class TableOverview extends React.Component {
                     dt[header] = res.processName;
                     dt["lane"] = res.lane;
                     dt["pid"] = res.processId;
-                } else if (header === "maxMem"){
-                    if (Object.keys(processInfo["memWarn"]).length !== 0 && processInfo["m" +
-                    "emWarn"].constructor === Object){
-                        dt[header] = <div>{processInfo[header]} <WarningPopover warningType={"memory"} warnings={processInfo["memWarn"]} /></div>
-                    } else {
-                        dt[header] = processInfo[header];
-                    }
-                } else {
+                } else if (plotButtons.includes(header)) {
+                    dt[header] = <PlotModal buttonLabel={processInfo[header]}/>
+                }
+                // else if (header === "maxMem"){
+                //     if (Object.keys(processInfo["memWarn"]).length !== 0 && processInfo["m" +
+                //     "emWarn"].constructor === Object){
+                //         dt[header] = <div>{processInfo[header]} <WarningPopover warningType={"memory"} warnings={processInfo["memWarn"]} /></div>
+                //     } else {
+                //         dt[header] = processInfo[header];
+                //     }
+                //    }
+                else {
                     dt[header] = processInfo[header];
                 }
             });
@@ -939,6 +966,48 @@ class TableOverview extends React.Component {
                      className="-striped -highlight"
                  />
              </div>
+        )
+    }
+}
+
+
+class PlotModal extends React.Component {
+
+    state = {
+        open: false,
+    };
+
+    handleOpen = () => {
+        this.setState({ open: true });
+    };
+
+    handleClose = () => {
+        this.setState({ open: false });
+    };
+
+    render () {
+        return (
+            <div>
+                <Button className={styles.tableButton}  onClick={this.handleOpen}>
+                    {this.props.buttonLabel}
+                </Button>
+                <Modal
+                    aria-labelledby="simple-modal-title"
+                    aria-describedby="simple-modal-description"
+                    open={this.state.open}
+                    onClose={this.handleClose}>
+                    <Paper className={styles.tagModal}>
+                        <Typography variant={"title"} gutterBottom>
+                            Plot stuff
+                        </Typography>
+                        <Divider/>
+                        <div>
+                            <MyComponent/>
+                            <MyComponent/>
+                        </div>
+                    </Paper>
+                </Modal>
+            </div>
         )
     }
 }
