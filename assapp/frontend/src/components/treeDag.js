@@ -370,7 +370,7 @@ class TreeDag extends Component {
     }
 
     render() {
-        return <svg ref={node => this.node = node}></svg>
+        return <svg style={{maxWidth: "100%"}} ref={node => this.node = node}></svg>
     }
 
 }
