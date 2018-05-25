@@ -220,7 +220,8 @@ class InspectPannels extends React.Component {
                         <Typography className={styles.panelHeaderTitle} variant={"title"}>Details</Typography>
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails>
-                        <DetailsOverview detailsData={this.props.detailsData}/>
+                        <DetailsOverview detailsData={this.props.detailsData}
+                                         runId={this.props.runID}/>
                     </ExpansionPanelDetails>
                 </ExpansionPanel>
 
@@ -335,7 +336,6 @@ class HeaderOverview extends React.Component {
                                         {v.header === "Pipeline name" &&
                                         <RemoteLogModal title={"Pipeline file"}
                                                         buttonLabel={"View File"}
-                                                        content={"None"}
                                                         fileId={"pipelineFile"}
                                                         runId={this.props.runId}
                                                         buttonStyle={{marginTop: "-30px", minHeight: "30px"}}/>
@@ -539,17 +539,46 @@ Header component of the inspection with summary information
  */
 class DetailsOverview extends React.Component {
     render () {
+
+        const configFiles = {
+            "configFile": ["Nextflow config", ".nextflow.config"],
+            "paramsFile": ["Parameters config", "params.config"],
+            "resourcesFile": ["Resources config", "resources.config"],
+            "containersFile": ["Containers config", "containers.config"],
+            "userFile": ["User config", "user.config"],
+        };
+
         return (
-            <List component="nav"
-                  dense>
-                {this.props.detailsData.map((v) => {
-                    return (
-                        <ListItem key={v.header}>
-                            <ListItemText primary={v.header} secondary={v.value}/>
-                        </ListItem>
-                    )
-                })}
-            </List>
+            <Grid container spacing={8}>
+                <Grid item xs={6} style={{minWidth: "300px"}}>
+                    <List component="nav"
+                          dense>
+                        {this.props.detailsData.map((v) => {
+                            return (
+                                <ListItem key={v.header}>
+                                    <ListItemText primary={v.header} secondary={v.value}/>
+                                </ListItem>
+                            )
+                        })}
+                    </List>
+                </Grid>
+                <Grid item xs={6} style={{minWidth: "300px"}}>
+                    <List component="nav"
+                          dense>
+                    {Object.keys(configFiles).map((v) => {
+                        return(
+                            <ListItem key={v}>
+                                <ListItemText primary={configFiles[v][0]} secondary={configFiles[v][1]}/>
+                                <RemoteLogModal title={configFiles[v][0]}
+                                                buttonLabel={"View File"}
+                                                fileId={v}
+                                                runId={this.props.runId}/>
+                            </ListItem>
+                        )
+                    })}
+                    </List>
+                </Grid>
+            </Grid>
         )
     }
 }
