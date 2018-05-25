@@ -226,12 +226,16 @@ class InspectPannels extends React.Component {
                     </ExpansionPanelDetails>
                 </ExpansionPanel>
 
-                <ExpansionPanel defaultExpanded>
+                <ExpansionPanel defaultExpanded style={{marginBottom: 0}}>
                     <ExpansionPanelSummary classes={{content: styles.panelHeader}} expandIcon={<ExpandMoreIcon />}>
                         <Typography className={styles.panelHeaderTitle} variant={"title"}>Process submission</Typography>
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails>
                         <ProcessSubmission processData={this.props.processData}/>
+                    </ExpansionPanelDetails>
+                    <Divider/>
+                    <ExpansionPanelDetails>
+                        <ResourcesDetails processData={this.props.processData}/>
                     </ExpansionPanelDetails>
                 </ExpansionPanel>
 
@@ -633,7 +637,7 @@ class ProcessSubmission extends React.Component {
         const counts = this.countSubmissions();
 
         return (
-            <Grid container justify={"center"} spacing={24}>
+            <Grid container justify={"center"} spacing={24} direction={"row"}>
                 {Object.entries(headerMap).map(([header, key]) => {
                     return (
                         <Grid key={header} item xs={3} style={{minWidth: 200}}>
@@ -659,6 +663,64 @@ class SubmissionCard extends React.Component {
                     {this.props.value}
                 </Typography>
             </div>
+        )
+    }
+}
+
+
+class ResourcesDetails extends React.Component {
+
+    constructor(props) {
+        super(props);
+    }
+
+    getActiveResources(){
+        let activeCpus = 0;
+        let unknownCpus = false;
+        let allocMem = 0;
+        let unknownMem = false;
+
+        for (const vals of Object.values(this.props.processData)) {
+            if (vals.submitted.length > 0) {
+                if (vals.cpus) {
+                    activeCpus += parseInt(vals.cpus) * vals.submitted.length;
+                } else {
+                    unknownCpus = true;
+                }
+                if (vals.memory){
+                    allocMem += parseInt(vals.memory) * vals.submitted.length;
+                }
+            }
+        }
+
+        if (unknownCpus === true) {
+            activeCpus = `${activeCpus}(+?)`
+        } else {
+            activeCpus = `${activeCpus}`
+        }
+        if (unknownMem === true) {
+            allocMem = `${allocMem / 1024}Gb(+?)`
+        } else {
+            allocMem = `${allocMem / 1024}Gb`
+        }
+
+        return {
+            cpus: activeCpus,
+            memory: allocMem
+        }
+    }
+
+    render () {
+        const activeResources = this.getActiveResources();
+        return (
+            <Grid container justify={"center"} spacing={24} style={{width: "100%"}}>
+                <Grid item xs={6}>
+                    <Typography align={"center"} variant={"subheading"}>Cpus allocated: {activeResources.cpus}</Typography>
+                </Grid>
+                <Grid item xs={6}>
+                    <Typography align={"center"} variant={"subheading"}>Memory allocated: {activeResources.memory}</Typography>
+                </Grid>
+            </Grid>
         )
     }
 }
