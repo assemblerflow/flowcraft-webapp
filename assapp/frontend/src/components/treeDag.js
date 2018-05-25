@@ -377,7 +377,7 @@ class TreeDag extends Component {
             // counts the number of entries in each array and maps it to mapReturns object
             checkAllBarriers.map( (subProc) => {
                 Object.keys(subProc).map( (type) => {
-                    if (type !== "barrier") {
+                    if (Object.keys(mapReturns).includes(type)) {
                         mapReturns[type] += subProc[type].length
                     }
                 })
