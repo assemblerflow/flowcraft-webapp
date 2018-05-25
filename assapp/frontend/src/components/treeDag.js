@@ -58,6 +58,12 @@ class TreeDag extends Component {
             return d.depth !== 1
         });
 
+        /**
+         * This variable sets the size of the nodes in the dag
+         * @type {number}
+         */
+        this.radius = 14;
+
         // binds this function so that it can be used by other on component rendering (in this case on a button click)
         this.reDraw = this.reDraw.bind(this);
     }
@@ -259,7 +265,7 @@ class TreeDag extends Component {
 
             // Update the node attributes and style
             nodeUpdate.select('circle.node')
-                .attr('r', 14)
+                .attr('r', this.radius)
                 .style("fill", (d) => {
                     return grey[300]
                 })
@@ -346,22 +352,50 @@ class TreeDag extends Component {
             const laneString = name.split("_").slice(-2).join("_");
 
             // a variable that is used to check if all barriers from a lane return the same flag
-            let checkAllBarriers = []
+            let checkAllBarriers = [];
 
+            // check if the sub-process pid is present in the queried node main process
             Object.keys(this.props.processData).forEach((key) => {
 
                 if (key.includes(laneString)) {
-                    checkAllBarriers.push(this.props.processData[key].barrier)
+                    checkAllBarriers.push(this.props.processData[key])
                 }
             });
 
-            // if some process within the main process is running them set status to running, otherwise set the
-            // status if all processes are waiting or complete
-            return (checkAllBarriers.includes("R")) ? "R" :
-                (checkAllBarriers.includes("W") && checkAllBarriers.includes("C")) ? "Q" :
-                    checkAllBarriers.reduce( (a, b) => {
-                    return (a === b) ? a : false;
-                });
+            /**
+             * Variable that stores the counts for each one of the types of running elements and is used to make the pie
+             * chart percentages
+             * @type {{failed: number, finished: number, retry: number, submitted: number}}
+             */
+            const mapReturns = {
+                failed: 0,
+                finished: 0,
+                retry: 0,
+                submitted: 0,
+            };
+
+            // counts the number of entries in each array and maps it to mapReturns object
+            checkAllBarriers.map( (subProc) => {
+                Object.keys(subProc).map( (type) => {
+                    if (type !== "barrier") {
+                        mapReturns[type] += subProc[type].length
+                    }
+                })
+            });
+
+            // check if all arrays are empty and if so add 1 to the node that is wiating
+            const waitingNode = (mapReturns.failed === 0 &&
+                mapReturns.finished === 0 &&
+                mapReturns.retry === 0 &&
+                mapReturns.submitted === 0) ? 1 : 0;
+
+            return [
+                {group: "failed", value: mapReturns.failed},
+                {group: "finished", value: mapReturns.finished},
+                {group: "retry", value: mapReturns.retry},
+                {group: "submitted", value: mapReturns.submitted},
+                {group: "waiting", value: waitingNode}
+            ]
 
         }
 
@@ -372,21 +406,53 @@ class TreeDag extends Component {
      */
     updateDagViz() {
 
-        // first fetches d3 svg associated variables that are needed to update nodes
+        /**
+         * The radius of the pie chart. This in fact is the radius of the of the actual node - 1, otherwise the border
+         * would become to thin
+         * @type {number}
+         */
+        const radius = this.radius - 1;
 
-        const nodeGraph = this.svg.selectAll('g.node').data(this.nodes, (d) => { return d.id || (d.id = ++this.i) })
+        /**
+         * a color map to be used by d3 fill attribute for the pie chart
+         * @type {{failed: *, finished: *, retry: *, submitted: *, waiting: *}}
+         */
+        const color = {
+            failed: red[300],
+            finished: green[500],
+            retry: blue[100],
+            submitted: blue[300],
+            waiting: grey[300]
+        };
 
-        const nodeEnter = nodeGraph.enter().append('g');
+        /**
+         * The d3 pie object
+         */
+        const pie = d3.pie()
+            .sort(null)
+            .value( (d) => { return d.value; });
 
-        const nodeUpdate = nodeEnter.merge(nodeGraph);
+        const arc = d3.arc()
+            .outerRadius(radius)
+            .innerRadius(0);
 
-        // Update the node attributes and style
-        nodeUpdate.select('circle.node')
-            .style("fill", (d) => {
-                const nodeStatus = this.checkBarrier(d.data.name);
-                return (nodeStatus === "C") ? green[500] :
-                    (nodeStatus === "R") ? blue[300] :
-                        (nodeStatus === "Q") ? blue[100] : grey[300]
+        /**
+         * The actual code that fetches all the nodes and iterates through them to add the pie charts and the colors
+         * of those pie charts
+         */
+        this.svg.selectAll('g.node')
+            .selectAll("path")
+            // extremely important to update the graph, it removes the previous colors and allows to add new ones
+            .exit().remove()
+            .data( (d, i) => {
+                // passes the main process name to be parsed and checked for its state in checkBarrier function
+                return pie(this.checkBarrier(d.data.name));
+            })
+            .enter()
+            .append("svg:path")
+            .attr("d", arc)
+            .attr("fill", (d, i) => {
+                return color[d.data.group];
             })
 
     }
@@ -394,7 +460,7 @@ class TreeDag extends Component {
     render() {
         return(
             <div>
-                <svg style={{maxWidth: "100%"}} ref={node => this.node = node}></svg>
+                <svg style={{maxWidth: "100%"}} ref={node => this.node = node}/>
                 <Button variant={"raised"}
                         color={"primary"}
                         style={{position: "absolute", left: "2%",}}
