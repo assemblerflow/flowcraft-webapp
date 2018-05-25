@@ -210,7 +210,8 @@ class InspectPannels extends React.Component {
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails>
                         <GeneralOverview generalData={this.props.generalData}
-                                         runStatus={this.props.runStatus}/>
+                                         runStatus={this.props.runStatus}
+                                         runId={this.props.runID}/>
                     </ExpansionPanelDetails>
                 </ExpansionPanel>
 
@@ -304,7 +305,8 @@ class GeneralOverview extends  React.Component {
                   justify={"center"}
                   spacing={24}>
                 <Grid item className={styles.headerData}>
-                    <HeaderOverview generalData={this.props.generalData}/>
+                    <HeaderOverview generalData={this.props.generalData}
+                                    runId={this.props.runId}/>
                 </Grid>
                 <Grid item className={styles.headerStatus}>
                     <StatusPaper runStatus={this.props.runStatus}/>
@@ -322,12 +324,24 @@ class HeaderOverview extends React.Component {
                     {this.props.generalData.map((v) => {
                         return(
                             <Grid key={v.header} item xs={4} className={styles.headerItem}>
-                                <List><ListItem>
-                                    <ListItemText primary={v.header}
-                                                  secondary={v.value}
-                                                  classes={{primary: styles.headerTitle,
-                                                            secondary: styles.headerValue}}/>
-                                </ListItem></List>
+                                <List>
+                                    <ListItem>
+                                        <ListItemText primary={v.header}
+                                                      secondary={v.value}
+                                                      classes={{primary: styles.headerTitle,
+                                                                secondary: styles.headerValue}}/>
+                                    </ListItem>
+                                    <ListItem>
+                                        {v.header === "Pipeline name" &&
+                                        <RemoteLogModal title={"Pipeline file"}
+                                                        buttonLabel={"View File"}
+                                                        content={"None"}
+                                                        fileId={"pipelineFile"}
+                                                        runId={this.props.runId}
+                                                        buttonStyle={{marginTop: "-30px", minHeight: "30px"}}/>
+                                        }
+                                    </ListItem>
+                                </List>
                             </Grid>
                         )
                     })}
@@ -400,10 +414,75 @@ class StatusPaper extends React.Component {
                     <span style={{fontWeight: "bold"}} className={styles.cardHeader}> Duration: {this.state.duration}</span>
                     {status === "aborted" &&
                         <ViewLogModal title={this.props.runStatus.status.abortCause}
+                                      buttonLabel={"View Log"}
                                       content={this.props.runStatus.status.logLines.join("\n")}
                                       buttonStyle={{float: "right", marginTop: "-5px"}}/>}
                 </div>
             </Paper>
+        )
+    }
+}
+
+/*
+View remote file modal
+ */
+class RemoteLogModal extends React.Component {
+
+    state = {
+        open: false,
+        content: ""
+    };
+
+    getRemoteFile = () => {
+        axios.get(`api/status?run_id=${this.props.runId}&pipeline_files=true`)
+            .then(
+                (response) => {
+                    const fileData = response.data.files[this.props.fileId];
+                    if (fileData) {
+                        this.setState({content: fileData.join("\n")})
+                    } else {
+                        this.setState({content: `Could not retrieve ${this.props.fileId}`})
+                    }
+                }
+            )
+    };
+
+    handleOpen = () => {
+        this.setState({ open: true });
+        this.getRemoteFile();
+    };
+
+    handleClose = () => {
+        this.setState({ open: false });
+    };
+
+    render () {
+        return (
+            <span>
+                <Button variant={"raised"}
+                        size={"small"}
+                        style={this.props.buttonStyle}
+                        onClick={this.handleOpen}>
+                    {this.props.buttonLabel}
+                </Button>
+                <Modal aria-labelledby="simple-modal-title"
+                       aria-describedby="simple-modal-description"
+                       open={this.state.open}
+                       onClose={this.handleClose}>
+                    <Paper className={styles.tagModal}>
+                        <Typography variant={"title"} gutterBottom>
+                            {this.props.title}
+                        </Typography>
+                        <Divider/>
+                        <div className={styles.logModal}>
+                            {this.state.content ?
+                                <pre>{this.state.content}</pre> :
+                                <Loader/>
+                            }
+                        </div>
+                    </Paper>
+                </Modal>
+            </span>
         )
     }
 }
@@ -432,7 +511,7 @@ class ViewLogModal extends React.Component {
                         size={"small"}
                         style={this.props.buttonStyle}
                         onClick={this.handleOpen}>
-                    View Log
+                    {this.props.buttonLabel}
                 </Button>
                 <Modal aria-labelledby="simple-modal-title"
                        aria-describedby="simple-modal-description"
@@ -926,6 +1005,7 @@ class TagTable extends React.Component {
                     if (header === "log") {
                         if (this.state.tagData[sample][header]){
                             dt[header] = <ViewLogModal title={`Log file for sample ${sample}`}
+                                                       buttonLabel={"View log"}
                                                        content={this.state.tagData[sample][header].join("\n")}
                                                        buttonStyle={{width: "100%"}}/>;
                         } else {

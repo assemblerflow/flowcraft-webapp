@@ -18,6 +18,10 @@ class Status(View):
 
         f = models.Status.objects.get(run_id=request.GET.get("run_id"))
 
+        # Handle requests for pipeline files
+        if request.GET.get("pipeline_files"):
+            return JsonResponse({"files": f.pipeline_files})
+
         return JsonResponse({"status": f.status_json, "dag": f.dag_json})
 
     def put(self, request):
