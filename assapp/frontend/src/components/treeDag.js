@@ -5,7 +5,7 @@ import "../styles/treeDag.css"
 import {hierarchy, tree} from "d3-hierarchy";
 import {select, selectAll} from "d3-selection";
 const d3 = require("d3");
-import {event, max, zoom} from "d3";
+import {event, max, zoom, Transform} from "d3";
 import { legendColor } from 'd3-svg-legend';
 
 // Color imports
@@ -14,7 +14,14 @@ import blue from "@material-ui/core/colors/blue";
 import grey from "@material-ui/core/colors/grey";
 import red from "@material-ui/core/colors/red";
 
+// import material UI buttons and icons
+import Button from "@material-ui/core/Button";
+import Icon from "@material-ui/core/Icon";
 
+/**
+ * This div must be defined before the component, otherwise tooltips will not appear
+ * @type {Selection<BaseType, Datum, PElement extends BaseType, PDatum>}
+ */
 const div = select("body").append("div")
     .attr("class", "tooltip")
     .style("opacity", 0);
@@ -51,7 +58,8 @@ class TreeDag extends Component {
             return d.depth !== 1
         });
 
-
+        // binds this function so that it can be used by other on component rendering (in this case on a button click)
+        this.reDraw = this.reDraw.bind(this);
     }
 
     // this is required for the initial DAG rendering. It will create the d3 instance as well as update the node colors
@@ -91,7 +99,7 @@ class TreeDag extends Component {
             .style("left", (event.pageX) + "px")
             .style("top", (event.pageY - 28) + "px")
             .style("text-align", "left")
-    };
+    }
 
     /**
      * Function that hides the tooltip
@@ -102,7 +110,19 @@ class TreeDag extends Component {
         div.transition()
             .duration(500)
             .style("opacity", 0)
-    };
+    }
+
+    /**
+     * Function to force zoom and pan to default levels
+     * Default levels are stored within d3.zoomIdentity
+     */
+    reDraw() {
+        // force current visualization to reset to right zoom (default zoom)
+        this.svg.attr("transform", d3.zoomIdentity);
+        // force zoom property and pan to its default value as well, otherwise it will store the previous zoom level and
+        // panning.
+        select(this.node).property("__zoom", d3.zoomIdentity);
+    }
 
     /**
      * Let d3 live! Function that enables d3 through react. It just has to make
@@ -115,11 +135,11 @@ class TreeDag extends Component {
         // append the svg object to the body of the page
         // appends a 'group' element to 'svg'
         // moves the 'group' element to the top left margin
-        const svg = select(this.node)
+        this.svg = select(this.node)
             .attr("width", this.width + this.margin.right + this.margin.left)
             .attr("height", this.height + this.margin.top + this.margin.bottom)
             .call(zoom().on("zoom", () => {
-                svg.attr("transform", event.transform)
+                this.svg.attr("transform", event.transform)
             }))
             .on("dblclick.zoom", null)
             .append("g")
@@ -194,7 +214,7 @@ class TreeDag extends Component {
             // ****************** Nodes section ***************************
 
             // Update the nodes...
-            const nodeGraph = svg.selectAll('g.node')
+            const nodeGraph = this.svg.selectAll('g.node')
                 .data(this.nodes, (d) => { return d.id || (d.id = ++this.i) });
 
             // Enter any new modes at the parent's previous position.
@@ -265,7 +285,7 @@ class TreeDag extends Component {
             // ****************** links section ***************************
 
             // Update the links...
-            const link = svg.selectAll('path.link')
+            const link = this.svg.selectAll('path.link')
                 .data(this.links, (d) => { return d.id });
 
             // Enter any new links at the parent's previous position.
@@ -347,12 +367,14 @@ class TreeDag extends Component {
 
     }
 
+    /**
+     * Function that updates dag node colors without changing its shape or initial rendering
+     */
     updateDagViz() {
 
         // first fetches d3 svg associated variables that are needed to update nodes
-        const svg = select(this.node);
 
-        const nodeGraph = svg.selectAll('g.node').data(this.nodes, (d) => { return d.id || (d.id = ++this.i) })
+        const nodeGraph = this.svg.selectAll('g.node').data(this.nodes, (d) => { return d.id || (d.id = ++this.i) })
 
         const nodeEnter = nodeGraph.enter().append('g');
 
@@ -370,7 +392,19 @@ class TreeDag extends Component {
     }
 
     render() {
-        return <svg style={{maxWidth: "100%"}} ref={node => this.node = node}></svg>
+        return(
+            <div>
+                <svg style={{maxWidth: "100%"}} ref={node => this.node = node}></svg>
+                <Button variant={"raised"}
+                        color={"primary"}
+                        style={{position: "absolute", left: "2%",}}
+                        size={"small"}
+                        onClick={this.reDraw}>
+                    <Icon size={30}>autorenew
+                    </Icon>
+                </Button>
+            </div>
+        )
     }
 
 }
