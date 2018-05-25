@@ -168,6 +168,14 @@
     padding: 10px;
 }
 
+:local(.pipelineButton){
+    padding-top: 0;
+    margin-top: -20px!important;
+    min-height: 30px!important;
+    height: 30px!important;
+    line-height: 15px!important;
+}
+
 /* This prevents the focus outlier when clicking react table headers */
 .ReactTable .rt-thead [role="columnheader"] {
 outline: 0;

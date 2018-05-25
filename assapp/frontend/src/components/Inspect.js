@@ -210,7 +210,8 @@ class InspectPannels extends React.Component {
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails>
                         <GeneralOverview generalData={this.props.generalData}
-                                         runStatus={this.props.runStatus}/>
+                                         runStatus={this.props.runStatus}
+                                         runId={this.props.runID}/>
                     </ExpansionPanelDetails>
                 </ExpansionPanel>
 
@@ -219,7 +220,8 @@ class InspectPannels extends React.Component {
                         <Typography className={styles.panelHeaderTitle} variant={"title"}>Details</Typography>
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails>
-                        <DetailsOverview detailsData={this.props.detailsData}/>
+                        <DetailsOverview detailsData={this.props.detailsData}
+                                         runId={this.props.runID}/>
                     </ExpansionPanelDetails>
                 </ExpansionPanel>
 
@@ -304,7 +306,8 @@ class GeneralOverview extends  React.Component {
                   justify={"center"}
                   spacing={24}>
                 <Grid item className={styles.headerData}>
-                    <HeaderOverview generalData={this.props.generalData}/>
+                    <HeaderOverview generalData={this.props.generalData}
+                                    runId={this.props.runId}/>
                 </Grid>
                 <Grid item className={styles.headerStatus}>
                     <StatusPaper runStatus={this.props.runStatus}/>
@@ -322,12 +325,23 @@ class HeaderOverview extends React.Component {
                     {this.props.generalData.map((v) => {
                         return(
                             <Grid key={v.header} item xs={4} className={styles.headerItem}>
-                                <List><ListItem>
-                                    <ListItemText primary={v.header}
-                                                  secondary={v.value}
-                                                  classes={{primary: styles.headerTitle,
-                                                            secondary: styles.headerValue}}/>
-                                </ListItem></List>
+                                <List>
+                                    <ListItem>
+                                        <ListItemText primary={v.header}
+                                                      secondary={v.value}
+                                                      classes={{primary: styles.headerTitle,
+                                                                secondary: styles.headerValue}}/>
+                                    </ListItem>
+                                    <ListItem>
+                                        {v.header === "Pipeline name" &&
+                                        <RemoteLogModal title={"Pipeline file"}
+                                                        buttonLabel={"View File"}
+                                                        fileId={"pipelineFile"}
+                                                        runId={this.props.runId}
+                                                        buttonStyle={{marginTop: "-30px", minHeight: "30px"}}/>
+                                        }
+                                    </ListItem>
+                                </List>
                             </Grid>
                         )
                     })}
@@ -400,10 +414,75 @@ class StatusPaper extends React.Component {
                     <span style={{fontWeight: "bold"}} className={styles.cardHeader}> Duration: {this.state.duration}</span>
                     {status === "aborted" &&
                         <ViewLogModal title={this.props.runStatus.status.abortCause}
+                                      buttonLabel={"View Log"}
                                       content={this.props.runStatus.status.logLines.join("\n")}
                                       buttonStyle={{float: "right", marginTop: "-5px"}}/>}
                 </div>
             </Paper>
+        )
+    }
+}
+
+/*
+View remote file modal
+ */
+class RemoteLogModal extends React.Component {
+
+    state = {
+        open: false,
+        content: ""
+    };
+
+    getRemoteFile = () => {
+        axios.get(`api/status?run_id=${this.props.runId}&pipeline_files=true`)
+            .then(
+                (response) => {
+                    const fileData = response.data.files[this.props.fileId];
+                    if (fileData) {
+                        this.setState({content: fileData.join("\n")})
+                    } else {
+                        this.setState({content: `Could not retrieve ${this.props.fileId}`})
+                    }
+                }
+            )
+    };
+
+    handleOpen = () => {
+        this.setState({ open: true });
+        this.getRemoteFile();
+    };
+
+    handleClose = () => {
+        this.setState({ open: false });
+    };
+
+    render () {
+        return (
+            <span>
+                <Button variant={"raised"}
+                        size={"small"}
+                        style={this.props.buttonStyle}
+                        onClick={this.handleOpen}>
+                    {this.props.buttonLabel}
+                </Button>
+                <Modal aria-labelledby="simple-modal-title"
+                       aria-describedby="simple-modal-description"
+                       open={this.state.open}
+                       onClose={this.handleClose}>
+                    <Paper className={styles.tagModal}>
+                        <Typography variant={"title"} gutterBottom>
+                            {this.props.title}
+                        </Typography>
+                        <Divider/>
+                        <div className={styles.logModal}>
+                            {this.state.content ?
+                                <pre>{this.state.content}</pre> :
+                                <Loader/>
+                            }
+                        </div>
+                    </Paper>
+                </Modal>
+            </span>
         )
     }
 }
@@ -432,7 +511,7 @@ class ViewLogModal extends React.Component {
                         size={"small"}
                         style={this.props.buttonStyle}
                         onClick={this.handleOpen}>
-                    View Log
+                    {this.props.buttonLabel}
                 </Button>
                 <Modal aria-labelledby="simple-modal-title"
                        aria-describedby="simple-modal-description"
@@ -460,17 +539,46 @@ Header component of the inspection with summary information
  */
 class DetailsOverview extends React.Component {
     render () {
+
+        const configFiles = {
+            "configFile": ["Nextflow config", ".nextflow.config"],
+            "paramsFile": ["Parameters config", "params.config"],
+            "resourcesFile": ["Resources config", "resources.config"],
+            "containersFile": ["Containers config", "containers.config"],
+            "userFile": ["User config", "user.config"],
+        };
+
         return (
-            <List component="nav"
-                  dense>
-                {this.props.detailsData.map((v) => {
-                    return (
-                        <ListItem key={v.header}>
-                            <ListItemText primary={v.header} secondary={v.value}/>
-                        </ListItem>
-                    )
-                })}
-            </List>
+            <Grid container spacing={8}>
+                <Grid item xs={6} style={{minWidth: "300px"}}>
+                    <List component="nav"
+                          dense>
+                        {this.props.detailsData.map((v) => {
+                            return (
+                                <ListItem key={v.header}>
+                                    <ListItemText primary={v.header} secondary={v.value}/>
+                                </ListItem>
+                            )
+                        })}
+                    </List>
+                </Grid>
+                <Grid item xs={6} style={{minWidth: "300px"}}>
+                    <List component="nav"
+                          dense>
+                    {Object.keys(configFiles).map((v) => {
+                        return(
+                            <ListItem key={v}>
+                                <ListItemText primary={configFiles[v][0]} secondary={configFiles[v][1]}/>
+                                <RemoteLogModal title={configFiles[v][0]}
+                                                buttonLabel={"View File"}
+                                                fileId={v}
+                                                runId={this.props.runId}/>
+                            </ListItem>
+                        )
+                    })}
+                    </List>
+                </Grid>
+            </Grid>
         )
     }
 }
@@ -874,13 +982,13 @@ class TagTabs extends React.Component {
                     <SwipeableViews index={this.state.value}
                                     onChangeIndex={this.handleChangeIndex}>
                         <TagTable tags={this.state.running}
-                                  header={this.state.header}
+                                  header={"running"}
                                   tagData={this.state.tagData} />
                         <TagTable tags={this.state.complete}
-                                  header={this.state.header}
+                                  header={"complete"}
                                   tagData={this.state.tagData}/>
                         <TagTable tags={this.state.error}
-                                  header={this.state.header}
+                                  header={"error"}
                                   tagData={this.state.tagData}/>
                     </SwipeableViews>
                 </div>
@@ -914,7 +1022,8 @@ class TagTable extends React.Component {
 
     prepareData(tags) {
 
-        const headers = ["workdir", "start", "log"];
+        const headers = ["workdir", "start", "realtime", "rss", "rchar",
+            "wchar", "log"];
 
         return tags.map((sample) => {
             let dt = {"sample": sample};
@@ -925,6 +1034,7 @@ class TagTable extends React.Component {
                     if (header === "log") {
                         if (this.state.tagData[sample][header]){
                             dt[header] = <ViewLogModal title={`Log file for sample ${sample}`}
+                                                       buttonLabel={"View log"}
                                                        content={this.state.tagData[sample][header].join("\n")}
                                                        buttonStyle={{width: "100%"}}/>;
                         } else {
@@ -950,22 +1060,45 @@ class TagTable extends React.Component {
                 Header: "Work dir",
                 accessor: "workdir",
                 minWidth: 90,
+                className: styles.tableCell
             },
             {
                 Header: "Time start",
                 accessor: "start",
                 minWidth: 90,
+                className: styles.tableCell
             },
             {
-                Header: "Time stop",
-                accessor: "stop",
-                minWidth: 90
+                Header: "Duration",
+                accessor: "realtime",
+                className: styles.tableCell,
+                show: this.props.header === "complete"
+            },
+            {
+                Header: "Max memory",
+                accessor: "rss",
+                className: styles.tableCell,
+                show: this.props.header === "complete"
+            },
+            {
+                Header: "Disk read",
+                accessor: "rchar",
+                className: styles.tableCell,
+                show: this.props.header === "complete"
+            },
+            {
+                Header: "Disk write",
+                accessor: "wchar",
+                className: styles.tableCell,
+                show: this.props.header === "complete"
             },
             {
                 Header: "Log",
                 accessor: "log",
                 minWidth: 100,
                 width: 100,
+                className: styles.tableCell,
+                show: this.props.header === "error"
             }
         ]
     }

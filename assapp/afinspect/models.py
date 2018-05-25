@@ -9,3 +9,4 @@ class Status(models.Model):
     timestamp = models.DateTimeField(auto_now=True)
     status_json = JSONField(blank=True, default={})
     dag_json = JSONField(blank=True, default={})
+    pipeline_files = JSONField(blank=True, default={})
