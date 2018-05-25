@@ -32,6 +32,8 @@
     "d3-svg-legend": "^2.25.6",
     "material-design-icons": "^3.0.1",
     "moment": "^2.22.1",
+    "prismjs": "^1.14.0",
+    "react-prism": "^4.3.2",
     "react-router-dom": "^4.2.2",
     "react-swipeable-views": "^0.12.13",
     "react-table": "^6.8.2",

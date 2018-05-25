@@ -32,10 +32,11 @@ import blue from "@material-ui/core/colors/blue";
 import red from "@material-ui/core/colors/red";
 import grey from "@material-ui/core/colors/grey";
 
-
 // Other imports
 import axios from "axios";
 import moment from "moment";
+import prismjs from "prismjs";
+import PrismCode from "react-prism";
 
 // CSS imports
 const styles = require("../styles/inspect.css")
@@ -476,7 +477,9 @@ class RemoteLogModal extends React.Component {
                         <Divider/>
                         <div className={styles.logModal}>
                             {this.state.content ?
-                                <pre>{this.state.content}</pre> :
+                                <PrismCode component={"pre"} className={"language-groovy"}>
+                                    {this.state.content}
+                                </PrismCode> :
                                 <Loader/>
                             }
                         </div>
