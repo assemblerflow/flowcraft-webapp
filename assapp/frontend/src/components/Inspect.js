@@ -758,20 +758,43 @@ const sortIgnoreNA = (a, b) => {
 
 };
 
-class MyComponent extends React.Component {
-    componentDidMount() {
-        let chart = this.refs.chart.getChart();
-        chart.series[0].addPoint({x: 10, y: 12});
+class TestChart extends React.Component {
+
+    constructor(props){
+        super(props);
+
+        this.state = {
+            plotData: props.plotData
+        };
+    }
+
+    componentWillMount(){
+        console.log(this.props)
     }
 
     render() {
         let config = {
-            xAxis: {
-                categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+            chart: {
+                type: 'scatter',
+                zoomType: 'xy'
             },
-            series: [{
-                data: [29.9, 71.5, 106.4, 129.2, 144.0, 176.0, 135.6, 148.5, 216.4, 194.1, 295.6, 454.4]
-            }]
+            xAxis: {
+                title: {
+                    enabled: true,
+                    text: "Tags"
+                },
+                startOnTick: true,
+                endOnTick: true,
+                showLastLabel: true,
+                min: -5,
+                max: 6,
+            },
+            yAxis: {
+                title: {
+                    text: ''
+                }
+            },
+            series: this.state.plotData
         };
         return <ReactHighcharts config={config} ref="chart"></ReactHighcharts>;
     }
@@ -781,6 +804,7 @@ class TableOverview extends React.Component {
 
     constructor(props) {
         super(props);
+        console.log(props)
 
         this.state = {
             "data": props.data,
@@ -823,10 +847,45 @@ class TableOverview extends React.Component {
 
     }
 
+    preparePlotData(process, dataType) {
+
+        if (!this.props.tagData[process]){
+            return null
+        }
+
+        let data = [];
+        let c = 1;
+        const total = Object.keys(this.props.tagData[process]).length;
+
+        for (const [sample, info] of Object.entries(this.props.tagData[process])) {
+            if (info[dataType] === "-"){
+                continue
+            }
+            data.push({
+                name: sample,
+                data: [[c/total, info[dataType]]],
+                marker: {
+                    symbol: 'triangle'
+                }
+            });
+            c += 1
+        }
+
+        console.log(data)
+
+        return data;
+    }
+
     prepareData(data) {
 
         const listToLength = ["running", "complete", "error"];
         const plotButtons = ["maxMem", "avgRead", "avgWrite"];
+
+        const tagDataMap = {
+            "maxMem": "rss",
+            "avgRead": "rchar",
+            "avgWrite": "wchar"
+        };
 
         return data.map(processInfo => {
             let dt = {};
@@ -844,7 +903,11 @@ class TableOverview extends React.Component {
                     dt["lane"] = res.lane;
                     dt["pid"] = res.processId;
                 } else if (plotButtons.includes(header)) {
-                    dt[header] = <PlotModal buttonLabel={processInfo[header]}/>
+                    const plotData = this.preparePlotData(processInfo.process, tagDataMap[header])
+                    dt[header] = processInfo[header] === "-" ?
+                        "-" :
+                        <PlotModal buttonLabel={processInfo[header]}
+                                   plotData={plotData}/>
                 }
                 // else if (header === "maxMem"){
                 //     if (Object.keys(processInfo["memWarn"]).length !== 0 && processInfo["m" +
@@ -1002,8 +1065,7 @@ class PlotModal extends React.Component {
                         </Typography>
                         <Divider/>
                         <div>
-                            <MyComponent/>
-                            <MyComponent/>
+                            <TestChart plotData={this.props.plotData}/>
                         </div>
                     </Paper>
                 </Modal>
