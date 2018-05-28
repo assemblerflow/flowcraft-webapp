@@ -32,6 +32,9 @@ import blue from "@material-ui/core/colors/blue";
 import red from "@material-ui/core/colors/red";
 import grey from "@material-ui/core/colors/grey";
 
+import SkullIcon from "mdi-react/SkullIcon"
+import AlertOctagonIcon from "mdi-react/AlertOctagonIcon"
+
 // Highcharts imports
 const ReactHighcharts = require("react-highcharts");
 
@@ -182,7 +185,6 @@ export class InspectHome extends React.Component {
 
     constructor(props) {
         super(props);
-
     }
 
     render () {
@@ -250,7 +252,8 @@ class InspectPannels extends React.Component {
                     <ExpansionPanelDetails>
                         <MainTable tableData={this.props.tableData}
                                    tagData={this.props.tagData}
-                                   processData={this.props.processData}/>
+                                   processData={this.props.processData}
+                                   runStatus={this.props.runStatus.status.value}/>
                     </ExpansionPanelDetails>
                 </ExpansionPanel>
 
@@ -740,7 +743,8 @@ class MainTable extends React.Component {
                            data={this.props.tableData.data}
                            mappings={this.props.tableData.mappings}
                            tagData={this.props.tagData}
-                           processData={this.props.processData}/>
+                           processData={this.props.processData}
+                           runStatus={this.props.runStatus}/>
         )
     }
 }
@@ -908,6 +912,7 @@ class TableOverview extends React.Component {
         };
 
         return data.map(processInfo => {
+            console.log(processInfo)
             let dt = {};
             Object.keys(processInfo).forEach(header => {
                 if (listToLength.includes(header)) {
@@ -942,6 +947,15 @@ class TableOverview extends React.Component {
                     dt[header] = processInfo[header];
                 }
             });
+
+            if (this.props.runStatus === "aborted") {
+                if (processInfo.error.length > 0) {
+                    dt.barrier = "F"
+                } else if (dt.barrier === "R") {
+                    dt.barrier = "A"
+                }
+            }
+
             return dt;
         })
     }
@@ -949,6 +963,14 @@ class TableOverview extends React.Component {
     prepareColumns() {
 
         const mainWidth = 90;
+
+        const barrierIcons = {
+            "C": <Icon style={{ color: green[300] }} size={30}>check_circle</Icon>,
+            "W": <Icon size={30}>access_time</Icon>,
+            "R": <CircularProgress size={25} style={{ color: green[500] }}/>,
+            "F": <SkullIcon color={red[300]}/>,
+            "A": <AlertOctagonIcon color={red[300]}/>
+        };
 
         return [
             {
@@ -958,12 +980,7 @@ class TableOverview extends React.Component {
                 className: styles.tableBarrier,
                 Cell: row => (
                     <div>
-                        {row.value === "C" ?
-                            <Icon size={30}>check_circle</Icon> :
-                            row.value === "W" ?
-                                <Icon size={30}>access_time</Icon> :
-                                <CircularProgress size={25} style={{ color: green[500] }}/>
-                        }
+                        {barrierIcons[row.value]}
                     </div>
                 )
             },
