@@ -32,6 +32,13 @@ import blue from "@material-ui/core/colors/blue";
 import red from "@material-ui/core/colors/red";
 import grey from "@material-ui/core/colors/grey";
 
+import SkullIcon from "mdi-react/SkullIcon"
+import AlertOctagonIcon from "mdi-react/AlertOctagonIcon"
+
+// Highcharts imports
+const ReactHighcharts = require("react-highcharts");
+
+
 // Other imports
 import axios from "axios";
 import moment from "moment";
@@ -39,7 +46,7 @@ import prismjs from "prismjs";
 import PrismCode from "react-prism";
 
 // CSS imports
-const styles = require("../styles/inspect.css")
+const styles = require("../styles/inspect.css");
 
 // TreeDag import
 
@@ -184,7 +191,6 @@ export class InspectHome extends React.Component {
 
     constructor(props) {
         super(props);
-
     }
 
     render () {
@@ -252,7 +258,8 @@ class InspectPannels extends React.Component {
                     <ExpansionPanelDetails>
                         <MainTable tableData={this.props.tableData}
                                    tagData={this.props.tagData}
-                                   processData={this.props.processData}/>
+                                   processData={this.props.processData}
+                                   runStatus={this.props.runStatus.status.value}/>
                     </ExpansionPanelDetails>
                 </ExpansionPanel>
 
@@ -741,7 +748,8 @@ class MainTable extends React.Component {
                            data={this.props.tableData.data}
                            mappings={this.props.tableData.mappings}
                            tagData={this.props.tagData}
-                           processData={this.props.processData}/>
+                           processData={this.props.processData}
+                           runStatus={this.props.runStatus}/>
         )
     }
 }
@@ -759,6 +767,98 @@ const sortIgnoreNA = (a, b) => {
 
 };
 
+class ResourceScatterPlot extends React.Component {
+
+    constructor(props){
+        super(props);
+
+        this.state = {
+            plotData: this.preparePlotData(props.rawPlotData, props.dataType)
+        };
+    }
+
+    preparePlotData(dataObj, dataType) {
+
+        if (!dataObj){
+            return null
+        }
+
+        let data = [];
+        let c = 1;
+        const total = Object.keys(dataObj).length;
+
+        for (const [sample, info] of Object.entries(dataObj)) {
+            if (info[dataType] === "-"){
+                continue
+            }
+            data.push({
+                name: sample,
+                data: [[c/total, info[dataType]]],
+                marker: {
+                    symbol: 'circle'
+                }
+            });
+            c += 1
+        }
+
+        return data;
+    }
+
+    render() {
+
+        const tagDataMap = {
+            "rss": "Max Memory (MB)",
+            "rchar": "Average Disk Read (MB)",
+            "wchar": "Average Disk Write (MB)"
+        };
+
+        let config = {
+            chart: {
+                type: "scatter",
+                zoomType: "x",
+            },
+            legend: {
+                enabled: false
+            },
+            tooltip: {
+                formatter() {
+                    const title = this.series.yAxis.userOptions.title.text;
+                    return "<b>" + title + "</b><br>" +
+                        "<b>" + this.point.series.name +"</b>:  " + this.y + "Mb"
+                },
+            },
+            xAxis: {
+                title: {
+                    enabled: true,
+                    text: "Tags"
+                },
+                startOnTick: true,
+                endOnTick: true,
+                showLastLabel: true,
+                min: -2,
+                max: 3,
+                labels: {
+                    enabled: false
+                }
+            },
+            yAxis: {
+                title: {
+                    text: tagDataMap[this.props.dataType],
+                },
+            },
+            title: {
+                text: "Distribution of " + tagDataMap[this.props.dataType]
+            },
+            series: this.state.plotData
+        };
+        return (
+            <div style={{paddingTop: 20}}>
+                <ReactHighcharts style={{height: "100%"}} config={config} ref="chart"></ReactHighcharts>
+            </div>
+        );
+    }
+}
+
 class TableOverview extends React.Component {
 
     constructor(props) {
@@ -768,7 +868,6 @@ class TableOverview extends React.Component {
             "data": props.data,
             "columns": this.prepareColumns()
         };
-
     }
 
     static getDerivedStateFromProps(nextProps, prevState) {
@@ -809,12 +908,19 @@ class TableOverview extends React.Component {
     prepareData(data) {
 
         const listToLength = ["running", "complete", "error"];
+        const plotButtons = ["maxMem", "avgRead", "avgWrite"];
+
+        const tagDataMap = {
+            "maxMem": "rss",
+            "avgRead": "rchar",
+            "avgWrite": "wchar"
+        };
 
         return data.map(processInfo => {
+            console.log(processInfo)
             let dt = {};
             Object.keys(processInfo).forEach(header => {
                 if (listToLength.includes(header)) {
-                    // dt[header] = <Button className={styles.tableButton}>{processInfo[header].length}</Button>;
                     dt[header] = <TagInspectionModal tagList={processInfo[header]}
                                                      process={processInfo["process"]}
                                                      header={header}
@@ -825,17 +931,36 @@ class TableOverview extends React.Component {
                     dt[header] = res.processName;
                     dt["lane"] = res.lane;
                     dt["pid"] = res.processId;
-                } else if (header === "maxMem"){
-                    if (Object.keys(processInfo["memWarn"]).length !== 0 && processInfo["m" +
-                    "emWarn"].constructor === Object){
-                        dt[header] = <div>{processInfo[header]} <WarningPopover warningType={"memory"} warnings={processInfo["memWarn"]} /></div>
+                } else if (plotButtons.includes(header)) {
+                    if (Object.keys(this.props.tagData[processInfo.process]).length !== 0 && this.props.tagData[processInfo.process].constructor === Object){
+                        dt[header] = <ResourceScatterModal buttonLabel={processInfo[header]}
+                                                           rawPlotData={this.props.tagData[processInfo.process]}
+                                                           dataType={tagDataMap[header]}/>
                     } else {
-                        dt[header] = processInfo[header];
+                        dt[header] = "-"
                     }
-                } else {
+                }
+                // else if (header === "maxMem"){
+                //     if (Object.keys(processInfo["memWarn"]).length !== 0 && processInfo["m" +
+                //     "emWarn"].constructor === Object){
+                //         dt[header] = <div>{processInfo[header]} <WarningPopover warningType={"memory"} warnings={processInfo["memWarn"]} /></div>
+                //     } else {
+                //         dt[header] = processInfo[header];
+                //     }
+                //    }
+                else {
                     dt[header] = processInfo[header];
                 }
             });
+
+            if (this.props.runStatus === "aborted") {
+                if (processInfo.error.length > 0) {
+                    dt.barrier = "F"
+                } else if (dt.barrier === "R") {
+                    dt.barrier = "A"
+                }
+            }
+
             return dt;
         })
     }
@@ -843,6 +968,14 @@ class TableOverview extends React.Component {
     prepareColumns() {
 
         const mainWidth = 90;
+
+        const barrierIcons = {
+            "C": <Icon style={{ color: green[300] }} size={30}>check_circle</Icon>,
+            "W": <Icon size={30}>access_time</Icon>,
+            "R": <CircularProgress size={25} style={{ color: green[500] }}/>,
+            "F": <SkullIcon color={red[300]}/>,
+            "A": <AlertOctagonIcon color={red[300]}/>
+        };
 
         return [
             {
@@ -852,12 +985,7 @@ class TableOverview extends React.Component {
                 className: styles.tableBarrier,
                 Cell: row => (
                     <div>
-                        {row.value === "C" ?
-                            <Icon size={30}>check_circle</Icon> :
-                            row.value === "W" ?
-                                <Icon size={30}>access_time</Icon> :
-                                <CircularProgress size={25} style={{ color: green[500] }}/>
-                        }
+                        {barrierIcons[row.value]}
                     </div>
                 )
             },
@@ -944,6 +1072,44 @@ class TableOverview extends React.Component {
                      className="-striped -highlight"
                  />
              </div>
+        )
+    }
+}
+
+
+class ResourceScatterModal extends React.Component {
+
+    state = {
+        open: false,
+    };
+
+    handleOpen = () => {
+        this.setState({ open: true });
+    };
+
+    handleClose = () => {
+        this.setState({ open: false });
+    };
+
+    render () {
+        return (
+            <div>
+                <Button className={styles.tableButton}  onClick={this.handleOpen}>
+                    {this.props.buttonLabel}
+                </Button>
+                <Modal
+                    aria-labelledby="simple-modal-title"
+                    aria-describedby="simple-modal-description"
+                    open={this.state.open}
+                    onClose={this.handleClose}>
+                    <Paper className={styles.tagModal}>
+                        <div>
+                            <ResourceScatterPlot rawPlotData={this.props.rawPlotData}
+                                       dataType={this.props.dataType}/>
+                        </div>
+                    </Paper>
+                </Modal>
+            </div>
         )
     }
 }

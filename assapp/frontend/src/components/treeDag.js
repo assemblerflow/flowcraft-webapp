@@ -540,15 +540,16 @@ class TreeDag extends Component {
         if (this.state.update) {this.updateDagViz()}
         return(
             <div>
-                <svg style={{maxWidth: "100%"}} ref={node => this.node = node}/>
-                <Button variant={"raised"}
-                        color={"primary"}
-                        style={{position: "absolute", left: "2%",}}
-                        size={"small"}
-                        onClick={this.reDraw}>
-                    <Icon size={30}>autorenew
-                    </Icon>
-                </Button>
+                <div>
+                    <Button variant={"raised"}
+                            color={"primary"}
+                            size={"small"}
+                            onClick={this.reDraw}>
+                        <Icon size={30}>autorenew
+                        </Icon>
+                    </Button>
+                </div>
+                <svg style={{maxWidth: "100%"}} ref={node => this.node = node}></svg>
             </div>
         )
     }
