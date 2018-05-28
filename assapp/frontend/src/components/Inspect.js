@@ -758,25 +758,65 @@ const sortIgnoreNA = (a, b) => {
 
 };
 
-class TestChart extends React.Component {
+class ResourceScatterPlot extends React.Component {
 
     constructor(props){
         super(props);
 
         this.state = {
-            plotData: props.plotData
+            plotData: this.preparePlotData(props.rawPlotData, props.dataType)
         };
     }
 
-    componentWillMount(){
-        console.log(this.props)
+    preparePlotData(dataObj, dataType) {
+
+        if (!dataObj){
+            return null
+        }
+
+        let data = [];
+        let c = 1;
+        const total = Object.keys(dataObj).length;
+
+        for (const [sample, info] of Object.entries(dataObj)) {
+            if (info[dataType] === "-"){
+                continue
+            }
+            data.push({
+                name: sample,
+                data: [[c/total, info[dataType]]],
+                marker: {
+                    symbol: 'circle'
+                }
+            });
+            c += 1
+        }
+
+        return data;
     }
 
     render() {
+
+        const tagDataMap = {
+            "rss": "Max Memory (MB)",
+            "rchar": "Average Disk Read (MB)",
+            "wchar": "Average Disk Write (MB)"
+        };
+
         let config = {
             chart: {
-                type: 'scatter',
-                zoomType: 'xy'
+                type: "scatter",
+                zoomType: "x",
+            },
+            legend: {
+                enabled: false
+            },
+            tooltip: {
+                formatter() {
+                    const title = this.series.yAxis.userOptions.title.text;
+                    return "<b>" + title + "</b><br>" +
+                        "<b>" + this.point.series.name +"</b>:  " + this.y + "Mb"
+                },
             },
             xAxis: {
                 title: {
@@ -786,17 +826,27 @@ class TestChart extends React.Component {
                 startOnTick: true,
                 endOnTick: true,
                 showLastLabel: true,
-                min: -5,
-                max: 6,
+                min: -2,
+                max: 3,
+                labels: {
+                    enabled: false
+                }
             },
             yAxis: {
                 title: {
-                    text: ''
-                }
+                    text: tagDataMap[this.props.dataType],
+                },
+            },
+            title: {
+                text: "Distribution of " + tagDataMap[this.props.dataType]
             },
             series: this.state.plotData
         };
-        return <ReactHighcharts config={config} ref="chart"></ReactHighcharts>;
+        return (
+            <div style={{paddingTop: 20}}>
+                <ReactHighcharts style={{height: "100%"}} config={config} ref="chart"></ReactHighcharts>
+            </div>
+        );
     }
 }
 
@@ -804,7 +854,6 @@ class TableOverview extends React.Component {
 
     constructor(props) {
         super(props);
-        console.log(props)
 
         this.state = {
             "data": props.data,
@@ -847,35 +896,6 @@ class TableOverview extends React.Component {
 
     }
 
-    preparePlotData(process, dataType) {
-
-        if (!this.props.tagData[process]){
-            return null
-        }
-
-        let data = [];
-        let c = 1;
-        const total = Object.keys(this.props.tagData[process]).length;
-
-        for (const [sample, info] of Object.entries(this.props.tagData[process])) {
-            if (info[dataType] === "-"){
-                continue
-            }
-            data.push({
-                name: sample,
-                data: [[c/total, info[dataType]]],
-                marker: {
-                    symbol: 'triangle'
-                }
-            });
-            c += 1
-        }
-
-        console.log(data)
-
-        return data;
-    }
-
     prepareData(data) {
 
         const listToLength = ["running", "complete", "error"];
@@ -891,7 +911,6 @@ class TableOverview extends React.Component {
             let dt = {};
             Object.keys(processInfo).forEach(header => {
                 if (listToLength.includes(header)) {
-                    // dt[header] = <Button className={styles.tableButton}>{processInfo[header].length}</Button>;
                     dt[header] = <TagInspectionModal tagList={processInfo[header]}
                                                      process={processInfo["process"]}
                                                      header={header}
@@ -903,11 +922,13 @@ class TableOverview extends React.Component {
                     dt["lane"] = res.lane;
                     dt["pid"] = res.processId;
                 } else if (plotButtons.includes(header)) {
-                    const plotData = this.preparePlotData(processInfo.process, tagDataMap[header])
-                    dt[header] = processInfo[header] === "-" ?
-                        "-" :
-                        <PlotModal buttonLabel={processInfo[header]}
-                                   plotData={plotData}/>
+                    if (Object.keys(this.props.tagData[processInfo.process]).length !== 0 && this.props.tagData[processInfo.process].constructor === Object){
+                        dt[header] = <ResourceScatterModal buttonLabel={processInfo[header]}
+                                                           rawPlotData={this.props.tagData[processInfo.process]}
+                                                           dataType={tagDataMap[header]}/>
+                    } else {
+                        dt[header] = "-"
+                    }
                 }
                 // else if (header === "maxMem"){
                 //     if (Object.keys(processInfo["memWarn"]).length !== 0 && processInfo["m" +
@@ -1034,7 +1055,7 @@ class TableOverview extends React.Component {
 }
 
 
-class PlotModal extends React.Component {
+class ResourceScatterModal extends React.Component {
 
     state = {
         open: false,
@@ -1060,12 +1081,9 @@ class PlotModal extends React.Component {
                     open={this.state.open}
                     onClose={this.handleClose}>
                     <Paper className={styles.tagModal}>
-                        <Typography variant={"title"} gutterBottom>
-                            Plot stuff
-                        </Typography>
-                        <Divider/>
                         <div>
-                            <TestChart plotData={this.props.plotData}/>
+                            <ResourceScatterPlot rawPlotData={this.props.rawPlotData}
+                                       dataType={this.props.dataType}/>
                         </div>
                     </Paper>
                 </Modal>
