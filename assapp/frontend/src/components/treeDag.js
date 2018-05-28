@@ -17,6 +17,7 @@ import red from "@material-ui/core/colors/red";
 // import material UI buttons and icons
 import Button from "@material-ui/core/Button";
 import Icon from "@material-ui/core/Icon";
+import orange from "@material-ui/core/colors/orange";
 
 /**
  * This div must be defined before the component, otherwise tooltips will not appear
@@ -285,9 +286,9 @@ class TreeDag extends Component {
             // Update the node attributes and style
             nodeUpdate.select('circle.node')
                 .attr('r', this.radius)
-                .style("fill", (d) => {
-                    return grey[300]
-                })
+                // .style("fill", (d) => {
+                //     return grey[300]
+                // })
                 .attr('cursor', 'pointer');
 
 
@@ -348,6 +349,42 @@ class TreeDag extends Component {
 
         update(this.root)
 
+    }
+
+    /**
+     * This function checks if the main process is complete
+     * @param {String} name - The name of the node which contains the processes called through the pipeline string and
+     * their pid.
+     * @returns {*} - returns a string with the status of the main process.
+     */
+    checkBarrierComplete(name) {
+
+        // skips first node that is root
+        if (name !== "root") {
+
+            const laneString = name.split("_").slice(-2).join("_");
+
+            // a variable that is used to check if all barriers from a lane return the same flag
+            let checkAllBarriers = []
+
+            Object.keys(this.props.processData).forEach((key) => {
+
+                if (key.includes(laneString)) {
+                    checkAllBarriers.push(this.props.processData[key].barrier)
+                }
+            });
+
+            const labelProcess = checkAllBarriers.reduce((a, b) => {
+                return (a === b) ? a : false;
+            });
+
+
+            // check if all processes are complete
+            if (labelProcess === "C") {
+                return "C"
+            }
+
+        }
     }
 
 
@@ -438,9 +475,9 @@ class TreeDag extends Component {
          */
         const color = {
             failed: red[300],
-            finished: green[500],
-            retry: blue[100],
-            submitted: blue[300],
+            finished: green[300],
+            retry: orange[300],
+            submitted: blue[100],
             waiting: grey[300]
         };
 
@@ -455,18 +492,21 @@ class TreeDag extends Component {
             .outerRadius(radius)
             .innerRadius(0);
 
+        // a variable to iterate through all nodes
+        const nodeIter = this.svg.selectAll('g.node')
+
         /**
          * The actual code that fetches all the nodes and iterates through them to add the pie charts and the colors
          * of those pie charts
          */
-        this.svg.selectAll('g.node')
+        nodeIter
             .selectAll("path")
+            // adds a class to remove previous nodes that will suffer update here
             .attr("class", "toRemove")
             // extremely important to update the graph, it exists previous node so that it can render the new one above
             .exit()
             .data( (d, i) => {
                 // passes the main process name to be parsed and checked for its state in checkBarrier function
-                console.log(this.checkBarrier(d.data.name))
                 return pie(this.checkBarrier(d.data.name));
             })
             .enter()
@@ -477,7 +517,22 @@ class TreeDag extends Component {
             })
 
         // removes previous path with pie chart
-        this.svg.selectAll('path.toRemove').remove()
+        this.svg.selectAll('path.toRemove').remove();
+
+        // filters nodes that are fully completed and stores it in this variable
+        const completedNodes = nodeIter.filter( (d) => {
+            return this.checkBarrierComplete(d.data.name) === "C"
+        });
+
+        // remove pie charts from fully completed nodes
+        completedNodes
+            .selectAll("path")
+            .remove();
+
+        // adds a dark green circle
+        completedNodes
+            .selectAll("circle")
+            .style("fill", green[800]);
 
     }
 

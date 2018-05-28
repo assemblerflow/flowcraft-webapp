@@ -1271,10 +1271,11 @@ class DagLegend extends React.Component{
 
         this.legendObj = {
             "Waiting": grey[300],
-            "Retry": blue[100],
-            "Running": blue[300],
-            "Completed": green[500],
-            "Aborted": red[300]
+            "Running": blue[100],
+            "Completed": green[300],
+            "Retry": orange[300],
+            "Aborted": red[300],
+            "Fully completed process": green[800]
         }
     }
 
@@ -1286,12 +1287,12 @@ class DagLegend extends React.Component{
                     return (
                         <Grid item key={k}>
                             <Grid container>
-                                <Grid item xs={4}>
+                                <Grid item justify={"center"}>
                                     <Icon size={30} style={{color: this.legendObj[k]}}>lens
                                     </Icon>
                                 </Grid>
-                                <Grid item xs={8}>
-                                    <Typography align={"left"} style={{lineHeight: "25px"}}>{k}</Typography>
+                                <Grid item justify={"center"}>
+                                    <Typography style={{lineHeight: "25px"}}>{k}</Typography>
                                 </Grid>
                             </Grid>
                         </Grid>
