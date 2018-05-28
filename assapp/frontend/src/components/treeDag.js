@@ -66,6 +66,12 @@ class TreeDag extends Component {
 
         // binds this function so that it can be used by other on component rendering (in this case on a button click)
         this.reDraw = this.reDraw.bind(this);
+
+        this.state = {
+            treeDag: props.treeDag,
+            update: false,
+            processData: props.processData
+        }
     }
 
     // this is required for the initial DAG rendering. It will create the d3 instance as well as update the node colors
@@ -74,10 +80,23 @@ class TreeDag extends Component {
         this.updateDagViz()
     }
 
-    // this will be triggered every time the props of this component are updated. It will update node colors
-    componentDidUpdate() {
-        this.updateDagViz()
+    static getDerivedStateFromProps(props, state) {
+        if (JSON.stringify(props.processData) !== JSON.stringify(state.processData)) {
+            return {
+                processData: props.processData,
+                update: true
+            }
+        } else {
+            return {
+                update: false
+            }
+        }
     }
+
+    // this will be triggered every time the props of this component are updated. It will update node colors
+    // componentDidUpdate() {
+    //     this.updateDagViz()
+    // }
 
     componentWillUnmount() {
         // TODO Add unmount function
@@ -442,10 +461,12 @@ class TreeDag extends Component {
          */
         this.svg.selectAll('g.node')
             .selectAll("path")
-            // extremely important to update the graph, it removes the previous colors and allows to add new ones
-            .exit().remove()
+            .attr("class", "toRemove")
+            // extremely important to update the graph, it exists previous node so that it can render the new one above
+            .exit()
             .data( (d, i) => {
                 // passes the main process name to be parsed and checked for its state in checkBarrier function
+                console.log(this.checkBarrier(d.data.name))
                 return pie(this.checkBarrier(d.data.name));
             })
             .enter()
@@ -455,9 +476,13 @@ class TreeDag extends Component {
                 return color[d.data.group];
             })
 
+        // removes previous path with pie chart
+        this.svg.selectAll('path.toRemove').remove()
+
     }
 
     render() {
+        if (this.state.update) {this.updateDagViz()}
         return(
             <div>
                 <svg style={{maxWidth: "100%"}} ref={node => this.node = node}/>

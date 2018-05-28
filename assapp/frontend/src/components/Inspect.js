@@ -97,11 +97,18 @@ class InspectApp extends React.Component {
         };
     }
 
-    updateJson(){
+    updateJson(full){
         axios.get(`api/status?run_id=${this.state.runID}`)
             .then(
                 (response) => {
                     const dataStatus = response.data.status;
+
+                    if (full) {
+                        this.setState({
+                            treeDag: response.data.dag
+                        })
+                    }
+
                     this.setState({loading: false});
                     // Set general overview data
                     this.setState({
@@ -111,7 +118,6 @@ class InspectApp extends React.Component {
                             timeStart: dataStatus.timeStart,
                             timeStop: dataStatus.timeStop,
                         },
-                        treeDag: response.data.dag
                     });
                     // Set details data
                     this.setState({detailsData: dataStatus.generalDetails});
@@ -135,7 +141,7 @@ class InspectApp extends React.Component {
 
     componentDidMount() {
 
-        this.updateJson();
+        this.updateJson(true);
 
         const statusSocket = new WebSocket(
             "ws://" + window.location.host + "/ws/inspect/" +
@@ -143,7 +149,7 @@ class InspectApp extends React.Component {
         );
 
         statusSocket.onmessage = (e) => {
-            this.updateJson()
+            this.updateJson(false)
         };
 
     }
@@ -255,9 +261,8 @@ class InspectPannels extends React.Component {
                         <Typography className={styles.panelHeaderTitle} variant={"title"}>DAG overview</Typography>
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails style={{display: "block"}}>
-                        <MainDag treeDag={this.props.treeDag} processData={this.props.processData}
-                                 runStatus = {this.props.runStatus}/>
-                        <DagLegend></DagLegend>
+                        <MainDag treeDag={this.props.treeDag} processData={this.props.processData}/>
+                        <DagLegend/>
 
                     </ExpansionPanelDetails>
                 </ExpansionPanel>
@@ -1250,9 +1255,7 @@ Table and DAG controller
 class MainDag extends React.Component {
     render () {
         return (
-            <TreeDag data={this.props.treeDag} processData={this.props.processData}
-                     runStatus = {this.props.runStatus}/>
-
+            <TreeDag data={this.props.treeDag} processData={this.props.processData}/>
         )
     }
 }
@@ -1268,7 +1271,7 @@ class DagLegend extends React.Component{
 
         this.legendObj = {
             "Waiting": grey[300],
-            "Queued": blue[100],
+            "Retry": blue[100],
             "Running": blue[300],
             "Completed": green[500],
             "Aborted": red[300]
