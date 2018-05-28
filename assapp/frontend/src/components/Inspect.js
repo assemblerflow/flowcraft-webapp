@@ -917,7 +917,6 @@ class TableOverview extends React.Component {
         };
 
         return data.map(processInfo => {
-            console.log(processInfo)
             let dt = {};
             Object.keys(processInfo).forEach(header => {
                 if (listToLength.includes(header)) {
@@ -1453,11 +1452,11 @@ class DagLegend extends React.Component{
                     return (
                         <Grid item key={k}>
                             <Grid container>
-                                <Grid item justify={"center"}>
+                                <Grid item>
                                     <Icon size={30} style={{color: this.legendObj[k]}}>lens
                                     </Icon>
                                 </Grid>
-                                <Grid item justify={"center"}>
+                                <Grid item>
                                     <Typography style={{lineHeight: "25px"}}>{k}</Typography>
                                 </Grid>
                             </Grid>
