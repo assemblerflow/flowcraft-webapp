@@ -85,22 +85,44 @@ export class Inspect extends React.Component {
 
 /*
 MAIN APP CONTROLLERS
- */
+This is the component that fetches the status data from the REST API. If the
+GET is successfull, the data is passed down to the InspectPannels component
+that renders the actual app. Otherwise, it will shows an error component.
 
+NOTE: The relevant information from the REST API is used to set the state
+of this component. This state is what will be passed down to the children
+components
+ */
 class InspectApp extends React.Component {
 
     constructor(props) {
         super(props);
+
         this.state = {
+            // This will remain true until the first GET is completed
             loading: true,
+            // This will become true when the GET is not successful
             badRequest: false,
+            // The runID that is used to fetch the information in the database
             runID: props.runID,
+            // Data for the GeneralOverview component. Contains the name and
+            // tag of the pipeline, and the number of processes
             generalData: {},
+            // Data with the run status (complete, running, etc) and time
+            // start (and stop, if the pipeline finished) of the pipeline
             runStatus: {},
+            // Data for the DetailsOverview component. Contains information
+            // about the work directory, nextflow command, config files, etc.
             detailsData: {},
+            // Data about each process, including the samples that are
+            // submited, failing, finished, etc, the barrier status of the
+            // process and the cpu/ram resources
             processData: {},
+            // The stats data for the main table
             tableData: {},
+            // Detailed information for each tag in each process
             tagData: {},
+            // Information necessary for building and updating the DAG overview
             treeDag: {}
         };
     }
@@ -111,6 +133,7 @@ class InspectApp extends React.Component {
                 (response) => {
                     const dataStatus = response.data.status;
 
+                    // Set this only once. It should remain static
                     if (full) {
                         this.setState({
                             treeDag: response.data.dag
@@ -149,21 +172,19 @@ class InspectApp extends React.Component {
 
     componentDidMount() {
 
+        // Perform first GET
         this.updateJson(true);
 
+        // Create websocket connection and listen to message events to update
+        // the app.
         const statusSocket = new WebSocket(
             "ws://" + window.location.host + "/ws/inspect/" +
             this.props.runID + "/"
         );
-
         statusSocket.onmessage = (e) => {
             this.updateJson(false)
         };
 
-    }
-
-    componentWillUnmount() {
-        clearInterval(this.hook);
     }
 
     render () {
@@ -188,6 +209,10 @@ class InspectApp extends React.Component {
     }
 }
 
+/*
+Simple home page of the inspect app, shown when there is no runID provided in
+the URL.
+ */
 export class InspectHome extends React.Component {
 
     constructor(props) {
@@ -212,8 +237,9 @@ export class InspectHome extends React.Component {
 
 /*
 MAIN INSPECTION PANEL CONTROLLER
+This component is responsible for rendering the entier inspect app as
+expansion pannels.
  */
-
 class InspectPannels extends React.Component {
     render () {
         return (
@@ -281,43 +307,14 @@ class InspectPannels extends React.Component {
 }
 
 /*
-COMPONENTS
+GENERAL OVERVIEW COMPONENTS
  */
 
 /*
-Loader component displayed at the center of the page
+General overview main component. Contains the basic information about the
+pipeline name/tag/processes (HeaderOverview) and the status of the run
+(StatusPaper)
  */
-class Loader extends React.Component {
-    render () {
-        return (
-            <CircularProgress className={styles.loader}
-                              style={{ color: green[500] }}
-                              size={50}/>
-        )
-    }
-}
-
-/*
-Error Paper
- */
-class BadRequestPaper extends React.Component {
-    render () {
-        return (
-            <div>
-                <Paper className={styles.badrequest}>
-                    <Typography>
-                    The requested runID does not exist: {this.props.runID}
-                    </Typography>
-                </Paper>
-            </div>
-        )
-    }
-}
-
-/*
-GENERAL OVERVIEW
-*/
-
 class GeneralOverview extends  React.Component {
     render () {
         return (
@@ -336,6 +333,10 @@ class GeneralOverview extends  React.Component {
     }
 }
 
+/*
+Populates the GeneralOverview component with ListItems containing general
+information about the pipeline
+ */
 class HeaderOverview extends React.Component {
     render () {
         return(
@@ -370,6 +371,11 @@ class HeaderOverview extends React.Component {
     }
 }
 
+/*
+Renders the status card banner with the information about the pipeline running
+status. Internally, it sets a timed function that updates the duration of the
+pipeline while its running.
+ */
 class StatusPaper extends React.Component {
 
     constructor(props){
@@ -391,6 +397,11 @@ class StatusPaper extends React.Component {
         clearInterval(this.timerID);
     }
 
+    /*
+    Gets the duration of the pipeline, either from the timeStop attribute
+    of this.props.runStatus when the pipeline has finished, or from the
+    present time, when the pipeline is running.
+     */
     getDuration () {
 
         const start = moment(this.props.runStatus.timeStart);
@@ -408,11 +419,15 @@ class StatusPaper extends React.Component {
 
     render () {
 
+        // Changes the color of the status paper component based on the
+        // status of the pipeline run
         const statusColorMap = {
             "complete": green[300],
             "running": blue[300],
             "aborted": red[300],
         };
+
+        // Get relevant information from props.
         const status = this.props.runStatus.status.value;
         const timeStart = moment(this.props.runStatus.timeStart).format("D/M/YYYY, h:mm:ss");
         const timeStop = this.props.runStatus.timeStop === "-" ? "-" :
@@ -443,124 +458,17 @@ class StatusPaper extends React.Component {
 }
 
 /*
-View remote file modal
+DETAILS OVERVIEW COMPONENTS
  */
-class RemoteLogModal extends React.Component {
-
-    state = {
-        open: false,
-        content: ""
-    };
-
-    getRemoteFile = () => {
-        axios.get(`api/status?run_id=${this.props.runId}&pipeline_files=true`)
-            .then(
-                (response) => {
-                    const fileData = response.data.files[this.props.fileId];
-                    if (fileData) {
-                        this.setState({content: fileData.join("\n")})
-                    } else {
-                        this.setState({content: `Could not retrieve ${this.props.fileId}`})
-                    }
-                }
-            )
-    };
-
-    handleOpen = () => {
-        this.setState({ open: true });
-        this.getRemoteFile();
-    };
-
-    handleClose = () => {
-        this.setState({ open: false });
-    };
-
-    render () {
-        return (
-            <span>
-                <Button variant={"raised"}
-                        size={"small"}
-                        style={this.props.buttonStyle}
-                        onClick={this.handleOpen}>
-                    {this.props.buttonLabel}
-                </Button>
-                <Modal aria-labelledby="simple-modal-title"
-                       aria-describedby="simple-modal-description"
-                       open={this.state.open}
-                       onClose={this.handleClose}>
-                    <Paper className={styles.tagModal}>
-                        <Typography variant={"title"} gutterBottom>
-                            {this.props.title}
-                        </Typography>
-                        <Divider/>
-                        <div className={styles.logModal}>
-                            {this.state.content ?
-                                <PrismCode component={"pre"} className={"language-groovy"}>
-                                    {this.state.content}
-                                </PrismCode> :
-                                <Loader/>
-                            }
-                        </div>
-                    </Paper>
-                </Modal>
-            </span>
-        )
-    }
-}
 
 /*
-Button and modal for displaying error logs
- */
-class ViewLogModal extends React.Component {
-
-    state = {
-        open: false,
-    };
-
-    handleOpen = () => {
-        this.setState({ open: true });
-    };
-
-    handleClose = () => {
-        this.setState({ open: false });
-    };
-
-    render () {
-        return (
-            <span>
-                <Button variant={"raised"}
-                        size={"small"}
-                        style={this.props.buttonStyle}
-                        onClick={this.handleOpen}>
-                    {this.props.buttonLabel}
-                </Button>
-                <Modal aria-labelledby="simple-modal-title"
-                       aria-describedby="simple-modal-description"
-                       open={this.state.open}
-                       onClose={this.handleClose}>
-                    <Paper className={styles.tagModal}>
-                        <Typography variant={"title"} gutterBottom>
-                            {this.props.title}
-                        </Typography>
-                        <Divider/>
-                        <div className={styles.logModal}>
-                            <pre>
-                                {this.props.content}
-                            </pre>
-                        </div>
-                    </Paper>
-                </Modal>
-            </span>
-        )
-    }
-}
-
-/*
-Header component of the inspection with summary information
+Component with the detail information about the pieline in a List-like format
  */
 class DetailsOverview extends React.Component {
     render () {
 
+        // Maps the keys of the configuration files in the props object
+        // to their headers in the rendered List, and to the name of the file.
         const configFiles = {
             "configFile": ["Nextflow config", ".nextflow.config"],
             "paramsFile": ["Parameters config", "params.config"],
@@ -605,11 +513,21 @@ class DetailsOverview extends React.Component {
 }
 
 /*
-Process submission components
+PROCESS SUBMISSION COMPONENTS
  */
 
+
+/*
+Main component that displays the processes that are currently submitted,
+retrying, failing or complete. For each of these possible status, a
+SubmissionCard component is rendered.
+ */
 class ProcessSubmission extends React.Component {
 
+    /*
+    Returns an object with the number of tags for each possible status and the
+    samples that are failing for each process.
+     */
     countSubmissions () {
 
         let counts = {
@@ -619,12 +537,16 @@ class ProcessSubmission extends React.Component {
             "finished": 0
         };
 
+        // This object will store the list of failing samples for each
+        // process (e.g.: {processA: [sampleA, sampleB]}
         let failedTags = {};
 
+        // Iterate of process and headers to obtain the counts
         for (const [k, v] of Object.entries(this.props.processData)) {
             failedTags[k] = [];
             for (const header of Object.keys(counts)) {
                 counts[header] += v[header].length;
+                // Update the object with the failing samples for each process
                 if (header === "failed"){
                     failedTags[k].push.apply(failedTags[k], v[header])
                 }
@@ -677,6 +599,11 @@ class ProcessSubmission extends React.Component {
     }
 }
 
+/*
+Renders the submission status of pipeline tags for the ProcessSubmission
+component. Each possible status (submitted, retrying, etc) is rendered as a
+separate SubmissionCard component
+ */
 class SubmissionCard extends React.Component {
     render () {
         return (
@@ -687,6 +614,8 @@ class SubmissionCard extends React.Component {
                 <Typography style={{color: this.props.color}} className={styles.submissionValue}>
                     {this.props.value}
                 </Typography>
+                {/* Only show the button to view failing samples for the Failed card and only when*/}
+                {/* there are samples failing*/}
                 {(this.props.header === "Failed" && this.props.value !== 0) && <FailedTableModal buttonLabel={"View"}
                                                                      failedData={this.props.failedData}
                                                                      tagData={this.props.tagData}/>}
@@ -696,13 +625,173 @@ class SubmissionCard extends React.Component {
     }
 }
 
+/*
+Renders a button below the Failed ProcessSubmission SubmissionCard when at
+least one sample is failing in the pipeline. It opens a model with a table
+view of the failing samples.
+ */
+class FailedTableModal extends React.Component {
 
+    state = {
+        open: false,
+    };
+
+    handleOpen = () => {
+        this.setState({ open: true });
+    };
+
+    handleClose = () => {
+        this.setState({ open: false });
+    };
+
+    render () {
+        return (
+            <div>
+                <Button style={{width: "100%"}}  onClick={this.handleOpen}>
+                    {this.props.buttonLabel}
+                </Button>
+                <Modal
+                    aria-labelledby="simple-modal-title"
+                    aria-describedby="simple-modal-description"
+                    open={this.state.open}
+                    onClose={this.handleClose}>
+                    <Paper className={styles.tagModal}>
+                        <Typography variant={"title"} gutterBottom>
+                            Overview of failed samples
+                            </Typography>
+                        <Divider/>
+                        <FailedTagsTable failedData={this.props.failedData}
+                                         tagData={this.props.tagData}/>
+                    </Paper>
+                </Modal>
+            </div>
+        )
+    }
+}
+
+/*
+Renders a table with all the sample that are currently failing in the pipeline.
+It differs from the other tables because it may contain the information from
+all processes
+ */
+class FailedTagsTable extends React.Component {
+    constructor(props){
+        super(props);
+    }
+
+    /*
+    Prepares the table data for ReactTable component
+     */
+    prepareData(failedData, tagData) {
+
+        const headers = ["workdir", "start", "log"];
+        // The main table data array of objects
+        let tableData = [];
+
+        for (const [process, sampleArray] of Object.entries(failedData)) {
+            // Skip processes without fails
+            if (sampleArray.length === 0){continue}
+
+            for (const sample of sampleArray) {
+                // Create first instance of the process/tag object
+                let dt = {
+                    "process": process,
+                    "sample": sample
+                };
+                const tagInfo = tagData[process][sample];
+                // Skip process/tags not available in tagData object
+                if (!tagInfo){continue}
+
+                headers.forEach((header) => {
+                    // The log column is special in that it should show a
+                    // button that opens a modal to view the log file content
+                    if (header === "log"){
+                        // Handles cases where the log information is not
+                        // available
+                        if (tagInfo[header]) {
+                            dt[header] = <ViewLogModal
+                                title={`Log file for sample ${sample}`}
+                                buttonLabel={"View log"}
+                                content={tagInfo[header].join("\n")}
+                                buttonStyle={{width: "100%"}}/>;
+                        } else {
+                            dt[header] = ""
+                        }
+                    } else {
+                        dt[header] = tagInfo[header]
+                    }
+                });
+                tableData.push(dt)
+            }
+        }
+        return tableData
+    }
+
+    /*
+    Prepare column data for ReactTable
+     */
+    prepareColumns() {
+        return [
+            {
+                Header: "Process",
+                accessor: "process",
+                filterable: true,
+                filterMethod: (filter, rows) =>
+                    matchSorter(rows, filter.value, {keys: ["process"]}),
+                filterAll: true
+            },
+            {
+                Header: "sample",
+                accessor: "sample",
+                minWidth: 90
+            },
+            {
+                Header: "Work dir",
+                accessor: "workdir",
+                minWidth: 90,
+                className: styles.tableCell
+            },
+            {
+                Header: "Time start",
+                accessor: "start",
+                minWidth: 90,
+                className: styles.tableCell
+            },
+            {
+                Header: "Log",
+                accessor: "log",
+                minWidth: 100,
+                width: 100,
+                className: styles.tableCell
+            }
+        ]
+    }
+
+    render () {
+        console.log(this.prepareData(this.props.failedData, this.props.tagData))
+        return (
+                <ReactTable
+                    data={this.prepareData(this.props.failedData, this.props.tagData)}
+                    columns={this.prepareColumns()}
+                    className="-striped -highlight"/>
+            )
+    }
+}
+
+/*
+Component that shows an estimation of the resources being used by the pipeline,
+namely cpu and RAM.
+ */
 class ResourcesDetails extends React.Component {
 
     constructor(props) {
         super(props);
     }
 
+    /*
+    Estimates the resources (cpu and RAM) currently being used by the
+    pipeline.
+     */
     getActiveResources(){
         let activeCpus = 0;
         let unknownCpus = false;
@@ -754,142 +843,20 @@ class ResourcesDetails extends React.Component {
     }
 }
 
+/*
+MAIN TABLE COMPONENTS
+ */
+const sortIgnoreNA = (a, b) => {
 
-class FailedTableModal extends React.Component {
+    a = a === "-" ? -1 : a;
+    b = b === "-" ? -1 : b;
 
-    state = {
-        open: false,
-    };
+    return a > b ? 1 : -1;
 
-    handleOpen = () => {
-        this.setState({ open: true });
-    };
-
-    handleClose = () => {
-        this.setState({ open: false });
-    };
-
-    render () {
-        return (
-            <div>
-                <Button style={{width: "100%"}}  onClick={this.handleOpen}>
-                    {this.props.buttonLabel}
-                </Button>
-                <Modal
-                    aria-labelledby="simple-modal-title"
-                    aria-describedby="simple-modal-description"
-                    open={this.state.open}
-                    onClose={this.handleClose}>
-                    <Paper className={styles.tagModal}>
-                        <Typography variant={"title"} gutterBottom>
-                            Overview of failed samples
-                            </Typography>
-                        <Divider/>
-                        <FailedTagsTable failedData={this.props.failedData}
-                                         tagData={this.props.tagData}/>
-                    </Paper>
-                </Modal>
-            </div>
-        )
-    }
-}
-
-
-class FailedTagsTable extends React.Component {
-    constructor(props){
-        super(props);
-    }
-
-    prepareData(failedData, tagData) {
-
-        const headers = ["workdir", "start", "log"];
-        let tableData = [];
-
-        for (const [process, sampleArray] of Object.entries(failedData)) {
-            // Skip processes without fails
-            if (sampleArray.length === 0){continue}
-
-            for (const sample of sampleArray) {
-                let dt = {
-                    "process": process,
-                    "sample": sample
-                };
-                const tagInfo = tagData[process][sample];
-                // Skip process/tags not available in tagData object
-                if (!tagInfo){continue}
-                headers.forEach((header) => {
-                    if (header === "log"){
-                        if (tagInfo[header]) {
-                            dt[header] = <ViewLogModal
-                                title={`Log file for sample ${sample}`}
-                                buttonLabel={"View log"}
-                                content={tagInfo[header].join("\n")}
-                                buttonStyle={{width: "100%"}}/>;
-                        } else {
-                            dt[header] = ""
-                        }
-                    } else {
-                        dt[header] = tagInfo[header]
-                    }
-                });
-                tableData.push(dt)
-            }
-        }
-
-        return tableData
-    }
-
-    prepareColumns() {
-        return [
-            {
-                Header: "Process",
-                accessor: "process",
-                filterable: true,
-                filterMethod: (filter, rows) =>
-                    matchSorter(rows, filter.value, {keys: ["process"]}),
-                filterAll: true
-            },
-            {
-                Header: "sample",
-                accessor: "sample",
-                minWidth: 90
-            },
-            {
-                Header: "Work dir",
-                accessor: "workdir",
-                minWidth: 90,
-                className: styles.tableCell
-            },
-            {
-                Header: "Time start",
-                accessor: "start",
-                minWidth: 90,
-                className: styles.tableCell
-            },
-            {
-                Header: "Log",
-                accessor: "log",
-                minWidth: 100,
-                width: 100,
-                className: styles.tableCell
-            }
-        ]
-    }
-
-    render () {
-        console.log(this.prepareData(this.props.failedData, this.props.tagData))
-        return (
-                <ReactTable
-                    data={this.prepareData(this.props.failedData, this.props.tagData)}
-                    columns={this.prepareColumns()}
-                    className="-striped -highlight"/>
-            )
-    }
-}
-
+};
 
 /*
-Main table component
+Renders the main table controler
 */
 class MainTable extends React.Component {
     render () {
@@ -905,110 +872,8 @@ class MainTable extends React.Component {
 }
 
 /*
-Table overview component
+The component that acually renders the main table
  */
-
-const sortIgnoreNA = (a, b) => {
-
-    a = a === "-" ? -1 : a;
-    b = b === "-" ? -1 : b;
-
-    return a > b ? 1 : -1;
-
-};
-
-class ResourceScatterPlot extends React.Component {
-
-    constructor(props){
-        super(props);
-
-        this.state = {
-            plotData: this.preparePlotData(props.rawPlotData, props.dataType)
-        };
-    }
-
-    preparePlotData(dataObj, dataType) {
-
-        if (!dataObj){
-            return null
-        }
-
-        let data = [];
-        let c = 1;
-        const total = Object.keys(dataObj).length;
-
-        for (const [sample, info] of Object.entries(dataObj)) {
-            if (info[dataType] === "-"){
-                continue
-            }
-            data.push({
-                name: sample,
-                data: [[c/total, info[dataType]]],
-                marker: {
-                    symbol: 'circle'
-                }
-            });
-            c += 1
-        }
-
-        return data;
-    }
-
-    render() {
-
-        const tagDataMap = {
-            "rss": "Max Memory (MB)",
-            "rchar": "Average Disk Read (MB)",
-            "wchar": "Average Disk Write (MB)"
-        };
-
-        let config = {
-            chart: {
-                type: "scatter",
-                zoomType: "x",
-            },
-            legend: {
-                enabled: false
-            },
-            tooltip: {
-                formatter() {
-                    const title = this.series.yAxis.userOptions.title.text;
-                    return "<b>" + title + "</b><br>" +
-                        "<b>" + this.point.series.name +"</b>:  " + this.y + "Mb"
-                },
-            },
-            xAxis: {
-                title: {
-                    enabled: true,
-                    text: "Tags"
-                },
-                startOnTick: true,
-                endOnTick: true,
-                showLastLabel: true,
-                min: -2,
-                max: 3,
-                labels: {
-                    enabled: false
-                }
-            },
-            yAxis: {
-                title: {
-                    text: tagDataMap[this.props.dataType],
-                },
-            },
-            title: {
-                text: "Distribution of " + tagDataMap[this.props.dataType]
-            },
-            series: this.state.plotData
-        };
-        return (
-            <div style={{paddingTop: 20}}>
-                <ReactHighcharts style={{height: "100%"}} config={config} ref="chart"></ReactHighcharts>
-            </div>
-        );
-    }
-}
-
 class TableOverview extends React.Component {
 
     constructor(props) {
@@ -1020,6 +885,10 @@ class TableOverview extends React.Component {
         };
     }
 
+    /*
+    This method determines that the component should only update when the
+    data is changed.
+     */
     static getDerivedStateFromProps(nextProps, prevState) {
         if (nextProps.data && nextProps.data !== prevState.data) {
             return {data: nextProps.data}
@@ -1028,6 +897,11 @@ class TableOverview extends React.Component {
         }
     }
 
+    /*
+    Parses the name of the process (e.g.: processA_1_1) and tries to retrieve
+    the actuall process name (processA), lane (1) and process ID (1). When
+    it cannot parse the lane and process ID, they return "-"
+     */
     parseProcessNames(processStr) {
 
         const fields = processStr.split("_").reverse();
@@ -1055,6 +929,10 @@ class TableOverview extends React.Component {
 
     }
 
+    /*
+    Prepare the data for ReactTable. The data parameter is an array of object,
+    each containing the table data for a given process.
+     */
     prepareData(data) {
 
         const listToLength = ["running", "complete", "error"];
@@ -1066,20 +944,32 @@ class TableOverview extends React.Component {
             "avgWrite": "wchar"
         };
 
+        // Iterate over the array of process stats
         return data.map(processInfo => {
             let dt = {};
+
             Object.keys(processInfo).forEach(header => {
+                // For the Running, Complete and Error columns, the cell
+                // content should be a button that opens a model with the
+                // tabbed table view with the information about each tag
+                // in that process
                 if (listToLength.includes(header)) {
                     dt[header] = <TagInspectionModal tagList={processInfo[header]}
                                                      process={processInfo["process"]}
                                                      header={header}
                                                      tagData={this.props.tagData}
                                                      processData={this.props.processData}/>
+                // For the process header, parse the process name and try to
+                // Populate the process name, lane and process Id columns
                 } else if (header === "process") {
                     const res = this.parseProcessNames(processInfo[header]);
                     dt[header] = res.processName;
                     dt["lane"] = res.lane;
                     dt["pid"] = res.processId;
+                    // For columns in the plotButtons array, the cell content
+                    // should be a button that opens a model with a scatter
+                    // plot showing the distribution of a particular resource
+                    // for each sample.
                 } else if (plotButtons.includes(header)) {
                     if (Object.keys(this.props.tagData[processInfo.process]).length !== 0 && this.props.tagData[processInfo.process].constructor === Object){
                         dt[header] = <ResourceScatterModal buttonLabel={processInfo[header]}
@@ -1102,14 +992,19 @@ class TableOverview extends React.Component {
                 }
             });
 
+            // Update the barrier letter of the column, based on the run status
+            // of the pipeline and the number of failing samples.
             if (this.props.runStatus === "aborted") {
+                // When the pipeline has been aborted, change the process
+                // barrier signature to fail (will show a skull icon)
                 if (processInfo.error.length > 0) {
                     dt.barrier = "F"
+                // When the pipeline has been aborted but the process was still
+                // running, change the signature to alert (shows an alert icon)
                 } else if (dt.barrier === "R") {
                     dt.barrier = "A"
                 }
             }
-
             return dt;
         })
     }
@@ -1118,6 +1013,7 @@ class TableOverview extends React.Component {
 
         const mainWidth = 90;
 
+        // Sets the barrier icon based on its letter.
         const barrierIcons = {
             "C": <Icon style={{ color: green[300] }} size={30}>check_circle</Icon>,
             "W": <Icon size={30}>access_time</Icon>,
@@ -1225,44 +1121,10 @@ class TableOverview extends React.Component {
     }
 }
 
-
-class ResourceScatterModal extends React.Component {
-
-    state = {
-        open: false,
-    };
-
-    handleOpen = () => {
-        this.setState({ open: true });
-    };
-
-    handleClose = () => {
-        this.setState({ open: false });
-    };
-
-    render () {
-        return (
-            <div>
-                <Button className={styles.tableButton}  onClick={this.handleOpen}>
-                    {this.props.buttonLabel}
-                </Button>
-                <Modal
-                    aria-labelledby="simple-modal-title"
-                    aria-describedby="simple-modal-description"
-                    open={this.state.open}
-                    onClose={this.handleClose}>
-                    <Paper className={styles.tagModal}>
-                        <div>
-                            <ResourceScatterPlot rawPlotData={this.props.rawPlotData}
-                                       dataType={this.props.dataType}/>
-                        </div>
-                    </Paper>
-                </Modal>
-            </div>
-        )
-    }
-}
-
+/*
+Component that controls the opening of the modal with the tab table component
+with the running, complete and complete tags.
+ */
 class TagInspectionModal extends  React.Component {
 
     state = {
@@ -1505,6 +1367,285 @@ class TagTable extends React.Component {
     }
 }
 
+/*
+Loader component displayed at the center of the page
+ */
+class Loader extends React.Component {
+    render () {
+        return (
+            <CircularProgress className={styles.loader}
+                              style={{ color: green[500] }}
+                              size={50}/>
+        )
+    }
+}
+
+/*
+Error Paper
+ */
+class BadRequestPaper extends React.Component {
+    render () {
+        return (
+            <div>
+                <Paper className={styles.badrequest}>
+                    <Typography>
+                    The requested runID does not exist: {this.props.runID}
+                    </Typography>
+                </Paper>
+            </div>
+        )
+    }
+}
+
+/*
+View remote file modal
+ */
+class RemoteLogModal extends React.Component {
+
+    state = {
+        open: false,
+        content: ""
+    };
+
+    getRemoteFile = () => {
+        axios.get(`api/status?run_id=${this.props.runId}&pipeline_files=true`)
+            .then(
+                (response) => {
+                    const fileData = response.data.files[this.props.fileId];
+                    if (fileData) {
+                        this.setState({content: fileData.join("\n")})
+                    } else {
+                        this.setState({content: `Could not retrieve ${this.props.fileId}`})
+                    }
+                }
+            )
+    };
+
+    handleOpen = () => {
+        this.setState({ open: true });
+        this.getRemoteFile();
+    };
+
+    handleClose = () => {
+        this.setState({ open: false });
+    };
+
+    render () {
+        return (
+            <span>
+                <Button variant={"raised"}
+                        size={"small"}
+                        style={this.props.buttonStyle}
+                        onClick={this.handleOpen}>
+                    {this.props.buttonLabel}
+                </Button>
+                <Modal aria-labelledby="simple-modal-title"
+                       aria-describedby="simple-modal-description"
+                       open={this.state.open}
+                       onClose={this.handleClose}>
+                    <Paper className={styles.tagModal}>
+                        <Typography variant={"title"} gutterBottom>
+                            {this.props.title}
+                        </Typography>
+                        <Divider/>
+                        <div className={styles.logModal}>
+                            {this.state.content ?
+                                <PrismCode component={"pre"} className={"language-groovy"}>
+                                    {this.state.content}
+                                </PrismCode> :
+                                <Loader/>
+                            }
+                        </div>
+                    </Paper>
+                </Modal>
+            </span>
+        )
+    }
+}
+
+/*
+Button and modal for displaying error logs
+ */
+class ViewLogModal extends React.Component {
+
+    state = {
+        open: false,
+    };
+
+    handleOpen = () => {
+        this.setState({ open: true });
+    };
+
+    handleClose = () => {
+        this.setState({ open: false });
+    };
+
+    render () {
+        return (
+            <span>
+                <Button variant={"raised"}
+                        size={"small"}
+                        style={this.props.buttonStyle}
+                        onClick={this.handleOpen}>
+                    {this.props.buttonLabel}
+                </Button>
+                <Modal aria-labelledby="simple-modal-title"
+                       aria-describedby="simple-modal-description"
+                       open={this.state.open}
+                       onClose={this.handleClose}>
+                    <Paper className={styles.tagModal}>
+                        <Typography variant={"title"} gutterBottom>
+                            {this.props.title}
+                        </Typography>
+                        <Divider/>
+                        <div className={styles.logModal}>
+                            <pre>
+                                {this.props.content}
+                            </pre>
+                        </div>
+                    </Paper>
+                </Modal>
+            </span>
+        )
+    }
+}
+
+
+
+/*
+Process submission components
+ */
+class ResourceScatterPlot extends React.Component {
+
+    constructor(props){
+        super(props);
+
+        this.state = {
+            plotData: this.preparePlotData(props.rawPlotData, props.dataType)
+        };
+    }
+
+    preparePlotData(dataObj, dataType) {
+
+        if (!dataObj){
+            return null
+        }
+
+        let data = [];
+        let c = 1;
+        const total = Object.keys(dataObj).length;
+
+        for (const [sample, info] of Object.entries(dataObj)) {
+            if (info[dataType] === "-"){
+                continue
+            }
+            data.push({
+                name: sample,
+                data: [[c/total, info[dataType]]],
+                marker: {
+                    symbol: 'circle'
+                }
+            });
+            c += 1
+        }
+
+        return data;
+    }
+
+    render() {
+
+        const tagDataMap = {
+            "rss": "Max Memory (MB)",
+            "rchar": "Average Disk Read (MB)",
+            "wchar": "Average Disk Write (MB)"
+        };
+
+        let config = {
+            chart: {
+                type: "scatter",
+                zoomType: "x",
+            },
+            legend: {
+                enabled: false
+            },
+            tooltip: {
+                formatter() {
+                    const title = this.series.yAxis.userOptions.title.text;
+                    return "<b>" + title + "</b><br>" +
+                        "<b>" + this.point.series.name +"</b>:  " + this.y + "Mb"
+                },
+            },
+            xAxis: {
+                title: {
+                    enabled: true,
+                    text: "Tags"
+                },
+                startOnTick: true,
+                endOnTick: true,
+                showLastLabel: true,
+                min: -2,
+                max: 3,
+                labels: {
+                    enabled: false
+                }
+            },
+            yAxis: {
+                title: {
+                    text: tagDataMap[this.props.dataType],
+                },
+            },
+            title: {
+                text: "Distribution of " + tagDataMap[this.props.dataType]
+            },
+            series: this.state.plotData
+        };
+        return (
+            <div style={{paddingTop: 20}}>
+                <ReactHighcharts style={{height: "100%"}} config={config} ref="chart"></ReactHighcharts>
+            </div>
+        );
+    }
+}
+
+class ResourceScatterModal extends React.Component {
+
+    state = {
+        open: false,
+    };
+
+    handleOpen = () => {
+        this.setState({ open: true });
+    };
+
+    handleClose = () => {
+        this.setState({ open: false });
+    };
+
+    render () {
+        return (
+            <div>
+                <Button className={styles.tableButton}  onClick={this.handleOpen}>
+                    {this.props.buttonLabel}
+                </Button>
+                <Modal
+                    aria-labelledby="simple-modal-title"
+                    aria-describedby="simple-modal-description"
+                    open={this.state.open}
+                    onClose={this.handleClose}>
+                    <Paper className={styles.tagModal}>
+                        <div>
+                            <ResourceScatterPlot rawPlotData={this.props.rawPlotData}
+                                       dataType={this.props.dataType}/>
+                        </div>
+                    </Paper>
+                </Modal>
+            </div>
+        )
+    }
+}
+
+
+
 class WarningPopover extends React.Component {
 
     state = {
@@ -1621,9 +1762,5 @@ class DagLegend extends React.Component{
         )
     }
 }
-
-
-
-
 
 // export default withStyles(styles)({Inspect, InspectHome});
