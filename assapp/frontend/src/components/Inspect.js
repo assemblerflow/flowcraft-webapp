@@ -687,7 +687,7 @@ class SubmissionCard extends React.Component {
                 <Typography style={{color: this.props.color}} className={styles.submissionValue}>
                     {this.props.value}
                 </Typography>
-                {this.props.header === "Failed" && <FailedTableModal buttonLabel={"View"}
+                {(this.props.header === "Failed" && this.props.value !== 0) && <FailedTableModal buttonLabel={"View"}
                                                                      failedData={this.props.failedData}
                                                                      tagData={this.props.tagData}/>}
 
