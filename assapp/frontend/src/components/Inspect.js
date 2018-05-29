@@ -44,6 +44,7 @@ import axios from "axios";
 import moment from "moment";
 import prismjs from "prismjs";
 import PrismCode from "react-prism";
+import matchSorter from "match-sorter"
 
 // CSS imports
 const styles = require("../styles/inspect.css");
@@ -843,7 +844,10 @@ class FailedTagsTable extends React.Component {
             {
                 Header: "Process",
                 accessor: "process",
-                filterable: true
+                filterable: true,
+                filterMethod: (filter, rows) =>
+                    matchSorter(rows, filter.value, {keys: ["process"]}),
+                filterAll: true
             },
             {
                 Header: "sample",
@@ -1436,7 +1440,10 @@ class TagTable extends React.Component {
                 Header: "Sample",
                 accessor: "sample",
                 minWidth: 90,
-                filterable: true
+                filterable: true,
+                filterMethod: (filter, rows) =>
+                    matchSorter(rows, filter.value, {keys: ["sample"]}),
+                filterAll: true
             },
             {
                 Header: "Work dir",
