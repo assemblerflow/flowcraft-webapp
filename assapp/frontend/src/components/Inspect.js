@@ -243,7 +243,8 @@ class InspectPannels extends React.Component {
                         <Typography className={styles.panelHeaderTitle} variant={"title"}>Process submission</Typography>
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails>
-                        <ProcessSubmission processData={this.props.processData}/>
+                        <ProcessSubmission processData={this.props.processData}
+                                           tagData={this.props.tagData}/>
                     </ExpansionPanelDetails>
                     <Divider/>
                     <ExpansionPanelDetails>
@@ -617,13 +618,22 @@ class ProcessSubmission extends React.Component {
             "finished": 0
         };
 
+        let failedTags = {};
+
         for (const [k, v] of Object.entries(this.props.processData)) {
+            failedTags[k] = [];
             for (const header of Object.keys(counts)) {
-                counts[header] += v[header].length
+                counts[header] += v[header].length;
+                if (header === "failed"){
+                    failedTags[k].push.apply(failedTags[k], v[header])
+                }
             }
         }
 
-        return counts
+        return {
+            counts,
+            failedTags
+        }
     }
 
     render () {
@@ -646,7 +656,7 @@ class ProcessSubmission extends React.Component {
                 "color": green[300]
             }
         };
-        const counts = this.countSubmissions();
+        const res = this.countSubmissions();
 
         return (
             <Grid container justify={"center"} spacing={24} direction={"row"}>
@@ -654,8 +664,10 @@ class ProcessSubmission extends React.Component {
                     return (
                         <Grid key={header} item xs={3} style={{minWidth: 200}}>
                             <SubmissionCard header={header}
-                                            value={counts[key.header]}
-                                            color={key.color}/>
+                                            value={res.counts[key.header]}
+                                            color={key.color}
+                                            failedData={res.failedTags}
+                                            tagData={this.props.tagData}/>
                         </Grid>
                     )
                 })}
@@ -674,6 +686,10 @@ class SubmissionCard extends React.Component {
                 <Typography style={{color: this.props.color}} className={styles.submissionValue}>
                     {this.props.value}
                 </Typography>
+                {this.props.header === "Failed" && <FailedTableModal buttonLabel={"View"}
+                                                                     failedData={this.props.failedData}
+                                                                     tagData={this.props.tagData}/>}
+
             </div>
         )
     }
@@ -734,6 +750,136 @@ class ResourcesDetails extends React.Component {
                 </Grid>
             </Grid>
         )
+    }
+}
+
+
+class FailedTableModal extends React.Component {
+
+    state = {
+        open: false,
+    };
+
+    handleOpen = () => {
+        this.setState({ open: true });
+    };
+
+    handleClose = () => {
+        this.setState({ open: false });
+    };
+
+    render () {
+        return (
+            <div>
+                <Button style={{width: "100%"}}  onClick={this.handleOpen}>
+                    {this.props.buttonLabel}
+                </Button>
+                <Modal
+                    aria-labelledby="simple-modal-title"
+                    aria-describedby="simple-modal-description"
+                    open={this.state.open}
+                    onClose={this.handleClose}>
+                    <Paper className={styles.tagModal}>
+                        <Typography variant={"title"} gutterBottom>
+                            Overview of failed samples
+                            </Typography>
+                        <Divider/>
+                        <FailedTagsTable failedData={this.props.failedData}
+                                         tagData={this.props.tagData}/>
+                    </Paper>
+                </Modal>
+            </div>
+        )
+    }
+}
+
+
+class FailedTagsTable extends React.Component {
+    constructor(props){
+        super(props);
+    }
+
+    prepareData(failedData, tagData) {
+
+        const headers = ["workdir", "start", "log"];
+        let tableData = [];
+
+        for (const [process, sampleArray] of Object.entries(failedData)) {
+            // Skip processes without fails
+            if (sampleArray.length === 0){continue}
+
+            for (const sample of sampleArray) {
+                let dt = {
+                    "process": process,
+                    "sample": sample
+                };
+                const tagInfo = tagData[process][sample];
+                // Skip process/tags not available in tagData object
+                if (!tagInfo){continue}
+                headers.forEach((header) => {
+                    if (header === "log"){
+                        if (tagInfo[header]) {
+                            dt[header] = <ViewLogModal
+                                title={`Log file for sample ${sample}`}
+                                buttonLabel={"View log"}
+                                content={tagInfo[header].join("\n")}
+                                buttonStyle={{width: "100%"}}/>;
+                        } else {
+                            dt[header] = ""
+                        }
+                    } else {
+                        dt[header] = tagInfo[header]
+                    }
+                });
+                tableData.push(dt)
+            }
+        }
+
+        return tableData
+    }
+
+    prepareColumns() {
+        return [
+            {
+                Header: "Process",
+                accessor: "process",
+                filterable: true
+            },
+            {
+                Header: "sample",
+                accessor: "sample",
+                minWidth: 90
+            },
+            {
+                Header: "Work dir",
+                accessor: "workdir",
+                minWidth: 90,
+                className: styles.tableCell
+            },
+            {
+                Header: "Time start",
+                accessor: "start",
+                minWidth: 90,
+                className: styles.tableCell
+            },
+            {
+                Header: "Log",
+                accessor: "log",
+                minWidth: 100,
+                width: 100,
+                className: styles.tableCell
+            }
+        ]
+    }
+
+    render () {
+        console.log(this.prepareData(this.props.failedData, this.props.tagData))
+        return (
+                <ReactTable
+                    data={this.prepareData(this.props.failedData, this.props.tagData)}
+                    columns={this.prepareColumns()}
+                    className="-striped -highlight"/>
+            )
     }
 }
 
@@ -1263,7 +1409,7 @@ class TagTable extends React.Component {
         return tags.map((sample) => {
             let dt = {"sample": sample};
             headers.forEach((header) => {
-                // Skip entries on in the header
+                // Skip entries not in the header
                 if (this.state.tagData.hasOwnProperty(sample)){
                     // Handle special log case
                     if (header === "log") {
@@ -1290,6 +1436,7 @@ class TagTable extends React.Component {
                 Header: "Sample",
                 accessor: "sample",
                 minWidth: 90,
+                filterable: true
             },
             {
                 Header: "Work dir",
@@ -1350,7 +1497,6 @@ class TagTable extends React.Component {
         )
     }
 }
-
 
 class WarningPopover extends React.Component {
 
