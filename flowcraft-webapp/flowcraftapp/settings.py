@@ -25,7 +25,7 @@ SECRET_KEY = '=hbbez#8klfvt^^h_n_mwo68%9^j(@s1&44bru9vj+zq___kv$'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["192.92.149.169", "localhost"]
+ALLOWED_HOSTS = ["192.92.149.169", "localhost", "127.0.0.1"]
 
 
 # Application definition
@@ -53,7 +53,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'assapp.urls'
+ROOT_URLCONF = 'flowcraftapp.urls'
 #
 TEMPLATES = [
     {
@@ -71,7 +71,7 @@ TEMPLATES = [
     },
 ]
 
-ASGI_APPLICATION = "assapp.routing.application"
+ASGI_APPLICATION = "flowcraftapp.routing.application"
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
