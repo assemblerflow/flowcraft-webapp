@@ -32,8 +32,9 @@ import blue from "@material-ui/core/colors/blue";
 import red from "@material-ui/core/colors/red";
 import grey from "@material-ui/core/colors/grey";
 
-import SkullIcon from "mdi-react/SkullIcon"
-import AlertOctagonIcon from "mdi-react/AlertOctagonIcon"
+import AlertOctagonIcon from "mdi-react/AlertOctagonIcon";
+import SleepIcon from "mdi-react/SleepIcon";
+import SkullIcon from "mdi-react/SkullIcon";
 
 // Highcharts imports
 const ReactHighcharts = require("react-highcharts");
@@ -1037,6 +1038,10 @@ class TableOverview extends React.Component {
                 } else if (dt.barrier === "R") {
                     dt.barrier = "A"
                 }
+            } else {
+                if (processInfo.running.length === 0 && dt.barrier === "R"){
+                    dt.barrier = "Z"
+                }
             }
             return dt;
         })
@@ -1052,7 +1057,8 @@ class TableOverview extends React.Component {
             "W": <Icon size={30}>access_time</Icon>,
             "R": <CircularProgress size={25} style={{ color: green[500] }}/>,
             "F": <SkullIcon color={red[300]}/>,
-            "A": <AlertOctagonIcon color={red[300]}/>
+            "A": <AlertOctagonIcon color={red[300]}/>,
+            "Z": <SleepIcon color={green[300]}/>
         };
 
         return [

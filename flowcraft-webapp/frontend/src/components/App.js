@@ -18,7 +18,9 @@ import grey from "@material-ui/core/colors/grey";
 
 const theme = createMuiTheme({
     palette: {
-        primary: indigo,
+        primary: {
+            main: indigo[400]
+        },
         secondary: green,
     },
     typography: {
@@ -30,7 +32,7 @@ const theme = createMuiTheme({
         headline: {
             fontSize: 22,
             fontWeight: "bold",
-            color: "#3F51B5",
+            color: indigo[400],
         },
         display1: {
             fontSize: 20,
