@@ -1018,16 +1018,9 @@ class TableOverview extends React.Component {
                     } else {
                         dt[header] = <Typography>-</Typography>
                     }
-                }
-                // else if (header === "maxMem"){
-                //     if (Object.keys(processInfo["memWarn"]).length !== 0 && processInfo["m" +
-                //     "emWarn"].constructor === Object){
-                //         dt[header] = <div>{processInfo[header]} <WarningPopover warningType={"memory"} warnings={processInfo["memWarn"]} /></div>
-                //     } else {
-                //         dt[header] = processInfo[header];
-                //     }
-                //    }
-                else {
+                } else if (header === "barrier") {
+                    dt[header] = processInfo[header]
+                } else {
                     dt[header] = <Typography>{processInfo[header]}</Typography>;
                 }
             });
