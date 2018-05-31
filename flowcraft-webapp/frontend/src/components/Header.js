@@ -5,32 +5,38 @@ import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
 import IconButton from "@material-ui/core/IconButton";
 import Icon from "@material-ui/core/Icon";
-import { withStyles } from '@material-ui/core/styles';
 
-const styles = theme => ({
-    icon: {
-        color: "#26af64",
+// Color imports
+import green from "@material-ui/core/colors/green";
+
+// CSS imports
+const styles = require("../styles/header.css");
+
+export class Header extends React.Component {
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            headerTitle: props.headerTitle
+        }
     }
-});
 
-const Header = (props) => {
-
-    const {classes} = props;
-
-    return (
-        <div style={{ marginBottom: 25}}>
-            <AppBar position={"static"} color="default">
-                <Toolbar>
-                    <IconButton>
-                        <Icon className={classes.icon}>keyboard_arrow_left</Icon>
-                    </IconButton>
-                    <Typography>
-                        Assemblerflow
-                    </Typography>
-                </Toolbar>
-            </AppBar>
-        </div>
-    )
+    render () {
+        return (
+            <div style={{marginBottom: 25}}>
+                <AppBar position={"static"} color="primary">
+                    <Toolbar>
+                        <IconButton>
+                            <Icon>keyboard_arrow_left</Icon>
+                        </IconButton>
+                        <div className={styles.textContainer}>
+                            <Typography variant={"display1"}>Flowcraft</Typography>
+                            <Typography className={styles.secTitle}>{this.state.headerTitle}</Typography>
+                        </div>
+                    </Toolbar>
+                </AppBar>
+            </div>
+        )
+    }
 };
-
-export default withStyles(styles)(Header);

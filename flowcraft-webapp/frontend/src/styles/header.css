@@ -1,0 +1,17 @@
+:local(.mainTitle) {
+    font-size: 16px!important;
+    font-weight: bold!important;
+    letter-spacing: 4px;
+    float: left;
+}
+
+:local(.textContainer){
+    width: 100%;
+    text-align: center;
+}
+
+:local(.secTitle){
+    font-size: 18px!important;
+    font-weight: bold!important;
+    color: #f2f2f2!important;
+}

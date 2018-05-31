@@ -1,86 +1,51 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import { BrowserRouter, Link, Route, Switch } from "react-router-dom";
-import Header from "./Header";
-import Main from "./Main";
+import {Header} from "./Header";
+import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
+import {Main} from "./Main";
 
-// /**
-//  * Function that handles the conditional rendering of the Wrapper component
-//  * @param {Object} props - Object with the props provided to WelcomeDag in the
-//  * Wrapper component render function.
-//  * @returns {*} - html element that will be rendered by Wrapper component
-//  * @constructor
-//  */
-// const WelcomeDag = (props) => {
-//     if (props.json) {
-//         return <TreeDag data={props.json}
-//                         size={[window.innerWidth, window.innerHeight / 2]}/>
-//     } else {
-//         return <h1>Please wait while we prepare your DAG tree...</h1>
-//     }
-// };
-//
-//
-// class Wrapper extends React.Component {
-//
-//     constructor(props) {
-//         super(props);
-//         this.state = {
-//             json: props.json
-//         }
-//     }
-//
-//     /**
-//      * Function that makes a get to the database to retrieve json_entry that
-//      * stores DAG related information. This information will after the request
-//      * be stored in this.state.json
-//      */
-//     updateJson(){
-//
-//         const status_id = window.location.pathname.replace("/status_id", "");
-//         axios.get(`inspect/api/status?status_id=${status_id}`)
-//             .then((response) => {
-//                 this.setState({json: response.data})
-//             })
-//
-//     }
-//
-//     componentDidMount() {
-//         // forces getting this.state.json from db asap
-//         this.updateJson();
-//         // then every x seconds a get request will be made
-//         this.hook = setInterval(
-//             () => this.updateJson(),
-//             5000
-//         );
-//     }
-//
-//     componentWillUnmount() {
-//         clearInterval(this.hook)
-//     }
-//
-//     render () {
-//         return (
-//             <div>
-//                 <WelcomeDag json={this.state.json}/>
-//             </div>
-//         );
-//     }
-//
-// }
-//
-// const App = () => (
-//     <Wrapper json={""}/>
-// );
-//
-// const wrapper = document.getElementById("app");
-// wrapper ? ReactDOM.render(<App />, wrapper) : null;
+// Color imports
+import green from "@material-ui/core/colors/green";
+import indigo from "@material-ui/core/colors/indigo";
+import lightblue from "@material-ui/core/colors/lightBlue";
+import teal from "@material-ui/core/colors/teal";
+import orange from "@material-ui/core/colors/orange";
+import amber from "@material-ui/core/colors/amber";
+import deeporange from "@material-ui/core/colors/deepOrange";
+import deepurple from "@material-ui/core/colors/deepPurple";
+import grey from "@material-ui/core/colors/grey";
+
+const theme = createMuiTheme({
+    palette: {
+        primary: indigo,
+        secondary: green,
+    },
+    typography: {
+        // Use the system font instead of the default Roboto font.
+        fontWeightMedium: 500,
+        body1: {
+            fontWeight: 500,
+        },
+        headline: {
+            fontSize: 22,
+            fontWeight: "bold",
+            color: "#3F51B5",
+        },
+        display1: {
+            fontSize: 20,
+            fontWeight: "bold",
+            color: "#f2f2f2",
+            letterSpacing: "6px"
+        }
+    },
+});
+
 
 class App extends React.Component {
     render () {
         return(
             <div>
-                <Header />
                 <Main />
             </div>
         )
@@ -89,6 +54,8 @@ class App extends React.Component {
 
 ReactDOM.render((
     <BrowserRouter>
-        <App />
+        <MuiThemeProvider theme={theme}>
+            <App />
+        </MuiThemeProvider>
     </BrowserRouter>
 ), document.getElementById("app"));

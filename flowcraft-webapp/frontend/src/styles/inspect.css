@@ -45,7 +45,6 @@
 
 :local(.panelHeaderTitle) {
     font-weight: bold!important;
-    color: #7e7e7e!important;
 }
 
 :local(.headerGrid) {

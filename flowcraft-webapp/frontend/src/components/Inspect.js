@@ -52,6 +52,7 @@ const styles = require("../styles/inspect.css");
 // TreeDag import
 
 import TreeDag from "./treeDag";
+import {Header} from "./Header";
 
 /*
 ENTRY POINT FOR inspect
@@ -64,6 +65,7 @@ export class Inspect extends React.Component {
 
         // Fetch the URL parameter, if any
         const runId = this.props.match.params.runId;
+        console.log(this.props)
 
         this.state = {
             runId: runId
@@ -190,6 +192,7 @@ class InspectApp extends React.Component {
     render () {
         return (
             <div>
+                <Header headerTitle={"Inspect"}/>
                 {
                     this.state.badRequest ?
                         // BAD request component
@@ -246,7 +249,7 @@ class InspectPannels extends React.Component {
             <div>
                 <ExpansionPanel defaultExpanded style={{margin: 0}}>
                     <ExpansionPanelSummary classes={{content: styles.panelHeader}} expandIcon={<ExpandMoreIcon />}>
-                        <Typography className={styles.panelHeaderTitle} variant={"title"}>General Overview</Typography>
+                        <Typography variant={"headline"}>General Overview</Typography>
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails>
                         <GeneralOverview generalData={this.props.generalData}
@@ -257,7 +260,7 @@ class InspectPannels extends React.Component {
 
                 <ExpansionPanel style={{marginTop: 0}}>
                     <ExpansionPanelSummary classes={{content: styles.panelHeader}} expandIcon={<ExpandMoreIcon />}>
-                        <Typography className={styles.panelHeaderTitle} variant={"title"}>Details</Typography>
+                        <Typography variant={"headline"}>Details</Typography>
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails>
                         <DetailsOverview detailsData={this.props.detailsData}
@@ -267,7 +270,7 @@ class InspectPannels extends React.Component {
 
                 <ExpansionPanel defaultExpanded style={{marginBottom: 0}}>
                     <ExpansionPanelSummary classes={{content: styles.panelHeader}} expandIcon={<ExpandMoreIcon />}>
-                        <Typography className={styles.panelHeaderTitle} variant={"title"}>Process submission</Typography>
+                        <Typography variant={"headline"}>Process submission</Typography>
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails>
                         <ProcessSubmission processData={this.props.processData}
@@ -281,7 +284,7 @@ class InspectPannels extends React.Component {
 
                 <ExpansionPanel defaultExpanded>
                     <ExpansionPanelSummary classes={{content: styles.panelHeader}} expandIcon={<ExpandMoreIcon />}>
-                        <Typography className={styles.panelHeaderTitle} variant={"title"}>Table overview</Typography>
+                        <Typography variant={"headline"}>Table overview</Typography>
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails>
                         <MainTable tableData={this.props.tableData}
@@ -293,7 +296,7 @@ class InspectPannels extends React.Component {
 
                 <ExpansionPanel defaultExpanded>
                     <ExpansionPanelSummary classes={{content: styles.panelHeader}} expandIcon={<ExpandMoreIcon />}>
-                        <Typography className={styles.panelHeaderTitle} variant={"title"}>DAG overview</Typography>
+                        <Typography variant={"headline"}>DAG overview</Typography>
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails style={{display: "block"}}>
                         <MainDag treeDag={this.props.treeDag} processData={this.props.processData}/>
@@ -436,21 +439,21 @@ class StatusPaper extends React.Component {
         return (
             <Paper elevation={6} style={{padding: 10, backgroundColor: statusColorMap[status]}}>
                 <div style={{marginBottom: 5}}>
-                    <span style={{color: "white"}} className={styles.statusTitle}> Status: {status}</span>
+                    <Typography style={{color: "white"}} className={styles.statusTitle}> Status: {status}</Typography>
                 </div>
                 <div>
-                    <span className={styles.cardHeader}> Start time: {timeStart}</span>
+                    <Typography className={styles.cardHeader}> Start time: {timeStart}</Typography>
                 </div>
                 <div>
-                    <span className={styles.cardHeader}> Stop time: {timeStop}</span>
+                    <Typography className={styles.cardHeader}> Stop time: {timeStop}</Typography>
                 </div>
                 <div style={{marginTop: 10}}>
-                    <span style={{fontWeight: "bold"}} className={styles.cardHeader}> Duration: {this.state.duration}</span>
+                    <Typography style={{fontWeight: "bold"}} className={styles.cardHeader}> Duration: {this.state.duration}</Typography>
                     {status === "aborted" &&
                         <ViewLogModal title={this.props.runStatus.status.abortCause}
                                       buttonLabel={"View Log"}
                                       content={this.props.runStatus.status.logLines.join("\n")}
-                                      buttonStyle={{float: "right", marginTop: "-5px"}}/>}
+                                      buttonStyle={{float: "right", marginTop: "-30px"}}/>}
                 </div>
             </Paper>
         )
@@ -846,12 +849,49 @@ class ResourcesDetails extends React.Component {
 /*
 MAIN TABLE COMPONENTS
  */
+
+const convertToBytes = (value) => {
+
+    let multipliers = {};
+    multipliers.B = 1;
+    multipliers.KB = ( multipliers.B * 1024 );
+    multipliers.MB = ( multipliers.KB * 1024 );
+    multipliers.GB = ( multipliers.MB * 1024 );
+    multipliers.TB = ( multipliers.GB * 1024 );
+    multipliers.PB = ( multipliers.TB * 1024 );
+    multipliers.EB = ( multipliers.PB * 1024 );
+    multipliers.ZB = ( multipliers.EB * 1024 );
+
+    const matches = value.toUpperCase().match(/([KMGTPEZ]I?)?B$/);
+    const unit = matches[0].replace(/i/i, "");
+
+    return (parseFloat(value) * multipliers[unit])
+};
+
+const sortSizes = (a, b) => {
+
+    const aValue = a.props.hasOwnProperty("buttonLabel") ? convertToBytes(a.props.buttonLabel) : "-1";
+    const bValue = b.props.hasOwnProperty("buttonLabel") ? convertToBytes(b.props.buttonLabel) : "-1";
+
+    return aValue > bValue ? 1 : -1;
+
+};
+
 const sortIgnoreNA = (a, b) => {
 
-    a = a === "-" ? -1 : a;
-    b = b === "-" ? -1 : b;
+    a = a.props.children === "-" ? -1 : a.props.children;
+    b = b.props.children === "-" ? -1 : b.props.children;
 
     return a > b ? 1 : -1;
+
+};
+
+const sortButtonTags = (a, b) => {
+
+    const aValue = a.props.hasOwnProperty("tagList") ? a.props.tagList.length : -1;
+    const bValue = b.props.hasOwnProperty("tagList") ? b.props.tagList.length : -1;
+
+    return aValue > bValue ? 1 : -1;
 
 };
 
@@ -976,7 +1016,7 @@ class TableOverview extends React.Component {
                                                            rawPlotData={this.props.tagData[processInfo.process]}
                                                            dataType={tagDataMap[header]}/>
                     } else {
-                        dt[header] = "-"
+                        dt[header] = <Typography>-</Typography>
                     }
                 }
                 // else if (header === "maxMem"){
@@ -988,7 +1028,7 @@ class TableOverview extends React.Component {
                 //     }
                 //    }
                 else {
-                    dt[header] = processInfo[header];
+                    dt[header] = <Typography>{processInfo[header]}</Typography>;
                 }
             });
 
@@ -1035,74 +1075,79 @@ class TableOverview extends React.Component {
                 )
             },
             {
-                Header: <Tooltip id="lane" title="Process lane"><div>Lane</div></Tooltip>,
+                Header: <Tooltip id="lane" title="Process lane"><Typography>Lane</Typography></Tooltip>,
                 accessor: "lane",
                 minWidth: 40,
                 className: styles.tableCell
             },
             {
-                Header: <Tooltip id="pid" title="Process Identifier"><div>ID</div></Tooltip>,
+                Header: <Tooltip id="pid" title="Process Identifier"><Typography>ID</Typography></Tooltip>,
                 accessor: "pid",
                 minWidth: 30,
                 className: styles.tableCell
             },
             {
                 // Header: <Tooltip id="pname" title="Process name"><div>Process</div></Tooltip>,
-                Header: "Process",
+                Header: <Typography>Process</Typography>,
                 accessor: "process",
                 minWidth: 180,
                 className: styles.tableProcess
             }, {
                 // Header:  <Tooltip id="running" title="Submitted/Running processes"><div>Running</div></Tooltip>,
-                Header: "Running",
+                Header: <Typography>Running</Typography>,
                 accessor: "running",
                 minWidth: mainWidth,
-                className: styles.tableCell
+                className: styles.tableCell,
+                sortMethod: sortButtonTags
             }, {
                 // Header:  <Tooltip id="completed" title="Completed processes"><div>Complete</div></Tooltip>,
-                Header: "Complete",
+                Header: <Typography>Complete</Typography>,
                 accessor: "complete",
                 minWidth: mainWidth,
-                className: styles.tableCell
+                className: styles.tableCell,
+                sortMethod: sortButtonTags
             }, {
                 // Header:  <Tooltip id="error" title="Process exited with error"><div>Error</div></Tooltip>,
-                Header: "Error",
+                Header: <Typography>Error</Typography>,
                 accessor: "error",
                 minWidth: mainWidth,
-                className: styles.tableCell
+                className: styles.tableCell,
+                sortMethod: sortButtonTags
             }, {
                 // Header:  <Tooltip id="avgtime" title="Average time each process took"><div>Avg Time</div></Tooltip>,
-                Header: "Avg Time",
+                Header: <Typography>Avg Time</Typography>,
                 accessor: "avgTime",
                 minWidth: mainWidth,
-                className: styles.tableCell
+                className: styles.tableCell,
+                sortMethod: sortIgnoreNA
             }, {
                 // Header:  <Tooltip id="cpuhour" title="Cumulative CPU/hour measurement"><div>CPU/hour</div></Tooltip>,
-                Header: "CPU/Hour",
+                Header: <Typography>CPU/Hour</Typography>,
                 accessor: "cpuhour",
                 minWidth: mainWidth,
-                className: styles.tableCell
+                className: styles.tableCell,
+                sortMethod: sortIgnoreNA
             }, {
                 // Header:  <Tooltip id="maxmem" title="Maximum RAM used (MB)"><div>Max Mem</div></Tooltip>,
-                Header: "Max Mem",
+                Header: <Typography>Max Mem</Typography>,
                 accessor: "maxMem",
                 minWidth: mainWidth,
                 className: styles.tableCell,
-                sortMethod: sortIgnoreNA
+                sortMethod: sortSizes
             }, {
                 // Header:  <Tooltip id="avgread" title="Average disk read (MB)"><div>Avg Read</div></Tooltip>,
-                Header: "Avg Read",
+                Header: <Typography>Avg Read</Typography>,
                 accessor: "avgRead",
                 minWidth: mainWidth,
                 className: styles.tableCell,
-                sortMethod: sortIgnoreNA
+                sortMethod: sortSizes
             }, {
                 // Header:  <Tooltip id="avgwrite" title="Average disk write (MB)"><div>Avg Write</div></Tooltip>,
-                Header: "Avg Write",
+                Header: <Typography>Avg Write</Typography>,
                 accessor: "avgWrite",
                 minWidth: mainWidth,
                 className: styles.tableCell,
-                sortMethod: sortIgnoreNA
+                sortMethod: sortSizes
             }
         ];
     }
@@ -1482,7 +1527,7 @@ class ViewLogModal extends React.Component {
 
     render () {
         return (
-            <span>
+            <div>
                 <Button variant={"raised"}
                         size={"small"}
                         style={this.props.buttonStyle}
@@ -1505,7 +1550,7 @@ class ViewLogModal extends React.Component {
                         </div>
                     </Paper>
                 </Modal>
-            </span>
+            </div>
         )
     }
 }
