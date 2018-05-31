@@ -11,7 +11,8 @@
 }
 
 :local(.secTitle){
-    font-size: 18px!important;
+    font-size: 22px!important;
     font-weight: bold!important;
     color: #f2f2f2!important;
+    min-width: 100px;
 }
