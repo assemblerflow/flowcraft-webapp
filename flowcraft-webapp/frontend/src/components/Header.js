@@ -31,7 +31,7 @@ export class Header extends React.Component {
                         <IconButton>
                             <Icon>keyboard_arrow_left</Icon>
                         </IconButton>
-                        <Typography style={{width: "100%"}} align={"center"} className={styles.secTitle}>Flowcraft | <span style={{color: "#f2f2f2"}}>{this.state.headerTitle}</span></Typography>
+                        <Typography style={{width: "100%"}} align={"center"} className={styles.secTitle}>Flowcraft | <span style={{color: "#f2f2f2"}}>{this.state.headerTitle}</span> <span style={{fontSize: "13px"}}>v0.1</span></Typography>
                     </Toolbar>
                 </AppBar>
             </div>

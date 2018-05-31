@@ -8,13 +8,6 @@ import {Main} from "./Main";
 // Color imports
 import green from "@material-ui/core/colors/green";
 import indigo from "@material-ui/core/colors/indigo";
-import lightblue from "@material-ui/core/colors/lightBlue";
-import teal from "@material-ui/core/colors/teal";
-import orange from "@material-ui/core/colors/orange";
-import amber from "@material-ui/core/colors/amber";
-import deeporange from "@material-ui/core/colors/deepOrange";
-import deepurple from "@material-ui/core/colors/deepPurple";
-import grey from "@material-ui/core/colors/grey";
 
 const theme = createMuiTheme({
     palette: {

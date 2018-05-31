@@ -54,6 +54,7 @@ const styles = require("../styles/inspect.css");
 
 import TreeDag from "./treeDag";
 import {Header} from "./Header";
+import {Footer} from "./Footer";
 
 /*
 ENTRY POINT FOR inspect
@@ -208,6 +209,7 @@ class InspectApp extends React.Component {
                                 }
                             </div>
                 }
+                <Footer/>
             </div>
         )
     }
