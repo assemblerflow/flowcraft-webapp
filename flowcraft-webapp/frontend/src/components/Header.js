@@ -31,14 +31,7 @@ export class Header extends React.Component {
                         <IconButton>
                             <Icon>keyboard_arrow_left</Icon>
                         </IconButton>
-                        <Grid container>
-                            <Grid item xs={6} style={{minWidth: "200px"}}>
-                                <Typography className={styles.secTitle}>Flowcraft</Typography>
-                            </Grid>
-                            <Grid item xs={6} style={{minWidth: "200px"}}>
-                                <Typography className={styles.secTitle}>{this.state.headerTitle}</Typography>
-                            </Grid>
-                        </Grid>
+                        <Typography style={{width: "100%"}} align={"center"} className={styles.secTitle}>Flowcraft | <span style={{color: "#f2f2f2"}}>{this.state.headerTitle}</span></Typography>
                     </Toolbar>
                 </AppBar>
             </div>
