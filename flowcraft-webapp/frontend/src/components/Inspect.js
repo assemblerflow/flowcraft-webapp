@@ -32,6 +32,7 @@ import blue from "@material-ui/core/colors/blue";
 import red from "@material-ui/core/colors/red";
 import grey from "@material-ui/core/colors/grey";
 
+// Icon imports
 import AlertOctagonIcon from "mdi-react/AlertOctagonIcon";
 import SleepIcon from "mdi-react/SleepIcon";
 import SkullIcon from "mdi-react/SkullIcon";
