@@ -67,7 +67,6 @@ export class Inspect extends React.Component {
 
         // Fetch the URL parameter, if any
         const runId = this.props.match.params.runId;
-        console.log(this.props)
 
         this.state = {
             runId: runId
@@ -207,9 +206,9 @@ class InspectApp extends React.Component {
                                     <InspectPannels {...this.state}/> :
                                     <div>waiting</div>
                                 }
+                                <Footer/>
                             </div>
                 }
-                <Footer/>
             </div>
         )
     }
