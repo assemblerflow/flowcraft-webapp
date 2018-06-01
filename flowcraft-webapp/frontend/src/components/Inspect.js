@@ -1590,7 +1590,8 @@ class ResourceScatterPlot extends React.Component {
                 data: [[c/total, info[dataType]]],
                 marker: {
                     symbol: 'circle'
-                }
+                },
+                color: "gray"
             });
             c += 1
         }
