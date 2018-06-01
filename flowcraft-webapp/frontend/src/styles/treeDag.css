@@ -27,9 +27,13 @@ div.tooltip {
 }
 
 .tooltipProcSpan{
+    display: flex;
+    flex-grow: 1;
     float: right;
     background-color: #f2f2f2;
     border-radius: 50%;
-    width: 20px;
     text-align: center;
+    padding-left: 7px;
+    padding-right: 7px;
+
 }
