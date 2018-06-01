@@ -700,8 +700,8 @@ class FailedTagsTable extends React.Component {
             for (const sample of sampleArray) {
                 // Create first instance of the process/tag object
                 let dt = {
-                    "process": process,
-                    "sample": sample
+                    "process": <Typography>{process}</Typography>,
+                    "sample": <Typography>{sample}</Typography>
                 };
                 const tagInfo = tagData[process][sample];
                 // Skip process/tags not available in tagData object
@@ -723,7 +723,7 @@ class FailedTagsTable extends React.Component {
                             dt[header] = ""
                         }
                     } else {
-                        dt[header] = tagInfo[header]
+                        dt[header] = <Typography>{tagInfo[header]}</Typography>
                     }
                 });
                 tableData.push(dt)
@@ -1005,9 +1005,9 @@ class TableOverview extends React.Component {
                 // Populate the process name, lane and process Id columns
                 } else if (header === "process") {
                     const res = this.parseProcessNames(processInfo[header]);
-                    dt[header] = res.processName;
-                    dt["lane"] = res.lane;
-                    dt["pid"] = res.processId;
+                    dt[header] = <Typography style={{textAlign: "left"}} className={styles.tableCell}>{res.processName}</Typography>;
+                    dt["lane"] = <Typography className={styles.tableCell}>{res.lane}</Typography>;
+                    dt["pid"] = <Typography className={styles.tableCell}>{res.processId}</Typography>;
                     // For columns in the plotButtons array, the cell content
                     // should be a button that opens a model with a scatter
                     // plot showing the distribution of a particular resource
@@ -1018,12 +1018,12 @@ class TableOverview extends React.Component {
                                                            rawPlotData={this.props.tagData[processInfo.process]}
                                                            dataType={tagDataMap[header]}/>
                     } else {
-                        dt[header] = <Typography>-</Typography>
+                        dt[header] = <Typography className={styles.tableCell}>-</Typography>
                     }
                 } else if (header === "barrier") {
                     dt[header] = processInfo[header]
                 } else {
-                    dt[header] = <Typography>{processInfo[header]}</Typography>;
+                    dt[header] = <Typography className={styles.tableCell}>{processInfo[header]}</Typography>;
                 }
             });
 
@@ -1318,7 +1318,7 @@ class TagTable extends React.Component {
             "wchar", "log"];
 
         return tags.map((sample) => {
-            let dt = {"sample": sample};
+            let dt = {"sample": <Typography>{sample}</Typography>};
             headers.forEach((header) => {
                 // Skip entries not in the header
                 if (this.state.tagData.hasOwnProperty(sample)){
@@ -1333,7 +1333,7 @@ class TagTable extends React.Component {
                             dt[header] = "";
                         }
                     } else {
-                        dt[header] = this.state.tagData[sample][header]
+                        dt[header] = <Typography>{this.state.tagData[sample][header]}</Typography>
                     }
                 }
             });
