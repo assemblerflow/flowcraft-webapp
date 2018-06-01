@@ -1777,7 +1777,7 @@ class DagLegend extends React.Component{
 
         this.legendObj = {
             "Waiting": grey[300],
-            "Running": blue[100],
+            "Running": blue[300],
             "Completed": green[300],
             "Retry": orange[300],
             "Aborted": red[300],

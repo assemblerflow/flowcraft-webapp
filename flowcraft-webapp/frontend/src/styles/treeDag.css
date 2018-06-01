@@ -19,8 +19,17 @@ div.tooltip {
     text-align: center;
     padding: 10px 15px 10px 15px;
     font: 14px sans-serif;
-    background: lightsteelblue;
+    background: #5c6bc0;
+    color: #f2f2f2;
     box-shadow: 1px 2px 8px #626262;
     border-radius: 8px;
     pointer-events: none;
+}
+
+.tooltipProcSpan{
+    float: right;
+    background-color: #f2f2f2;
+    border-radius: 50%;
+    width: 20px;
+    text-align: center;
 }

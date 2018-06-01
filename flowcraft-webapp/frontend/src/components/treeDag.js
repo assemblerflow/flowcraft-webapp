@@ -13,11 +13,13 @@ import green from "@material-ui/core/colors/green";
 import blue from "@material-ui/core/colors/blue";
 import grey from "@material-ui/core/colors/grey";
 import red from "@material-ui/core/colors/red";
+import orange from "@material-ui/core/colors/orange";
 
 // import material UI buttons and icons
 import Button from "@material-ui/core/Button";
 import Icon from "@material-ui/core/Icon";
-import orange from "@material-ui/core/colors/orange";
+
+
 
 /**
  * This div must be defined before the component, otherwise tooltips will not appear
@@ -65,6 +67,18 @@ class TreeDag extends Component {
          */
         this.radius = 14;
 
+        /**
+         * a color map to be used by d3 fill attribute for the pie chart
+         * @type {{failed: *, finished: *, retry: *, submitted: *, waiting: *}}
+         */
+        this.color = {
+            failed: red[300],
+            finished: green[300],
+            retry: orange[300],
+            submitted: blue[300],
+            waiting: grey[300]
+        };
+
         // binds this function so that it can be used by other on component rendering (in this case on a button click)
         this.reDraw = this.reDraw.bind(this);
 
@@ -94,33 +108,137 @@ class TreeDag extends Component {
         }
     }
 
-    // this will be triggered every time the props of this component are updated. It will update node colors
-    // componentDidUpdate() {
-    //     this.updateDagViz()
-    // }
+    /**
+     * This function checks if the main process is complete
+     * @param {String} name - The name of the node which contains the processes called through the pipeline string and
+     * their pid.
+     * @returns {*} - returns a string with the status of the main process.
+     */
+    checkBarrierComplete(name) {
 
-    componentWillUnmount() {
-        // TODO Add unmount function
+        // skips first node that is root
+        if (name !== "root") {
+
+            const laneString = name.split("_").slice(-2).join("_");
+
+            // a variable that is used to check if all barriers from a lane return the same flag
+            let checkAllBarriers = []
+
+            Object.keys(this.props.processData).forEach((key) => {
+
+                if (key.includes(laneString)) {
+                    checkAllBarriers.push(this.props.processData[key].barrier)
+                }
+            });
+
+            const labelProcess = checkAllBarriers.reduce((a, b) => {
+                return (a === b) ? a : false;
+            });
+
+
+            // check if all processes are complete
+            if (labelProcess === "C") {
+                return "C"
+            }
+
+        }
+    }
+
+
+    /**
+     * Function that is used to check if node name matches any process status changes available in
+     * this.props.processData
+     * @param {String} name - The name of the node which contains the processes called through the pipeline string and
+     * their pid.
+     * @returns {*} - returns a string with the status of the main process. If the main process has two subprocesses
+     * that that has the same letter then the return value will be the one letter. E.g. array
+     * checkAllBarrier = ["W","W"], then the returning value will be "W". However, if any "R" is found within the
+     * checkAllBarrier array then the returning value will always be "R". If some processes are complete but others
+     * are waiting this will return false which will not update node color. It also returns "Q" when there are
+     * sub processes Waiting and some are already completed
+     */
+    checkBarrier(name) {
+
+        // skips first node that is root
+        if (name !== "root") {
+
+            const laneString = name.split("_").slice(-2).join("_");
+
+            // a variable that is used to check if all barriers from a lane return the same flag
+            let checkAllBarriers = [];
+
+            // check if the sub-process pid is present in the queried node main process
+            Object.keys(this.props.processData).forEach((key) => {
+
+                if (key.includes(laneString)) {
+                    checkAllBarriers.push(this.props.processData[key])
+                }
+            });
+
+            /**
+             * Variable that stores the counts for each one of the types of running elements and is used to make the pie
+             * chart percentages
+             * @type {{failed: number, finished: number, retry: number, submitted: number}}
+             */
+            const mapReturns = {
+                failed: 0,
+                finished: 0,
+                retry: 0,
+                submitted: 0,
+            };
+
+            // counts the number of entries in each array and maps it to mapReturns object
+            checkAllBarriers.map( (subProc) => {
+                Object.keys(subProc).map( (type) => {
+                    if (Object.keys(mapReturns).includes(type)) {
+                        mapReturns[type] += subProc[type].length
+                    }
+                })
+            });
+
+            // check if all arrays are empty and if so add 1 to the node that is wiating
+            const waitingNode = (mapReturns.failed === 0 &&
+                mapReturns.finished === 0 &&
+                mapReturns.retry === 0 &&
+                mapReturns.submitted === 0) ? 1 : 0;
+
+            return [
+                {group: "failed", value: mapReturns.failed},
+                {group: "finished", value: mapReturns.finished},
+                {group: "retry", value: mapReturns.retry},
+                {group: "submitted", value: mapReturns.submitted},
+                {group: "waiting", value: waitingNode}
+            ]
+
+        }
+
     }
 
     /**
      * This function creates a tooltip with the node/process information
      * on mouse over in the respective node
      *
-     * @param {Object} d - stores information of the node data (containing
-     * name, input, output, etc) and parent info for this node
+     * @param {String} name - stores the name of the process being hovered
+     * @param {Object} procObj - stores the current instance of failed, running, completed and retried samples for that
+     * process.
      */
-    mouseover(d) {
+    mouseover(procObj, name) {
+
         div.transition()
             .duration(200)
-            .style("opacity", .9);
-        div.html(`<b>pid:</b> ${d.data.process.pid},<br>
-            <b>lane:</b> ${d.data.process.lane},<br>
-            <b>input:</b> ${d.data.process.input},<br>
-            <b>output:</b> ${d.data.process.output},<br>
-            <b>directives:</b><br>
-            ${d.data.process.directives}
-            `)
+            .style("opacity", .95);
+
+        div.html(`<h2>Process ${name} status</h2>
+            <!--<b>${procObj[4].group}:</b> ${(procObj[4].value === 1) ? "true": "false"},<br>-->
+            <div style="font-size: 18px">
+            <b>Running: <span class="tooltipProcSpan" style="color: ${this.color[procObj[3].group]}">${procObj[3].value}
+            </span><br>
+            Completed: <span class="tooltipProcSpan" style="color: ${this.color[procObj[1].group]}">${procObj[1].value}
+            </span><br>
+            Retry: <span class="tooltipProcSpan" style="color: ${this.color[procObj[2].group]}">${procObj[2].value}
+            </span><br>
+            Aborted: <span class="tooltipProcSpan" style="color: ${this.color[procObj[0].group]}">${procObj[0].value}
+            </span></b></div>`)
         //             .style("left", (d3.event.pageX) + "px")
             .style("left", (event.pageX) + "px")
             .style("top", (event.pageY - 28) + "px")
@@ -249,8 +367,14 @@ class TreeDag extends Component {
                 .attr("transform", (d) => {
                     return "translate(" + source.y0 + "," + source.x0 + ")"
                 })
-                // .on('click', click)
-                .on("mouseover", this.mouseover)
+                // .on("click", (d) => {
+                //     const processName = this.checkBarrier(d.data.name)
+                //     this.mouseClickEvent(processName, d.data.name)
+                // })
+                .on("mouseover", (d) => {
+                    const processName = this.checkBarrier(d.data.name);
+                    this.mouseover(processName, d.data.name)
+                })
                 .on("mouseout", this.mouseout);
 
             // Add Circle for the nodes
@@ -352,112 +476,6 @@ class TreeDag extends Component {
     }
 
     /**
-     * This function checks if the main process is complete
-     * @param {String} name - The name of the node which contains the processes called through the pipeline string and
-     * their pid.
-     * @returns {*} - returns a string with the status of the main process.
-     */
-    checkBarrierComplete(name) {
-
-        // skips first node that is root
-        if (name !== "root") {
-
-            const laneString = name.split("_").slice(-2).join("_");
-
-            // a variable that is used to check if all barriers from a lane return the same flag
-            let checkAllBarriers = []
-
-            Object.keys(this.props.processData).forEach((key) => {
-
-                if (key.includes(laneString)) {
-                    checkAllBarriers.push(this.props.processData[key].barrier)
-                }
-            });
-
-            const labelProcess = checkAllBarriers.reduce((a, b) => {
-                return (a === b) ? a : false;
-            });
-
-
-            // check if all processes are complete
-            if (labelProcess === "C") {
-                return "C"
-            }
-
-        }
-    }
-
-
-    /**
-     * Function that is used to check if node name matches any process status changes available in
-     * this.props.processData
-     * @param {String} name - The name of the node which contains the processes called through the pipeline string and
-     * their pid.
-     * @returns {*} - returns a string with the status of the main process. If the main process has two subprocesses
-     * that that has the same letter then the return value will be the one letter. E.g. array
-     * checkAllBarrier = ["W","W"], then the returning value will be "W". However, if any "R" is found within the
-     * checkAllBarrier array then the returning value will always be "R". If some processes are complete but others
-     * are waiting this will return false which will not update node color. It also returns "Q" when there are
-     * sub processes Waiting and some are already completed
-     */
-    checkBarrier(name) {
-
-        // skips first node that is root
-        if (name !== "root") {
-
-            const laneString = name.split("_").slice(-2).join("_");
-
-            // a variable that is used to check if all barriers from a lane return the same flag
-            let checkAllBarriers = [];
-
-            // check if the sub-process pid is present in the queried node main process
-            Object.keys(this.props.processData).forEach((key) => {
-
-                if (key.includes(laneString)) {
-                    checkAllBarriers.push(this.props.processData[key])
-                }
-            });
-
-            /**
-             * Variable that stores the counts for each one of the types of running elements and is used to make the pie
-             * chart percentages
-             * @type {{failed: number, finished: number, retry: number, submitted: number}}
-             */
-            const mapReturns = {
-                failed: 0,
-                finished: 0,
-                retry: 0,
-                submitted: 0,
-            };
-
-            // counts the number of entries in each array and maps it to mapReturns object
-            checkAllBarriers.map( (subProc) => {
-                Object.keys(subProc).map( (type) => {
-                    if (Object.keys(mapReturns).includes(type)) {
-                        mapReturns[type] += subProc[type].length
-                    }
-                })
-            });
-
-            // check if all arrays are empty and if so add 1 to the node that is wiating
-            const waitingNode = (mapReturns.failed === 0 &&
-                mapReturns.finished === 0 &&
-                mapReturns.retry === 0 &&
-                mapReturns.submitted === 0) ? 1 : 0;
-
-            return [
-                {group: "failed", value: mapReturns.failed},
-                {group: "finished", value: mapReturns.finished},
-                {group: "retry", value: mapReturns.retry},
-                {group: "submitted", value: mapReturns.submitted},
-                {group: "waiting", value: waitingNode}
-            ]
-
-        }
-
-    }
-
-    /**
      * Function that updates dag node colors without changing its shape or initial rendering
      */
     updateDagViz() {
@@ -468,18 +486,6 @@ class TreeDag extends Component {
          * @type {number}
          */
         const radius = this.radius - 1;
-
-        /**
-         * a color map to be used by d3 fill attribute for the pie chart
-         * @type {{failed: *, finished: *, retry: *, submitted: *, waiting: *}}
-         */
-        const color = {
-            failed: red[300],
-            finished: green[300],
-            retry: orange[300],
-            submitted: blue[100],
-            waiting: grey[300]
-        };
 
         /**
          * The d3 pie object
@@ -493,7 +499,7 @@ class TreeDag extends Component {
             .innerRadius(0);
 
         // a variable to iterate through all nodes
-        const nodeIter = this.svg.selectAll('g.node')
+        const nodeIter = this.svg.selectAll('g.node');
 
         /**
          * The actual code that fetches all the nodes and iterates through them to add the pie charts and the colors
@@ -513,8 +519,8 @@ class TreeDag extends Component {
             .append("svg:path")
             .attr("d", arc)
             .attr("fill", (d, i) => {
-                return color[d.data.group];
-            })
+                return this.color[d.data.group];
+            });
 
         // removes previous path with pie chart
         this.svg.selectAll('path.toRemove').remove();

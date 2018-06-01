@@ -25,7 +25,7 @@ export class Footer extends React.Component {
                             <CopyrightIcon size={12} color={"#f2f2f2"} style={{marginLeft: "5px", marginRight: "5px"}}/>
                             <Typography className={styles.footerText}>2018</Typography>
                             <DotsVerticalIcon color={"#f2f2f2"}/>
-                            <Typography className={styles.footerText}>Made with Djagno +</Typography>
+                            <Typography className={styles.footerText}>Made with Django +</Typography>
                             <ReactIcon style={{marginLeft: "5px", marginRight: "5px"}} color={"#e2cbf2"}/>
                         </div>
                     </Toolbar>
