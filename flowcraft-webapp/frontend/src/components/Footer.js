@@ -9,7 +9,7 @@ import Icon from "@material-ui/core/Icon";
 import DotsVerticalIcon from "mdi-react/DotsVerticalIcon";
 import CopyrightIcon from "mdi-react/CopyrightIcon";
 import ReactIcon from "mdi-react/ReactIcon";
-import CoffeeIcon from "mdi-react/CoffeeIcon";
+import MaterialUiIcon from "mdi-react/MaterialUiIcon"
 
 // CSS imports
 const styles = require("../styles/footer.css");
@@ -25,8 +25,10 @@ export class Footer extends React.Component {
                             <CopyrightIcon size={12} color={"#f2f2f2"} style={{marginLeft: "5px", marginRight: "5px"}}/>
                             <Typography className={styles.footerText}>2018</Typography>
                             <DotsVerticalIcon color={"#f2f2f2"}/>
-                            <Typography className={styles.footerText}>Made with Django +</Typography>
-                            <ReactIcon style={{marginLeft: "5px", marginRight: "5px"}} color={"#e2cbf2"}/>
+                            <Typography className={styles.footerText}>Made with <a style={{color: "#f2f2f2", textDecoration: "none"}} href={"https://www.djangoproject.com/"} target={"_blank"}>Django</a> +</Typography>
+                            <a href={"https://reactjs.org/"} target={"_blank"}><ReactIcon style={{marginLeft: "5px", marginRight: "5px"}} color={"#e2cbf2"}/></a>
+                            <Typography className={styles.footerText}>+</Typography>
+                            <a href={"https://material-ui.com/"} target={"_blank"}><MaterialUiIcon style={{marginLeft: "5px", marginRight: "5px"}} color={"#f2f2f2"}/></a>
                         </div>
                     </Toolbar>
                 </AppBar>
