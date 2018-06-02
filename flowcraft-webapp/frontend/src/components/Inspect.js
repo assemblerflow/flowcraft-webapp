@@ -959,7 +959,7 @@ class TableOverview extends React.Component {
             lane = fields[1];
             processName = fields.slice(2,).reverse().join("_")
         } else {
-            processId = processStr;
+            processName = processStr;
             lane = "-";
             processId = "-"
         }
