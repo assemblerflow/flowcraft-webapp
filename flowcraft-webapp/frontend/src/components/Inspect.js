@@ -743,7 +743,7 @@ class FailedTagsTable extends React.Component {
                 accessor: "process",
                 filterable: true,
                 filterMethod: (filter, rows) =>
-                    matchSorter(rows, filter.value, {keys: ["process"]}),
+                    matchSorter(rows, filter.value, {keys: ["process.props.children"]}),
                 filterAll: true
             },
             {
@@ -1349,8 +1349,10 @@ class TagTable extends React.Component {
                 accessor: "sample",
                 minWidth: 90,
                 filterable: true,
+                // Filter sample names. These are actually Typography components,
+                // hence the sample.props.children.
                 filterMethod: (filter, rows) =>
-                    matchSorter(rows, filter.value, {keys: ["sample"]}),
+                    matchSorter(rows, filter.value, {keys: ["sample.props.children"]}),
                 filterAll: true
             },
             {
