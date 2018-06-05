@@ -35,8 +35,9 @@ class Status(View):
             instance.status_json = serializer.data["status_json"]
             instance.save()
 
-            ws_addr = "ws://{}/ws/inspect/{}/".format(
+            ws_addr = "ws://{}:{}/ws/inspect/{}/".format(
                 request.get_host(),
+                request.META['SERVER_PORT'],
                 data["run_id"]
             )
             ws_con = create_connection(ws_addr)
