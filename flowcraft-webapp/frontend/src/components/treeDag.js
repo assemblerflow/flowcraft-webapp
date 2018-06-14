@@ -126,7 +126,7 @@ class TreeDag extends Component {
 
             Object.keys(this.props.processData).forEach((key) => {
 
-                if (key.includes(laneString)) {
+                if (key.endsWith(laneString)) {
                     checkAllBarriers.push(this.props.processData[key].barrier)
                 }
             });
@@ -170,7 +170,7 @@ class TreeDag extends Component {
             // check if the sub-process pid is present in the queried node main process
             Object.keys(this.props.processData).forEach((key) => {
 
-                if (key.includes(laneString)) {
+                if (key.endsWith(laneString)) {
                     checkAllBarriers.push(this.props.processData[key])
                 }
             });
