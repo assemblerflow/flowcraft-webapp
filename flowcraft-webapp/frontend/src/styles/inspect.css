@@ -1,0 +1,199 @@
+:local(.homeContainer) {
+    width: 40%;
+    height: 80px;
+
+    position: absolute;
+    top:0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    margin: auto;
+}
+
+:local(.home) {
+
+    display: flex;
+    flex-grow: 1;
+
+    padding: 10px
+}
+
+:local(.loader) {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    margin: auto;
+}
+
+:local(.badrequestContainer) {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    text-align: center;
+    vertical-align: middle;
+
+    height: 50px;
+    line-height: 50px;
+    margin: auto;
+}
+
+:local(.badrequestPaper) {
+    width: 70%;
+    margin: auto;
+    word-break: break-all;
+    padding: 20px;
+}
+
+:local(.panelHeaderTitle) {
+    font-weight: bold!important;
+}
+
+:local(.headerGrid) {
+    flex-grow: 1;
+}
+
+:local(.headerData) {
+    flex-basis: 70%!important;
+}
+
+:local(.headerStatus) {
+    flex-basis: 30%!important;
+    min-width: 300px;
+}
+
+:local(.headerItem) {
+    min-width: 200px;
+}
+
+:local(.statusTitle) {
+    font-size: 20px!important;
+    text-align: left;
+    font-weight: bold!important;
+}
+
+:local(.headerTitle) {
+    font-size: 18px!important;
+    text-align: left;
+    min-width: 200px;
+    width: 200px;
+    color: #5b5b5b!important;
+}
+
+:local(.headerValue) {
+    font-size: 20px!important;
+    text-align: left;
+    font-weight: bold!important;
+    color: #000!important;
+}
+
+:local(.cardHeader) {
+    font-size: 16px;
+    text-align: left;
+    color: #fff
+}
+
+:local(.submissionHeader) {
+    font-size: 18px!important;
+    text-align: left;
+    font-weight: bold!important;
+    color: #5b5b5b!important;
+}
+:local(.submissionValue) {
+    font-size: 50px!important;
+    text-align: center;
+}
+
+:local(.mainPaper) {
+    flex-grow: 1;
+    height: 100%;
+    overflow-x: auto;
+}
+
+:local(.tableRoot) {
+    padding: 10px;
+}
+
+:local(.mainTable) {
+}
+
+:local(.tableButton) {
+    min-width: 70px!important;
+    width: 100%;
+}
+
+:local(.tableCell) {
+    text-align: center;
+    line-height: 33px!important;
+    vertical-align: middle!important;
+}
+
+:local(.tableProcess) {
+    text-align: left;
+    line-height: 33px;
+    vertical-align: middle;
+}
+
+:local(.tableBarrier){
+    text-align: center;
+    margin: auto;
+}
+
+:local(.warningIcon){
+    font-size: 18px!important;
+    color: #ff935e;
+    line-height: 13px;
+    vertical-align: middle;
+    text-align: right;
+}
+
+:local(.warningPopover){
+    margin: 10px;
+}
+
+:local(.logModal) {
+    padding: 10px;
+    overflow: auto;
+    max-height: 90%;
+}
+
+:local(.modalTitleContainer) {
+    margin-bottom: 10px;
+    display: flex;
+}
+
+:local(.modalTitle){
+    flex-grow: 1;
+    line-height: 40px!important;
+}
+
+:local(.tagModal){
+    position: absolute;
+    top:0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 90%;
+    height: 90%;
+    margin: auto;
+    padding: 20px;
+}
+
+:local(.pipelineButton){
+    padding-top: 0;
+    margin-top: -20px!important;
+    min-height: 30px!important;
+    height: 30px!important;
+    line-height: 15px!important;
+}
+
+/* This prevents the focus outlier when clicking react table headers */
+.ReactTable .rt-thead [role="columnheader"] {
+outline: 0;
+}
