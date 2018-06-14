@@ -1,0 +1,39 @@
+.node circle {
+    stroke: #292929;
+    stroke-width: 2px;
+}
+
+.node text {
+    font: 14px sans-serif;
+    font-weight: bold;
+}
+
+.link {
+    fill: none;
+    stroke: #acacac;
+    stroke-width: 2px;
+}
+
+div.tooltip {
+    position: absolute;
+    text-align: center;
+    padding: 10px 15px 10px 15px;
+    font: 14px sans-serif;
+    background: #5c6bc0;
+    color: #f2f2f2;
+    box-shadow: 1px 2px 8px #626262;
+    border-radius: 8px;
+    pointer-events: none;
+}
+
+.tooltipProcSpan{
+    display: flex;
+    flex-grow: 1;
+    float: right;
+    background-color: #f2f2f2;
+    border-radius: 50%;
+    text-align: center;
+    padding-left: 7px;
+    padding-right: 7px;
+
+}
