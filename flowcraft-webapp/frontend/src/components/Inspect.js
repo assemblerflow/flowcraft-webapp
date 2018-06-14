@@ -344,16 +344,20 @@ class InspectPannels extends React.Component {
                     </ExpansionPanelDetails>
                 </ExpansionPanel>
 
-                <ExpansionPanel defaultExpanded>
-                    <ExpansionPanelSummary classes={{content: styles.panelHeader}} expandIcon={<ExpandMoreIcon />}>
-                        <Typography variant={"headline"}>DAG overview</Typography>
-                    </ExpansionPanelSummary>
-                    <ExpansionPanelDetails style={{display: "block"}}>
-                        <MainDag treeDag={this.props.treeDag} processData={this.props.processData}/>
-                        <DagLegend/>
+                {
+                    Object.keys(this.props.treeDag).length > 0 &&
+                    <ExpansionPanel defaultExpanded>
+                        <ExpansionPanelSummary classes={{content: styles.panelHeader}}
+                                               expandIcon={<ExpandMoreIcon />}>
+                            <Typography variant={"headline"}>DAG overview</Typography>
+                        </ExpansionPanelSummary>
+                        <ExpansionPanelDetails style={{display: "block"}}>
+                            <MainDag treeDag={this.props.treeDag} processData={this.props.processData}/>
+                            <DagLegend/>
 
-                    </ExpansionPanelDetails>
-                </ExpansionPanel>
+                        </ExpansionPanelDetails>
+                    </ExpansionPanel>
+                }
             </div>
         )
     }
@@ -1847,7 +1851,8 @@ Table and DAG controller
 class MainDag extends React.Component {
     render () {
         return (
-            <TreeDag data={this.props.treeDag} processData={this.props.processData}/>
+            <TreeDag data={this.props.treeDag}
+                     processData={this.props.processData}/>
         )
     }
 }
