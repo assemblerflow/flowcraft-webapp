@@ -4,3 +4,5 @@ import "react-table/react-table.css";
 import "prismjs/themes/prism-coy.css"
 import "prismjs/components/prism-groovy"
 import "highcharts/highcharts";
+
+import {version} from "../../package.json"

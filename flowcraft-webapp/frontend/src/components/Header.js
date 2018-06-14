@@ -10,6 +10,7 @@ import GithubCircleIcon from "mdi-react/GithubCircleIcon"
 
 // CSS imports
 const styles = require("../styles/header.css");
+import {version} from "../../../package.json"
 
 export class Header extends React.Component {
 
@@ -27,7 +28,7 @@ export class Header extends React.Component {
                 <AppBar position={"static"} color="primary">
                     <Toolbar>
                         <img src={"https://github.com/assemblerflow/flowcraft-webapp/raw/master/flowcraft-webapp/frontend/resources/flowcraft_text_white.png"} alt={"logo"} height={"15"}/>
-                        <Typography style={{width: "100%", flex: 1}} align={"center"} className={styles.secTitle}><span style={{color: "#f2f2f2"}}>{this.state.headerTitle}</span> <span style={{fontSize: "12px"}}>v0.1</span></Typography>
+                        <Typography style={{width: "100%", flex: 1}} align={"center"} className={styles.secTitle}><span style={{color: "#f2f2f2"}}>{this.state.headerTitle}</span> <span style={{fontSize: "12px"}}>v{version}</span></Typography>
                         <IconButton href={"https://github.com/assemblerflow/flowcraft"} target={"_blank"}>
                             <GithubCircleIcon color={"#fff"}/>
                         </IconButton>
