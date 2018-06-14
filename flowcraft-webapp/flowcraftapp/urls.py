@@ -18,6 +18,7 @@ from django.urls import path, include
 
 urlpatterns = [
     path("inspect/", include("afinspect.urls")),
+    path("report/", include("afreport.urls")),
     path('admin/', admin.site.urls),
     path("", include("frontend.urls")),
 ]

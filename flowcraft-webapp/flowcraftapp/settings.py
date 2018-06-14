@@ -32,6 +32,7 @@ ALLOWED_HOSTS = ["192.92.149.169", "localhost", "127.0.0.1"]
 
 INSTALLED_APPS = [
     'afinspect',
+    'afreport',
     'frontend',
     'rest_framework',
     'django.contrib.admin',
