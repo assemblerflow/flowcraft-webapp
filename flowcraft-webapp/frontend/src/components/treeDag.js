@@ -16,9 +16,25 @@ import red from "@material-ui/core/colors/red";
 import orange from "@material-ui/core/colors/orange";
 
 // import material UI buttons and icons
+import Typography from "@material-ui/core/Typography";
 import Button from "@material-ui/core/Button";
 import Icon from "@material-ui/core/Icon";
 
+/**
+ * This component is shown whenever the TreeDAG component cannot be rendered.
+ * It is linked to the ``error`` state of that component.
+ */
+class TreeDagError extends React.Component {
+    render(){
+        return(
+            <div style={{textAlign: "Center", marginBottom: "20px"}}>
+                <Typography>
+                    Sorry, there was a problem rendering the DAG  <span style={{fontWeight: "bold"}}>¯\_(ツ)_/¯</span>
+                </Typography>
+            </div>
+        )
+    }
+}
 
 
 /**
@@ -85,14 +101,21 @@ class TreeDag extends Component {
         this.state = {
             treeDag: props.treeDag,
             update: false,
-            processData: props.processData
+            processData: props.processData,
+            error: false
         }
     }
 
     // this is required for the initial DAG rendering. It will create the d3 instance as well as update the node colors
     componentDidMount() {
-        this.createDagViz();
-        this.updateDagViz()
+        try {
+            this.createDagViz();
+            this.updateDagViz()
+        } catch (e) {
+            console.log(e);
+            this.setState({"error": true})
+        }
+
     }
 
     static getDerivedStateFromProps(props, state) {
@@ -546,16 +569,22 @@ class TreeDag extends Component {
         if (this.state.update) {this.updateDagViz()}
         return(
             <div>
-                <div>
-                    <Button variant={"raised"}
-                            color={"primary"}
-                            size={"small"}
-                            onClick={this.reDraw}>
-                        <Icon size={30}>autorenew
-                        </Icon>
-                    </Button>
-                </div>
-                <svg style={{maxWidth: "100%"}} ref={node => this.node = node}></svg>
+                {
+                    this.state.error ?
+                        <TreeDagError/> :
+                        <div>
+                            <div>
+                                <Button variant={"raised"}
+                                        color={"primary"}
+                                        size={"small"}
+                                        onClick={this.reDraw}>
+                                    <Icon size={30}>autorenew
+                                    </Icon>
+                                </Button>
+                            </div>
+                            <svg style={{maxWidth: "100%"}} ref={node => this.node = node}></svg>
+                        </div>
+                }
             </div>
         )
     }
