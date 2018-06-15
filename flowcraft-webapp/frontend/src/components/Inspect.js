@@ -232,19 +232,20 @@ export class InspectHome extends React.Component {
         return (
             <div>
                 <Header headerTitle={"Inspect"}/>
-                <InspectHomeInput/>
+                <HomeInput route={"inspect"}/>
             </div>
         )
     }
 }
 
-class InspectHomeInput extends React.Component {
+export class HomeInput extends React.Component {
 
     constructor(props) {
         super(props);
 
         this.state = {
-            "runId": ""
+            "runId": "",
+            "route": props.route
         };
     }
 
@@ -277,7 +278,7 @@ class InspectHomeInput extends React.Component {
                         margin="normal"/>
                     <div style={{height: "100%", margin: "auto", marginLeft: "10px"}}>
                         <Button styles={{height: "40px"}} variant={"raised"} color={"primary"}
-                                component={props => <Link to={`/inspect/${this.state.runId}`} {...props}/>}
+                                component={props => <Link to={`/${this.state.route}/${this.state.runId}`} {...props}/>}
                                 >
                             GO!
                         </Button>
