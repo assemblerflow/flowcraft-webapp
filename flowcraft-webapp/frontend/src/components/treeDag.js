@@ -122,12 +122,17 @@ class TreeDag extends Component {
             const laneString = name.split("_").slice(-2).join("_");
 
             // a variable that is used to check if all barriers from a lane return the same flag
-            let checkAllBarriers = []
+            let checkAllBarriers = [];
+
+            // variable to check if there are any failed process within the current node
+            let anyFail = false;
 
             Object.keys(this.props.processData).forEach((key) => {
 
                 if (key.endsWith(laneString)) {
-                    checkAllBarriers.push(this.props.processData[key].barrier)
+                    checkAllBarriers.push(this.props.processData[key].barrier);
+                    // if any failed process is found them retrieve anyFail as true
+                    anyFail = (this.props.processData[key].failed.length > 0)
                 }
             });
 
@@ -137,7 +142,7 @@ class TreeDag extends Component {
 
 
             // check if all processes are complete
-            if (labelProcess === "C") {
+            if (labelProcess === "C" && anyFail === false) {
                 return "C"
             }
 
