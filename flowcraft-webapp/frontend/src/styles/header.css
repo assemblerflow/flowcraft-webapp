@@ -5,3 +5,21 @@
     color: #fff !important;
     min-width: 100px;
 }
+
+:local(.appBar){
+    z-index: 1300!important;
+    -webkit-transition: width .5s;
+    transition: width .5s;
+}
+
+:local(.appBarShift){
+    margin-left: 280px;
+    width: calc(100% - 280px)!important;
+    -webkit-transition: width .5s;
+    transition: width .5s;
+}
+
+:local(.menuButton){
+    margin-left: -12px!important;
+    margin-right: 12px!important;
+}
