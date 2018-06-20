@@ -45,7 +45,7 @@
 
 @media only screen and (max-width: 600px) {
     :local(.content) {
-        -webkit-transition: width .5s;
+        -weyupbkit-transition: width .5s;
         transition: margin-left .5s;
         margin-left: 0;
     }
