@@ -1,22 +1,20 @@
 import React from "react";
 
+import {genericTableDataParser} from "./parsers";
+
 export class QualityControlTable extends React.Component {
 
     constructor(props) {
         super(props);
 
-        this.state = {
-            data: this.prepareData(props.reportArray),
-            columns: this.prepareHeaders(props.reportArray)
-        }
-    }
-
-    prepareData(reportsArray) {
+        this.qcTableParser(props.reportData)
 
     }
 
-    prepareHeaders(reportsArray) {
+    qcTableParser(reportArray){
 
+        const tableData = genericTableDataParser(reportArray, "qc");
+        console.log(tableData)
     }
 
     render () {

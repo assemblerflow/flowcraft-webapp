@@ -7,24 +7,11 @@ import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import Typography from "@material-ui/core/Typography";
 
-import {findTableSignatures} from "./reports/parsers";
+import {findTableSignatures, qcTableParser} from "./reports/parsers";
 import {QualityControlTable} from "./reports/tables";
 import {ReportsHeader} from "./reports/drawer";
 import {HomeInput} from "./Inspect";
 import {Header} from "./Header";
-
-
-export class Reports extends React.Component {
-
-    render() {
-        return(
-            <div>
-                REPORT!
-            </div>
-        )
-    }
-}
-
 
 /**
  * Full component for Reports home page. It is responsible for handling
@@ -70,7 +57,6 @@ export class ReportsHome extends React.Component {
         }.bind(this);
 
         reader.readAsText(data);
-        console.log(this.state)
     }
 
     _dragOver(ev){
@@ -107,11 +93,11 @@ class ReportsApp extends React.Component {
         this.state = {
             reportData: props.reportData,
             tables: findTableSignatures(props.reportData),
-            drawerOpen: false,
         };
     }
 
     render(){
+        console.log(this.state)
         return(
             <div>
                 <ReportsHeader>
@@ -122,7 +108,7 @@ class ReportsApp extends React.Component {
                                 <Typography variant={"headline"}>Quality control</Typography>
                             </ExpansionPanelSummary>
                             <ExpansionPanelDetails>
-                                <QualityControlTable/>
+                                <QualityControlTable reportData={this.state.reportData}/>
                             </ExpansionPanelDetails>
                         </ExpansionPanel>
                     }

@@ -17,9 +17,19 @@ export const findTableSignatures = (reportArray) => {
     let tables = [];
 
     for (const r of reportArray){
-        if (r["report_json"].hasOwnProperty("tableRow")){
-            for (const tr of r["report_json"]["tableRow"]){
-                !tables.includes(tr.table) && tables.push(tr.table)
+
+        // Skip entries without the tableRow signture
+        if (!r.reportJson.hasOwnProperty("tableRow")){
+            continue
+        }
+
+        for (const tr of r.reportJson.tableRow){
+            if (!tr.hasOwnProperty("data")){
+                continue
+            }
+
+            for (const cell of tr.data){
+                !tables.includes(cell.table) && tables.push(cell.table)
             }
         }
     }
@@ -28,36 +38,60 @@ export const findTableSignatures = (reportArray) => {
 
 };
 
+/**
+ * A generic parser of the reports JSON array. It searches for JSON with
+ * the corresponding table signatures and returns a data Map object with
+ * the table rows, and a column headers Map object.
+ * @param reportArray : array of JSON objects
+ * @param table : string with the target table signature
+ * @returns {{dataMap: Map<any, any>, columnsMap: Map<any, any>}}
+ */
+export const genericTableDataParser = (reportArray, table) => {
 
-export const retrieveTableData = (reportArray, table) => {
+    let dataMap = new Map();
+    let columnsMap = new Map();
 
-    let data = new Map();
-    let tableData = new Map();
+    for (const r of reportArray) {
+        // Skip objects missing the tableRow signature
+        if (!r.reportJson.hasOwnProperty("tableRow")) {
+            continue
+        }
 
-    for (const r of reportArray){
-        if (r["report_json"].hasOwnProperty("tableRow")){
-            for (const tr of r["report_json"]["tableRow"]){
-                if (tr.table === table){
+        for (const tr of r.reportJson.tableRow) {
+            // Skip objects without the standard data key
+            if (!tr.hasOwnProperty("data")) {
+                continue
+            }
 
-                    const sample = r["pipeline_id"];
+            const sample = tr.sample;
 
-                    // Check if sample has been added. If not, add if the
-                    // data Map object
-                    if (!data.has(sample)){
-                        data.set(sample, new Map([
-                            [tr.header, tr.value]
-                        ]));
-                    } else {
-                        data.get(sample).set(tr.header, tr.value)
-                    }
+            for (const cell of tr.data) {
+
+                // Skip tables with different signature
+                if (cell.table !== table) {
+                    continue
+                }
+
+                // Check if sample has been added. If not, add if the
+                // dataMap Map object
+                if (!dataMap.has(sample)) {
+                    dataMap.set(sample, new Map([[cell.header, cell.value]]))
+                } else {
+                    dataMap.get(sample).set(cell.header, cell.value)
+                }
+
+                // Add column, if not already present
+                if (!columnsMap.has(cell.header)) {
+                    // The processIs is added to sort the columns.
+                    columnsMap.set(cell.header, r.processId)
                 }
             }
         }
     }
 
     return {
-        data,
-        tableData
+        dataMap,
+        columnsMap
     }
 
 };
