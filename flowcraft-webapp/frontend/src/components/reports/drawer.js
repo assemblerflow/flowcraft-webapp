@@ -14,6 +14,9 @@ import List from "@material-ui/core/List";
 
 import SkullIcon from "mdi-react/SkullIcon";
 import ChevronLeftIcon from "mdi-react/ChevronLeftIcon";
+import HeartIcon from "mdi-react/HeartIcon";
+import PillIcon from "mdi-react/PillIcon";
+
 
 import {Header} from "../Header";
 
@@ -25,7 +28,13 @@ export class ReportsHeader extends React.Component {
         super(props);
 
         this.state = {
-            drawerOpen: false
+            drawerOpen: false,
+            headers: props.headers,
+            headerMap: {
+                "qc": {"icon": <HeartIcon/>, "text": "Quality Control"},
+                "assembly": {"icon": <SkullIcon/>, "text": "Assembly"},
+                "abricate": {"icon": <PillIcon/>, "text": "AMR"}
+            }
         }
     }
 
@@ -38,6 +47,7 @@ export class ReportsHeader extends React.Component {
     };
 
     render () {
+        console.log(this.state)
         return (
             <div>
                 <Header headerTitle={"Reports"}
@@ -55,12 +65,18 @@ export class ReportsHeader extends React.Component {
                     </div>
                     <Divider/>
                     <List>
-                        <ListItem button className={styles.drawerRow}>
-                            <ListItemIcon>
-                                <ChevronLeftIcon/>
-                            </ListItemIcon>
-                            <ListItemText primary={"Testeas dasda sda sd"}/>
-                        </ListItem>
+                        {
+                            this.state.headers.map((h) => {
+                                return (
+                                    <ListItem button className={styles.drawerRow} key={h}>
+                                        <ListItemIcon>
+                                            {this.state.headerMap[h].icon}
+                                        </ListItemIcon>
+                                        <ListItemText primary={this.state.headerMap[h].text}/>
+                                    </ListItem>
+                                )
+                            })
+                        }
                     </List>
                 </Drawer>
                 <main className={classNames(styles.content, this.state.drawerOpen && styles.contentShift)}>

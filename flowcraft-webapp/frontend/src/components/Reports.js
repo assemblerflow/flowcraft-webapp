@@ -93,10 +93,15 @@ class ReportsApp extends React.Component {
     }
 
     render(){
-        console.log(this.state);
+        //
+        // This is the main element where the Reports components will be added,
+        // Their addition should be conditional on the presence of relevant
+        // data in the this.state.reportData array, and each component should
+        // be responsible for handling the data in any way they see fit.
+        //
         return(
             <div>
-                <ReportsHeader>
+                <ReportsHeader headers={this.state.tables}>
                     {
                         this.state.tables.includes("qc") &&
                             <QualityControlTable reportData={this.state.reportData}/>
