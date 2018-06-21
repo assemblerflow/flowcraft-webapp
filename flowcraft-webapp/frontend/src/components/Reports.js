@@ -1,12 +1,6 @@
 // React imports
 import React from "react"
 
-import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary"
-import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails"
-import ExpansionPanel from "@material-ui/core/ExpansionPanel";
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import Typography from "@material-ui/core/Typography";
-
 import {findTableSignatures, qcTableParser} from "./reports/parsers";
 import {QualityControlTable} from "./reports/tables";
 import {ReportsHeader} from "./reports/drawer";
@@ -34,11 +28,13 @@ export class ReportsHome extends React.Component {
     }
 
     componentDidMount(){
+        // Add event listeners for drag and drop functionality
         window.addEventListener("drop", this._drop.bind(this));
         window.addEventListener("dragover", this._dragOver);
     }
 
     componentWillUnmount(){
+        // Remove event listeners for drag and drop functionality
         window.removeEventListener("drop", this._drop);
         window.removeEventListener("dragover", this._dragOver);
     }
@@ -97,20 +93,13 @@ class ReportsApp extends React.Component {
     }
 
     render(){
-        console.log(this.state)
+        console.log(this.state);
         return(
             <div>
                 <ReportsHeader>
                     {
                         this.state.tables.includes("qc") &&
-                        <ExpansionPanel defaultExpanded >
-                            <ExpansionPanelSummary  expandIcon={<ExpandMoreIcon/>}>
-                                <Typography variant={"headline"}>Quality control</Typography>
-                            </ExpansionPanelSummary>
-                            <ExpansionPanelDetails>
-                                <QualityControlTable reportData={this.state.reportData}/>
-                            </ExpansionPanelDetails>
-                        </ExpansionPanel>
+                            <QualityControlTable reportData={this.state.reportData}/>
                     }
                 </ReportsHeader>
             </div>
