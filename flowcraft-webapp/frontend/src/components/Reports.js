@@ -2,7 +2,7 @@
 import React from "react"
 
 import {findTableSignatures, qcTableParser} from "./reports/parsers";
-import {QualityControlTable} from "./reports/tables";
+import {QualityControlTable, AssemblyTable, AbricateTable} from "./reports/tables";
 import {ReportsHeader} from "./reports/drawer";
 import {HomeInput} from "./Inspect";
 import {Header} from "./Header";
@@ -113,6 +113,15 @@ class ReportsApp extends React.Component {
                     {
                         this.state.tables.includes("qc") &&
                             <QualityControlTable tableData={test}/>
+                    }
+                    {
+                        this.state.tables.includes("assembly") &&
+                            <AssemblyTable tableData={this.state.tableData.get("assembly")}/>
+                    }
+                    {
+                        this.state.tables.includes("abricate") &&
+                            <AbricateTable tableData={this.state.tableData.get("abricate")}/>
+
                     }
                 </ReportsHeader>
             </div>

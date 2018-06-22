@@ -1,5 +1,5 @@
 // React imports
-import React from "react"
+import React from "react";
 import ReactTable from "react-table";
 
 //Material UI imports

@@ -86,60 +86,55 @@ export const getTableHeaders = (dataArray) => {
 
 };
 
-/**
- * A generic parser of the reports JSON array. It searches for JSON with
- * the corresponding table signatures and returns a data Map object with
- * the table rows, and a column headers Map object.
- * @param reportArray : array of JSON objects
- * @param table : string with the target table signature
- * @returns {{dataMap: Map<any, any>, columnsMap: Map<any, any>}}
- */
-export const genericTableDataParser = (reportArray, table) => {
 
-    let dataMap = new Map();
-    let columnsMap = new Map();
+export const genericTableParser = (reportArray) => {
 
-    for (const r of reportArray) {
-        // Skip objects missing the tableRow signature
-        if (!r.reportJson.hasOwnProperty("tableRow")) {
-            continue
-        }
+    let dataDict = {};
+    let columnsArray = [];
+    let finalDataDict = [];
 
-        for (const tr of r.reportJson.tableRow) {
-            // Skip objects without the standard data key
-            if (!tr.hasOwnProperty("data")) {
-                continue
-            }
 
-            const sample = tr.sample;
+    const tableHeaders  = getTableHeaders(reportArray);
 
-            for (const cell of tr.data) {
+    // Add ID to columns
+    columnsArray.push({
+        Header: <Typography>ID</Typography>,
+        accessor: "rowId",
+        minWidth: 90
+    });
 
-                // Skip tables with different signature
-                if (cell.table !== table) {
-                    continue
-                }
+    // Add headers with typography and minWidth
+    for (const h of tableHeaders){
+        columnsArray.push({
+            Header: <Typography>{h.Header}</Typography>,
+            accessor: h.accessor,
+            minWidth: 90
+        })
+    }
 
-                // Check if sample has been added. If not, add if the
-                // dataMap Map object
-                if (!dataMap.has(sample)) {
-                    dataMap.set(sample, new Map([[cell.header, cell.value]]))
-                } else {
-                    dataMap.get(sample).set(cell.header, cell.value)
-                }
+    for (const cell of reportArray) {
 
-                // Add column, if not already present
-                if (!columnsMap.has(cell.header)) {
-                    // The processIs is added to sort the columns.
-                    columnsMap.set(cell.header, r.processId)
-                }
-            }
+        const joinHeader = cell.header.split(" ").join("");
+
+        // Add values to dictionary by rowId
+        if (!dataDict.hasOwnProperty(cell.rowId)) {
+            dataDict[cell.rowId] = {
+                "rowId": <Typography>{cell.rowId}</Typography>
+            };
+            dataDict[cell.rowId][joinHeader] = <Typography>{cell.value}</Typography>;
+        } else {
+            dataDict[cell.rowId][joinHeader] = <Typography>{cell.value}</Typography>;
         }
     }
 
-    return {
-        dataMap,
-        columnsMap
+    // Create array of data by row
+    for (const id in dataDict){
+        finalDataDict.push(dataDict[id]);
     }
 
-};
+    return [
+        finalDataDict,
+        columnsArray
+    ]
+
+}
