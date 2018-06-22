@@ -1,6 +1,8 @@
 import React from "react";
 import Typography from "@material-ui/core/Typography";
 
+import styles from "../../styles/reports.css"
+
 /**
  * Parses the reportData array and search for all unique table signatures.
  * Returns an array with the table signatures found
@@ -119,11 +121,11 @@ export const genericTableParser = (reportArray) => {
         // Add values to dictionary by rowId
         if (!dataDict.hasOwnProperty(cell.rowId)) {
             dataDict[cell.rowId] = {
-                "rowId": <Typography>{cell.rowId}</Typography>
+                "rowId": <Typography className={styles.tableCell}>{cell.rowId}</Typography>
             };
-            dataDict[cell.rowId][joinHeader] = <Typography>{cell.value}</Typography>;
+            dataDict[cell.rowId][joinHeader] = <Typography className={styles.tableCell}>{cell.value}</Typography>;
         } else {
-            dataDict[cell.rowId][joinHeader] = <Typography>{cell.value}</Typography>;
+            dataDict[cell.rowId][joinHeader] = <Typography className={styles.tableCell}>{cell.value}</Typography>;
         }
     }
 

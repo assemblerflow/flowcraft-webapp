@@ -1,3 +1,9 @@
 :local(.mainPaper) {
     flex-grow: 1;
 }
+
+:local(.tableCell) {
+    text-align: center;
+    line-height: 33px!important;
+    vertical-align: middle!important;
+}
