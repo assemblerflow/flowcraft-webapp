@@ -34,7 +34,7 @@ export const findTableSignatures = (reportArray) => {
                 cell.rowId = tr.sample;
                 cell.projectId = r.projectid;
                 cell.processName = r.processName;
-                cell.procesId = r.processId;
+                cell.processId = r.processId;
 
                 if (!tables.has(cell.table)){
                     tables.set(cell.table, [cell])
@@ -46,6 +46,40 @@ export const findTableSignatures = (reportArray) => {
     }
 
     return tables;
+
+};
+
+
+/**
+ * Returns the column array ready for ReactTable from an data array provide
+ * by findTableSignatures.
+ * @param dataArray
+ */
+export const getTableHeaders = (dataArray) => {
+
+    let columnsMap = new Map();
+
+    for (const el of dataArray){
+        const columnAccessor = el.header.split(" ").join("");
+        const processNum = el.processId.split("_").slice(-1);
+        if (!columnsMap.has(columnAccessor)) {
+            columnsMap.set(columnAccessor, {
+                num: parseInt(processNum),
+                header: el.header,
+                processName: el.processName
+            })
+        }
+    }
+
+    const sortedColumns = [...columnsMap.entries()].sort((a, b) => {return a[1].num - b[1].num});
+
+    return sortedColumns.map((v) => {
+        return {
+            accessor: v[0],
+            Header: v[1].header,
+            processName: v[1].processName,
+        }
+    })
 
 };
 
