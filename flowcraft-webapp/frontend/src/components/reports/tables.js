@@ -12,6 +12,14 @@ import styles from "../../styles/reports.css"
 import {genericTableParser, getTableHeaders} from "./parsers";
 
 
+export class CellColumn extends React.Component {
+    render () {
+        return (
+            <Typography>{this.props.value} - {this.props.getMax()}</Typography>
+        )
+    }
+}
+
 export class QualityControlTable extends React.Component {
 
     constructor(props) {

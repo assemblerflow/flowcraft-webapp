@@ -1,6 +1,8 @@
 import React from "react";
 import Typography from "@material-ui/core/Typography";
 
+import {CellColumn} from "./tables";
+
 import styles from "../../styles/reports.css"
 
 /**
@@ -123,9 +125,9 @@ export const genericTableParser = (reportArray) => {
             dataDict[cell.rowId] = {
                 "rowId": <Typography className={styles.tableCell}>{cell.rowId}</Typography>
             };
-            dataDict[cell.rowId][joinHeader] = <Typography className={styles.tableCell}>{cell.value}</Typography>;
+            dataDict[cell.rowId][joinHeader] = <CellColumn value={cell.value}/>;
         } else {
-            dataDict[cell.rowId][joinHeader] = <Typography className={styles.tableCell}>{cell.value}</Typography>;
+            dataDict[cell.rowId][joinHeader] = <CellColumn value={cell.value}/>;
         }
     }
 
@@ -139,4 +141,4 @@ export const genericTableParser = (reportArray) => {
         columnsArray
     ]
 
-}
+};
