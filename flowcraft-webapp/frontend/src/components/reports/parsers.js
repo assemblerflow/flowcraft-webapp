@@ -30,7 +30,12 @@ export const findTableSignatures = (reportArray) => {
             }
 
             for (const cell of tr.data){
+
                 cell.rowId = tr.sample;
+                cell.projectId = r.projectid;
+                cell.processName = r.processName;
+                cell.procesId = r.processId;
+
                 if (!tables.has(cell.table)){
                     tables.set(cell.table, [cell])
                 } else {
