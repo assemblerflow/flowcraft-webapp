@@ -103,12 +103,16 @@ class ReportsApp extends React.Component {
         // be responsible for handling the data in any way they see fit.
         //
         console.log(this.state);
+
+        const test = this.state.tableData.get("qc");
+        console.log(test);
+
         return(
             <div>
                 <ReportsHeader headers={this.state.tables}>
                     {
                         this.state.tables.includes("qc") &&
-                            <QualityControlTable reportData={this.state.reportData}/>
+                            <QualityControlTable tableData={test}/>
                     }
                 </ReportsHeader>
             </div>

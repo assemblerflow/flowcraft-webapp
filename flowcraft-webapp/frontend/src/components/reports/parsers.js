@@ -1,3 +1,6 @@
+import React from "react";
+import Typography from "@material-ui/core/Typography";
+
 /**
  * Parses the reportData array and search for all unique table signatures.
  * Returns an array with the table signatures found
