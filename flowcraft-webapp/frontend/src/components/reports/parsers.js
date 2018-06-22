@@ -58,14 +58,16 @@ export const findTableSignatures = (reportArray) => {
 
 
 /**
- * Returns the column array ready for ReactTable from an data array provide
- * by findTableSignatures.
+ * Method used to retrieve the JSON array needed for the column headers of
+ * a ReactTable component. The Headers are sorted by their processId attribute.
  * @param dataArray
+ * @returns {{accessor: *, Header: *, processName: *}[]}
  */
 export const getTableHeaders = (dataArray) => {
 
     let columnsMap = new Map();
 
+    // Build the unsorted Map object for each column eader
     for (const el of dataArray){
         const columnAccessor = el.header.split(" ").join("");
         const processNum = el.processId.split("_").slice(-1);
@@ -78,6 +80,7 @@ export const getTableHeaders = (dataArray) => {
         }
     }
 
+    // Sort the column headers according to the processId
     const sortedColumns = [...columnsMap.entries()].sort((a, b) => {return a[1].num - b[1].num});
 
     return sortedColumns.map((v) => {

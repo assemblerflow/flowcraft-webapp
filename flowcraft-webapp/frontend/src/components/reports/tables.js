@@ -15,7 +15,7 @@ import {genericTableParser, getTableHeaders} from "./parsers";
 export class CellColumn extends React.Component {
     render () {
         return (
-            <Typography>{this.props.value} - {this.props.getMax()}</Typography>
+            <Typography>{this.props.value}</Typography>
         )
     }
 }
