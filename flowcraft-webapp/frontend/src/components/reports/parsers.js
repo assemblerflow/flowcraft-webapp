@@ -13,8 +13,9 @@
 */
 export const findTableSignatures = (reportArray) => {
 
-    // Stores the unique table signatures found
-    let tables = [];
+    // Stores the unique table signatures found and sets the value as the
+    // array of JSON for those tables
+    let tables = new Map();
 
     for (const r of reportArray){
 
@@ -29,7 +30,12 @@ export const findTableSignatures = (reportArray) => {
             }
 
             for (const cell of tr.data){
-                !tables.includes(cell.table) && tables.push(cell.table)
+                cell.rowId = tr.sample;
+                if (!tables.has(cell.table)){
+                    tables.set(cell.table, [cell])
+                } else {
+                    tables.get(cell.table).push(cell)
+                }
             }
         }
     }

@@ -86,9 +86,12 @@ class ReportsApp extends React.Component {
     constructor(props) {
         super(props);
 
+        const tableData = findTableSignatures(props.reportData);
+
         this.state = {
             reportData: props.reportData,
-            tables: findTableSignatures(props.reportData),
+            tables: [ ...tableData.keys() ],
+            tableData
         };
     }
 
@@ -99,6 +102,7 @@ class ReportsApp extends React.Component {
         // data in the this.state.reportData array, and each component should
         // be responsible for handling the data in any way they see fit.
         //
+        console.log(this.state);
         return(
             <div>
                 <ReportsHeader headers={this.state.tables}>
