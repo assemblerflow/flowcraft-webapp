@@ -12,14 +12,6 @@ import styles from "../../styles/reports.css"
 import {genericTableParser, getTableHeaders} from "./parsers";
 
 
-export class CellColumn extends React.Component {
-    render () {
-        return (
-            <Typography>{this.props.value}</Typography>
-        )
-    }
-}
-
 export class QualityControlTable extends React.Component {
 
     constructor(props) {
@@ -89,56 +81,6 @@ export class AbricateTable extends React.Component {
         };
     }
 
-    amrTableParser (reportArray) {
-
-        let dataDict = {};
-        let columnsArray = [];
-        let finalDataDict = [];
-
-        const tableHeaders = getTableHeaders(reportArray);
-
-        // Add ID to columns
-        columnsArray.push({
-            Header: <Typography>ID</Typography>,
-            accessor: "rowId",
-            minWidth: 90
-        });
-
-        // Add headers with typography and minWidth
-        for (const h of tableHeaders){
-            columnsArray.push({
-                Header: <Typography>{h.Header}</Typography>,
-                accessor: h.accessor,
-                minWidth: 90
-            })
-        }
-
-        for (const cell of reportArray) {
-
-            const joinHeader = cell.header.split(" ").join("");
-
-            // Add values to dictionary by rowId
-            if (!dataDict.hasOwnProperty(cell.rowId)) {
-                dataDict[cell.rowId] = {
-                    "rowId": <Typography>{cell.rowId}</Typography>
-                };
-                dataDict[cell.rowId][joinHeader] = <Typography>{cell.value.length}</Typography>;
-            } else {
-                dataDict[cell.rowId][joinHeader] = <Typography>{cell.value.length}</Typography>;
-            }
-        }
-
-        // Create array of data by row
-        for (const id in dataDict){
-            finalDataDict.push(dataDict[id]);
-        }
-
-        return [
-            finalDataDict,
-            columnsArray
-        ]
-    }
-
     render () {
         return (
             <ExpansionPanel defaultExpanded >
@@ -154,6 +96,23 @@ export class AbricateTable extends React.Component {
                     </div>
                 </ExpansionPanelDetails>
             </ExpansionPanel>
+        )
+    }
+}
+
+/**
+ * This component renders a simple table cell bar, whose with is a percentage
+ * of its props.value, relative to the props.max. The bar is rendered behing the
+ * cell text.
+ */
+export class CellBar extends React.Component {
+    render () {
+        return (
+            <div className={styles.columnCellContainer}>
+                <div className={styles.columnCell} style={{width: `${(this.props.value / this.props.max) * 100}%`}}>
+                </div>
+                <Typography className={styles.tableCell}>{this.props.value}</Typography>
+            </div>
         )
     }
 }

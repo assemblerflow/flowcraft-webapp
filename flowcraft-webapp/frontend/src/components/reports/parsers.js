@@ -1,7 +1,7 @@
 import React from "react";
 import Typography from "@material-ui/core/Typography";
 
-import {CellColumn} from "./tables";
+import {CellBar} from "./tables";
 
 import styles from "../../styles/reports.css"
 
@@ -94,6 +94,38 @@ export const getTableHeaders = (dataArray) => {
 };
 
 
+/**
+ * Returns the maximum numeric values for each header in the reportArray. Returns
+ * a Map object with headers as keys and the maximum values as values.
+ * @param reportArray
+ * @returns {Map<any, any>}
+ */
+const getColumnMax = (reportArray) => {
+
+    let columnMax = new Map();
+
+    for (const cell of reportArray){
+
+        if (!columnMax.has(cell.header)){
+            columnMax.set(cell.header, parseFloat(cell.value))
+        } else if (parseFloat(cell.value) > columnMax.get(cell.header)) {
+            columnMax.set(cell.header, parseFloat(cell.value))
+        }
+
+    }
+
+    return columnMax
+};
+
+
+/**
+ * Generic parser for simple numeric table data. This simply assumes that each
+ * JSON in the reportArray argument has a numeric value that should be displayed
+ * as is. Additional modifications to the table cell can still be performed
+ * conditional on the present of certain keys in the JSON (columnBar for instance)
+ * @param reportArray
+ * @returns {*[]}
+ */
 export const genericTableParser = (reportArray) => {
 
     let dataDict = {};
@@ -102,6 +134,7 @@ export const genericTableParser = (reportArray) => {
 
 
     const tableHeaders  = getTableHeaders(reportArray);
+    const columnMaxVals = getColumnMax(reportArray);
 
     // Add ID to columns
     columnsArray.push({
@@ -128,9 +161,9 @@ export const genericTableParser = (reportArray) => {
             dataDict[cell.rowId] = {
                 "rowId": <Typography className={styles.tableCell}>{cell.rowId}</Typography>
             };
-            dataDict[cell.rowId][joinHeader] = <CellColumn value={cell.value}/>;
+            dataDict[cell.rowId][joinHeader] = <CellBar value={cell.value} max={columnMaxVals.get(cell.header)}/>;
         } else {
-            dataDict[cell.rowId][joinHeader] = <CellColumn value={cell.value}/>;
+            dataDict[cell.rowId][joinHeader] = <CellBar value={cell.value} max={columnMaxVals.get(cell.header)}/>;
         }
     }
 
