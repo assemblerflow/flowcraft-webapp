@@ -1,7 +1,7 @@
 // React imports
 import React from "react"
 
-import {findTableSignatures, qcTableParser} from "./reports/parsers";
+import {findTableSignatures, findChartSignatures} from "./reports/parsers";
 import {QualityControlTable, AssemblyTable, AbricateTable} from "./reports/tables";
 import {ReportsHeader} from "./reports/drawer";
 import {HomeInput} from "./Inspect";
@@ -87,11 +87,13 @@ class ReportsApp extends React.Component {
         super(props);
 
         const tableData = findTableSignatures(props.reportData);
+        const charts = findChartSignatures(props.reportData);
 
         this.state = {
             reportData: props.reportData,
             tables: [ ...tableData.keys() ],
-            tableData
+            tableData,
+            charts,
         };
     }
 
@@ -105,7 +107,6 @@ class ReportsApp extends React.Component {
         console.log(this.state);
 
         const test = this.state.tableData.get("qc");
-        console.log(test);
 
         return(
             <div>

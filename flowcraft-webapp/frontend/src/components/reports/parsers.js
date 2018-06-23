@@ -1,3 +1,4 @@
+import _ from "lodash";
 import React from "react";
 import Typography from "@material-ui/core/Typography";
 
@@ -54,6 +55,45 @@ export const findTableSignatures = (reportArray) => {
 
     return tables;
 
+};
+
+
+/**
+ * Parses the reportData array and search for all unique chart signatures.
+ * Returns an array object with the chart signatures.
+ *
+ * This will check each object in report Array for the presence of the
+ * following signature:
+ *      object["report_json"]["plotData"]
+ *
+ * @param reportArray
+ * @returns {Array}
+ */
+export const findChartSignatures = (reportArray) => {
+
+    let charts = [];
+
+    for (const r of reportArray){
+
+        // Skip entries without the plotData signature
+        if (!r.reportJson.hasOwnProperty("plotData")){
+            continue
+        }
+
+        for (const el of r.reportJson.plotData){
+
+            if (!el.hasOwnProperty("data")){
+                continue
+            }
+
+            for (const plot of Object.keys(el.data)) {
+
+                !charts.includes(plot) && charts.push(plot)
+            }
+        }
+    }
+
+    return charts;
 };
 
 
