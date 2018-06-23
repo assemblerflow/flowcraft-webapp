@@ -23,7 +23,7 @@ export class Header extends React.Component {
     render () {
         return (
             <div style={{marginBottom: 85}}>
-                <AppBar position={"absolute"} color="primary"
+                <AppBar position={"fixed"} color="primary"
                         className={classNames(styles.appBar, this.props.drawer && styles.appBarShift)}>
                     <Toolbar>
                         {(this.props.drawerButton && !this.props.drawer) && <IconButton onClick={this.props.openDrawer} className={styles.menuButton}><MenuIcon color={"#fff"}/></IconButton>}
