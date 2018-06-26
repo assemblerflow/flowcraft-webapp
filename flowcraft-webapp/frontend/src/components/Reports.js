@@ -3,6 +3,7 @@ import React from "react"
 
 import {findTableSignatures, findChartSignatures} from "./reports/parsers";
 import {QualityControlTable, AssemblyTable, AbricateTable} from "./reports/tables";
+import {FastQcCharts} from "./reports/charts";
 import {ReportsHeader} from "./reports/drawer";
 import {HomeInput} from "./Inspect";
 import {Header} from "./Header";
@@ -123,6 +124,10 @@ class ReportsApp extends React.Component {
                         this.state.tables.includes("abricate") &&
                             <AbricateTable tableData={this.state.tableData.get("abricate")}/>
 
+                    }
+                    {
+                        this.state.charts.includes("base_n_content") &&
+                            <FastQcCharts rawReports={this.state.reportData}/>
                     }
                 </ReportsHeader>
             </div>
