@@ -11,6 +11,8 @@ import Tab from "@material-ui/core/Tab";
 
 const ReactHighcharts = require("react-highcharts");
 
+import {Chart} from "./chart_utils";
+
 import styles from "../../styles/charts.css"
 
 export class FastQcCharts extends React.Component {
@@ -74,20 +76,14 @@ export class FastQcCharts extends React.Component {
         this.setState({tabValue: value})
     };
 
-    handleChangeIndex = index => {
-        this.setState({tabValue: index});
-
-    };
-
     render () {
-        console.log(this.state)
         return (
             <ExpansionPanel defaultExpanded >
                 <ExpansionPanelSummary  expandIcon={<ExpandMoreIcon/>}>
                     <Typography variant={"headline"}>Quality control</Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails>
-                    <div className={styles.mainPaper}>
+                    <div className={styles.mainPaper} style={{"height": "600px"}}>
                         <Tabs value={this.state.tabValue}
                               onChange={this.handleChange}
                               indicatorColor={"primary"}
@@ -95,21 +91,16 @@ export class FastQcCharts extends React.Component {
                               scrollable
                               scrollButtons={"auto"}>
                             <Tab label={"Base sequence quality"}/>
-                            <Tab label={"Base GC content"}/>
                             <Tab label={"Sequence quality"}/>
+                            <Tab label={"Base GC content"}/>
                             <Tab label={"Sequence length"}/>
                             <Tab label={"Base sequence content"}/>
                         </Tabs>
-                        <div style={{overflow: "auto", height: "95%"}}>
-                            <SwipeableViews index={this.state.tabValue}
-                                            onChangeIndex={this.handleChangeIndex}>
-                               <FastqcBaseSequenceQuality plotData={this.state.chartData["base_sequence_quality"]}/>
-                                <div>Base GC content</div>
-                                <div>Sequence quality</div>
-                                <div>BSequence length</div>
-                                <div>Base sequence content</div>
-                            </SwipeableViews>
-                        </div>
+                            {this.state.tabValue === 0  && <FastqcBaseSequenceQuality plotData={this.state.chartData["base_sequence_quality"]}/>}
+                            {this.state.tabValue === 1  && <FastqcSequenceQuality plotData={this.state.chartData["sequence_quality"]}/>}
+                            {this.state.tabValue === 2  && <FastqcGcContent plotData={this.state.chartData["base_gc_content"]}/>}
+                            {this.state.tabValue === 3  && <FastqcSequenceLength plotData={this.state.chartData["sequence_length_dist"]}/>}
+                            {this.state.tabValue === 4  && <FastqcNContent plotData={this.state.chartData["base_n_content"]}/>}
                     </div>
                 </ExpansionPanelDetails>
             </ExpansionPanel>
@@ -130,55 +121,179 @@ class FastqcBaseSequenceQuality extends React.Component {
 
     render (){
 
-        let config = {
-            chart: {
-                type: "line",
-                zoomType: "x",
-            },
-            legend: {
-                enabled: false
-            },
-            xAxis: {
-                title: {
-                    enabled: true,
-                    text: "Tags"
-                },
-                margin: 30,
-                style: {
-                    fontSize: 20,
-                    fontWeight: "bold",
-                }
-            },
-            yAxis: {
-                title: {
-                    text: "FastQC plot"
-                },
-                min: 0,
-                max: 45,
-                plotBands: [{
-                    color: "rgba(170,255,170,.3)",
-                    from: 28,
-                    to: 45,
-                }, {
-                    color: "rgba(255,255,170,.3)",
-                    from: 20,
-                    to: 28
-                }, {
-                    color: "rgba(255,170,170,.3)",
-                    from: 0,
-                    to: 20
-                }]
-            },
-            title: {
-                text: "Distribution of "
-            },
+        let config = new Chart({
+            title: "Per base sequence quality scores",
+            axisLabels: {x: "Position in read (bp)", y: "Quality score"},
             series: this.state.plotData
-        };
+        });
+
+        config.extend("yAxis", {
+            min: 0,
+            max: 45,
+            plotBands: [{
+                color: "rgba(170,255,170,.3)",
+                from: 28,
+                to: 45,
+            }, {
+                color: "rgba(255,255,170,.3)",
+                from: 20,
+                to: 28
+            }, {
+                color: "rgba(255,170,170,.3)",
+                from: 0,
+                to: 20
+            }]
+        });
+        config.extend("chart", {height: "550px"});
 
         return (
             <div>
-                <ReactHighcharts style={{height: "100%", width: "100%"}} config={config} ref="chart"></ReactHighcharts>
+                <ReactHighcharts config={config.layout} ref="chart"></ReactHighcharts>
             </div>
         )
     }
  }
+
+
+class FastqcSequenceQuality extends React.Component {
+
+   constructor(props){
+       super(props);
+
+       this.state = {
+           plotData: props.plotData
+       }
+   }
+
+    render (){
+
+        let config = new Chart({
+            title: "Per sequence quality scores",
+            axisLabels: {x: "Quality score", y: "Position in read (bp)"},
+            series: this.state.plotData
+        });
+
+        config.extend("xAxis", {
+            min: 0,
+            max: 45,
+            plotBands: [{
+                color: "rgba(170,255,170,.3)",
+                from: 28,
+                to: 45,
+            }, {
+                color: "rgba(255,255,170,.3)",
+                from: 20,
+                to: 28
+            }, {
+                color: "rgba(255,170,170,.3)",
+                from: 0,
+                to: 20
+            }]
+        });
+        config.extend("chart", {height: "550px"});
+
+        return (
+            <div>
+                <ReactHighcharts config={config.layout} ref="chart"></ReactHighcharts>
+            </div>
+        )
+    }
+}
+
+
+class FastqcGcContent extends React.Component {
+
+    constructor(props){
+        super(props);
+
+        this.state = {
+            plotData: this.normalizeCounts(props.plotData)
+        }
+    }
+
+    normalizeCounts(dataArray){
+
+        for (const sample of dataArray){
+            const totalBp = sample.data.reduce((a, b) => a + b, 0);
+            sample.data = sample.data.map((v) => {return (v / totalBp) * 100});
+        }
+
+        return dataArray
+
+    }
+
+    render (){
+
+        let config = new Chart({
+            title: "GC percentage",
+            axisLabels: {x: "GC percentage", y: "Normalized read count (%)"},
+            series: this.state.plotData
+        });
+
+        config.extend("chart", {height: "550px"});
+
+        return (
+            <div>
+                <ReactHighcharts config={config.layout} ref="chart"></ReactHighcharts>
+            </div>
+        )
+    }
+}
+
+
+class FastqcSequenceLength extends React.Component {
+
+    constructor(props){
+        super(props);
+
+        this.state = {
+            plotData: props.plotData
+        }
+    }
+
+    render (){
+
+        let config = new Chart({
+            title: "Distribution of sequence length",
+            axisLabels: {x: "Base pair", y: "Count"},
+            series: this.state.plotData
+        });
+
+        config.extend("chart", {height: "550px"});
+
+        return (
+            <div>
+                <ReactHighcharts config={config.layout} ref="chart"></ReactHighcharts>
+            </div>
+        )
+    }
+}
+
+
+class FastqcNContent extends React.Component {
+
+    constructor(props){
+        super(props);
+
+        this.state = {
+            plotData: props.plotData
+        }
+    }
+
+    render (){
+
+        let config = new Chart({
+            title: "Missing data content",
+            axisLabels: {x: "Base pair", y: "Count"},
+            series: this.state.plotData
+        });
+
+        config.extend("chart", {height: "550px"});
+
+        return (
+            <div>
+                <ReactHighcharts config={config.layout} ref="chart"></ReactHighcharts>
+            </div>
+        )
+    }
+}
