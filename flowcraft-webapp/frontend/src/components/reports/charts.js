@@ -94,7 +94,7 @@ export class FastQcCharts extends React.Component {
                             <Tab label={"Sequence quality"}/>
                             <Tab label={"Base GC content"}/>
                             <Tab label={"Sequence length"}/>
-                            <Tab label={"Base sequence content"}/>
+                            <Tab label={"Missing data"}/>
                         </Tabs>
                             {this.state.tabValue === 0  && <FastqcBaseSequenceQuality plotData={this.state.chartData["base_sequence_quality"]}/>}
                             {this.state.tabValue === 1  && <FastqcSequenceQuality plotData={this.state.chartData["sequence_quality"]}/>}
@@ -288,6 +288,7 @@ class FastqcNContent extends React.Component {
             series: this.state.plotData
         });
 
+        config.extend("yAxis", {min: 0});
         config.extend("chart", {height: "550px"});
 
         return (
