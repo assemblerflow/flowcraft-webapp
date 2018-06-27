@@ -8,6 +8,11 @@ import {ReportsHeader} from "./reports/drawer";
 import {HomeInput} from "./Inspect";
 import {Header} from "./Header";
 
+import { Link, DirectLink, Element, Events, animateScroll as scroll, scrollSpy, scroller } from 'react-scroll'
+
+import styles from "../styles/reports.css";
+
+
 /**
  * Full component for Reports home page. It is responsible for handling
  * the Drag and Drop of report files OR the specification of runID for
@@ -114,20 +119,28 @@ class ReportsApp extends React.Component {
                 <ReportsHeader headers={this.state.tables}>
                     {
                         this.state.tables.includes("qc") &&
-                            <QualityControlTable tableData={test}/>
+                            <Element name={"qcTable"} className={styles.scrollElement}>
+                                <QualityControlTable id={"qcTable"} tableData={test}/>
+                            </Element>
                     }
                     {
                         this.state.tables.includes("assembly") &&
-                            <AssemblyTable tableData={this.state.tableData.get("assembly")}/>
+                             <Element name={"assemblyTable"} className={styles.scrollElement}>
+                                <AssemblyTable tableData={this.state.tableData.get("assembly")}/>
+                             </Element>
                     }
                     {
                         this.state.tables.includes("abricate") &&
-                            <AbricateTable tableData={this.state.tableData.get("abricate")}/>
+                            <Element name={"abricateTable"} className={styles.scrollElement}>
+                                <AbricateTable name={"abricateTable"} tableData={this.state.tableData.get("abricate")}/>
+                            </Element>
 
                     }
                     {
                         this.state.charts.includes("base_n_content") &&
-                            <FastQcCharts rawReports={this.state.reportData}/>
+                             <Element name={"fastqcCharts"} className={styles.scrollElement}>
+                                <FastQcCharts name={"fastqcCharts"} rawReports={this.state.reportData}/>
+                             </Element>
                     }
                 </ReportsHeader>
             </div>

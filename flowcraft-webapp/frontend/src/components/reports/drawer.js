@@ -1,5 +1,7 @@
 // React imports
 import React from "react"
+import ReactDOM from "react-dom";
+import { Link, DirectLink, Element, Events, animateScroll as scroll, scrollSpy, scroller } from 'react-scroll'
 
 import classNames from "classnames";
 
@@ -46,6 +48,11 @@ export class ReportsHeader extends React.Component {
         this.setState({drawerOpen: false})
     };
 
+    scrollTo(anchor){
+        const anchorNode = ReactDOM.findDOMNode(anchor)
+        console.log(anchorNode)
+    }
+
     render () {
         return (
             <div>
@@ -67,12 +74,15 @@ export class ReportsHeader extends React.Component {
                         {
                             this.state.headers.map((h) => {
                                 return (
-                                    <ListItem button className={styles.drawerRow} key={h}>
-                                        <ListItemIcon>
-                                            {this.state.headerMap[h].icon}
-                                        </ListItemIcon>
-                                        <ListItemText primary={this.state.headerMap[h].text}/>
-                                    </ListItem>
+                                    <Link activeClass={styles.activeSideButton} key={h} to={`${h}Table`} spy={true} smooth={true} duration={500} offset={-70}>
+                                        <ListItem button className={styles.drawerRow}>
+                                            <ListItemIcon>
+                                                {this.state.headerMap[h].icon}
+                                            </ListItemIcon>
+                                            <ListItemText primary={this.state.headerMap[h].text}/>
+                                        </ListItem>
+                                    </Link>
+
                                 )
                             })
                         }

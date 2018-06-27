@@ -56,3 +56,7 @@
     transition: margin-left .5s;
     margin-left: 300px;
 }
+
+:local(.activeSideButton svg path){
+    fill: #5c6bc0!important;
+}
