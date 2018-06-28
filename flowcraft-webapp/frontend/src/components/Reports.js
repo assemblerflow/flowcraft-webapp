@@ -1,8 +1,12 @@
 // React imports
 import React from "react"
 
+import Typography from '@material-ui/core/Typography';
+import Button from '@material-ui/core/Button';
+
 import {findTableSignatures, findChartSignatures} from "./reports/parsers";
 import {QualityControlTable, AssemblyTable, AbricateTable} from "./reports/tables";
+import {BasicModal} from "./reports/modals";
 import {FastQcCharts} from "./reports/charts";
 import {ReportsHeader} from "./reports/drawer";
 import {HomeInput} from "./Inspect";
@@ -30,6 +34,8 @@ export class ReportsHome extends React.Component {
         this.state = {
             "runId": "",
             "reportData": "",
+            "openModal": false,
+            "dropData": ""
         };
     }
 
@@ -45,20 +51,57 @@ export class ReportsHome extends React.Component {
         window.removeEventListener("dragover", this._dragOver);
     }
 
+    /*
+     Required to trigger modal open and close
+     */
+    setModalState = (value) => {
+        this.setState({openModal:value});
+    };
+
+    /*
+    Function to load reports app by changing the state of the reportData
+     */
+    loadReports = (reportData) => {
+        this.setState({"reportData": reportData});
+        this.setModalState(false);
+    };
+
+    /*
+    Function to merge uploaded reportData with previous available data and
+    then loads reports
+     */
+    mergeReports = (reportData) => {
+        const mergedData = [...reportData, ...this.state.reportData];
+        this.loadReports(mergedData);
+    };
+
     _drop(ev){
         ev.preventDefault();
+
         const data = ev.dataTransfer.files[0];
         const reader = new FileReader();
 
         reader.onload = function(e) {
             try {
-                this.setState({"reportData": JSON.parse(e.target.result).data.results});
+                const jsonData = JSON.parse(e.target.result).data.results;
+
+                // Case no processes on current report, load reports directly
+                // Else, launch modal to ask user if wants to merge reports
+                // or just show the uploaded one
+                if (this.state.reportData.length === 0) {
+                    this.loadReports(jsonData);
+                }
+                else {
+                    this.setState({dropData: jsonData});
+                    this.setModalState(true);
+                }
             } catch(e) {
                 console.log(e);
             }
         }.bind(this);
 
         reader.readAsText(data);
+
     }
 
     _dragOver(ev){
@@ -69,6 +112,29 @@ export class ReportsHome extends React.Component {
     render() {
         return(
             <div>
+                {
+                    this.state.reportData.length > 0 &&
+                    <BasicModal openModal={this.state.openModal}
+                                setModalState={this.setModalState}>
+
+                        /* Prototype for modal content */
+                        <Typography className={styles.centeredContent}>Uploaded {this.state.dropData.length} new processes!</Typography>
+                        <Typography className={styles.centeredContent}>What do you want to do?!</Typography>
+
+                        /*
+                        * dropData: is the current data uploaded using dragNdrop
+                        */
+                        <div className={styles.centeredContent}>
+                            <Button color="primary"
+                                    onClick={() => {this.mergeReports(this.state.dropData)}}>Merge</Button>
+                            <Button color="secondary"
+                                    onClick={() => {this.loadReports(this.state.dropData)}}>
+                                Remove Previous
+                            </Button>
+                        </div>
+
+                    </BasicModal>
+                }
                 {
                     this.state.reportData ?
                         <ReportsApp reportData={this.state.reportData}/> :

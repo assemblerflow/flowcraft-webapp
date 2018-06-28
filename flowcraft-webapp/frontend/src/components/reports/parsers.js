@@ -25,32 +25,39 @@ export const findTableSignatures = (reportArray) => {
     // array of JSON for those tables
     let tables = new Map();
 
+    const signatures = ["tableRow"];
+
     for (const r of reportArray){
 
-        // Skip entries without the tableRow signture
-        if (!r.reportJson.hasOwnProperty("tableRow")){
-            continue
-        }
+        for (const s of signatures){
 
-        for (const tr of r.reportJson.tableRow){
-            if (!tr.hasOwnProperty("data")){
+            // Skip entries without the tableRow signture
+            if (!r.reportJson.hasOwnProperty(s)){
                 continue
             }
 
-            for (const cell of tr.data){
+            for (const tr of r.reportJson[s]){
+                if (!tr.hasOwnProperty("data")){
+                    continue
+                }
 
-                cell.rowId = tr.sample;
-                cell.projectId = r.projectid;
-                cell.processName = r.processName;
-                cell.processId = r.processId;
+                for (const cell of tr.data){
 
-                if (!tables.has(cell.table)){
-                    tables.set(cell.table, [cell])
-                } else {
-                    tables.get(cell.table).push(cell)
+                    cell.rowId = tr.sample;
+                    cell.projectId = r.projectid;
+                    cell.processName = r.processName;
+                    cell.processId = r.processId;
+
+                    if (!tables.has(cell.table)){
+                        tables.set(cell.table, [cell])
+                    } else {
+                        tables.get(cell.table).push(cell)
+                    }
                 }
             }
+
         }
+
     }
 
     return tables;
@@ -198,7 +205,10 @@ export const genericTableParser = (reportArray) => {
 
         // Add values to dictionary by rowId
         if (!dataDict.hasOwnProperty(cell.rowId)) {
+            // Add rowId in the _id field to have checkbox on Checkbox
+            // React-table
             dataDict[cell.rowId] = {
+                "_id": cell.rowId,
                 "rowId": <Typography className={styles.tableCell}>{cell.rowId}</Typography>
             };
             dataDict[cell.rowId][joinHeader] = <CellBar value={cell.value} max={columnMaxVals.get(cell.header)}/>;
@@ -216,5 +226,15 @@ export const genericTableParser = (reportArray) => {
         finalDataDict,
         columnsArray
     ]
+
+};
+
+
+/**
+ * chewBBACA table parser
+ * @param reportArray
+ * @returns {*[]}
+ */
+export const chewbbacaTableParser = (reportArray, metadata) => {
 
 };

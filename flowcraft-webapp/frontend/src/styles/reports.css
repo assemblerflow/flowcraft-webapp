@@ -23,3 +23,21 @@
 :local(.scrollElement) {
     margin-top: 40px;
 }
+
+:local(.centralModal) {
+    background-color: white!important;
+    opacity: 1;
+    position:absolute;
+    width:50%;
+    height:50%;
+    top:25%;
+    left:25%;
+}
+
+:local(.modalBody) {
+    margin: 2%!important;
+}
+
+:local(.centeredContent) {
+    text-align: center!important;
+}
