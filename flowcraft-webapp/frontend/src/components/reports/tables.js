@@ -25,8 +25,6 @@ class FCTable extends React.Component {
         super(props);
 
         this.state = {
-            data: props.data,
-            columns: props.columns,
             selection: [],
             selectAll: false
         }
@@ -105,8 +103,8 @@ class FCTable extends React.Component {
         return (
             <CheckboxTable
                 ref={r => (this.checkboxTable = r)}
-                data={this.state.data}
-                columns={this.state.columns}
+                data={this.props.data}
+                columns={this.props.columns}
                 defaultPageSize={10}
                 className="-striped -highlight"
                 {...checkboxProps}
@@ -119,20 +117,13 @@ class FCTable extends React.Component {
 
 export class QualityControlTable extends React.Component {
 
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            tableData: genericTableParser(props.tableData)
-        }
-
-    }
-
     setSelection = (selection) => {
         this.setState({selection});
     };
 
     render () {
+        const tableData = genericTableParser(this.props.tableData);
+
         return (
             <ExpansionPanel defaultExpanded >
                 <ExpansionPanelSummary  expandIcon={<ExpandMoreIcon/>}>
@@ -141,8 +132,8 @@ export class QualityControlTable extends React.Component {
                 <ExpansionPanelDetails>
                     <div className={styles.mainPaper}>
                         <FCTable
-                            data={this.state.tableData[0]}
-                            columns={this.state.tableData[1]}
+                            data={tableData[0]}
+                            columns={tableData[1]}
                             setSelection={this.setSelection}
                         />
                     </div>
@@ -168,6 +159,8 @@ export class AssemblyTable extends React.Component {
     };
 
     render () {
+        const tableData = genericTableParser(this.props.tableData);
+
         return (
             <ExpansionPanel defaultExpanded >
                 <ExpansionPanelSummary  expandIcon={<ExpandMoreIcon/>}>
@@ -176,8 +169,8 @@ export class AssemblyTable extends React.Component {
                 <ExpansionPanelDetails>
                     <div className={styles.mainPaper}>
                         <FCTable
-                            data={this.state.tableData[0]}
-                            columns={this.state.tableData[1]}
+                            data={tableData[0]}
+                            columns={tableData[1]}
                             setSelection={this.setSelection}
                         />
                     </div>
@@ -202,6 +195,8 @@ export class AbricateTable extends React.Component {
     };
 
     render () {
+        const tableData = genericTableParser(this.props.tableData);
+
         return (
             <ExpansionPanel defaultExpanded >
                 <ExpansionPanelSummary  expandIcon={<ExpandMoreIcon/>}>
@@ -210,8 +205,8 @@ export class AbricateTable extends React.Component {
                 <ExpansionPanelDetails>
                     <div className={styles.mainPaper}>
                         <FCTable
-                            data={this.state.tableData[0]}
-                            columns={this.state.tableData[1]}
+                            data={tableData[0]}
+                            columns={tableData[1]}
                             setSelection={this.setSelection}
                         />
                     </div>

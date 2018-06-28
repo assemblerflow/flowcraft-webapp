@@ -103,6 +103,19 @@ class ReportsApp extends React.Component {
         };
     }
 
+    static getDerivedStateFromProps(props, state) {
+
+        const tableData = findTableSignatures(props.reportData);
+        const charts = findChartSignatures(props.reportData);
+
+        return {
+            reportData: props.reportData,
+            tables: [ ...tableData.keys() ],
+            tableData: tableData,
+            charts: charts,
+        }
+    }
+
     render(){
         //
         // This is the main element where the Reports components will be added,
@@ -110,9 +123,6 @@ class ReportsApp extends React.Component {
         // data in the this.state.reportData array, and each component should
         // be responsible for handling the data in any way they see fit.
         //
-        console.log(this.state);
-
-        const test = this.state.tableData.get("qc");
 
         return(
             <div>
@@ -120,7 +130,7 @@ class ReportsApp extends React.Component {
                     {
                         this.state.tables.includes("qc") &&
                             <Element name={"qcTable"} className={styles.scrollElement}>
-                                <QualityControlTable id={"qcTable"} tableData={test}/>
+                                <QualityControlTable tableData={this.state.tableData.get("qc")}/>
                             </Element>
                     }
                     {
@@ -132,14 +142,21 @@ class ReportsApp extends React.Component {
                     {
                         this.state.tables.includes("abricate") &&
                             <Element name={"abricateTable"} className={styles.scrollElement}>
-                                <AbricateTable name={"abricateTable"} tableData={this.state.tableData.get("abricate")}/>
+                                <AbricateTable tableData={this.state.tableData.get("abricate")}/>
+                            </Element>
+
+                    }
+                    {
+                        this.state.tables.includes("chewbbaca") &&
+                            <Element name={"chewbbacaTable"} className={styles.scrollElement}>
+                                <ChewbbacaTable tableData={this.state.tableData.get("chewbbaca")}/>
                             </Element>
 
                     }
                     {
                         this.state.charts.includes("base_n_content") &&
                              <Element name={"fastqcCharts"} className={styles.scrollElement}>
-                                <FastQcCharts name={"fastqcCharts"} rawReports={this.state.reportData}/>
+                                <FastQcCharts rawReports={this.state.reportData}/>
                              </Element>
                     }
                 </ReportsHeader>
