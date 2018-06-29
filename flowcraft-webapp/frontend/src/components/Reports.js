@@ -5,7 +5,7 @@ import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 
 import {findTableSignatures, findChartSignatures} from "./reports/parsers";
-import {QualityControlTable, AssemblyTable, AbricateTable} from "./reports/tables";
+import {QualityControlTable, AssemblyTable, AbricateTable, ChewbbacaTable} from "./reports/tables";
 import {BasicModal} from "./reports/modals";
 import {FastQcCharts} from "./reports/charts";
 import {ReportsHeader} from "./reports/drawer";
@@ -33,9 +33,9 @@ export class ReportsHome extends React.Component {
 
         this.state = {
             "runId": "",
-            "reportData": "",
+            "reportData": null,
             "openModal": false,
-            "dropData": ""
+            "dropData": []
         };
     }
 
@@ -88,7 +88,7 @@ export class ReportsHome extends React.Component {
                 // Case no processes on current report, load reports directly
                 // Else, launch modal to ask user if wants to merge reports
                 // or just show the uploaded one
-                if (this.state.reportData.length === 0) {
+                if (this.state.reportData === null) {
                     this.loadReports(jsonData);
                 }
                 else {
@@ -113,24 +113,27 @@ export class ReportsHome extends React.Component {
         return(
             <div>
                 {
-                    this.state.reportData.length > 0 &&
+                    this.state.reportData &&
                     <BasicModal openModal={this.state.openModal}
-                                setModalState={this.setModalState}>
+                                setModalState={this.setModalState}
+                                title="">
 
-                        /* Prototype for modal content */
-                        <Typography className={styles.centeredContent}>Uploaded {this.state.dropData.length} new processes!</Typography>
-                        <Typography className={styles.centeredContent}>What do you want to do?!</Typography>
+                        <div className={styles.modalBody}>
 
-                        /*
-                        * dropData: is the current data uploaded using dragNdrop
-                        */
-                        <div className={styles.centeredContent}>
-                            <Button color="primary"
-                                    onClick={() => {this.mergeReports(this.state.dropData)}}>Merge</Button>
-                            <Button color="secondary"
-                                    onClick={() => {this.loadReports(this.state.dropData)}}>
-                                Remove Previous
-                            </Button>
+                            {/* Prototype for modal content */}
+                            <Typography className={styles.centeredContent}>Uploaded {this.state.dropData.length} new processes!</Typography>
+                            <Typography className={styles.centeredContent}>What do you want to do?!</Typography>
+
+                            {/* dropData: is the current data uploaded using
+                             dragNdrop */}
+                            <div className={styles.centeredContent}>
+                                <Button color="primary"
+                                        onClick={() => {this.mergeReports(this.state.dropData)}}>Merge</Button>
+                                <Button color="secondary"
+                                        onClick={() => {this.loadReports(this.state.dropData)}}>
+                                    Remove Previous
+                                </Button>
+                            </div>
                         </div>
 
                     </BasicModal>
@@ -160,6 +163,8 @@ class ReportsApp extends React.Component {
 
         const tableData = findTableSignatures(props.reportData);
         const charts = findChartSignatures(props.reportData);
+
+        console.log(tableData);
 
         this.state = {
             reportData: props.reportData,
@@ -215,7 +220,9 @@ class ReportsApp extends React.Component {
                     {
                         this.state.tables.includes("chewbbaca") &&
                             <Element name={"chewbbacaTable"} className={styles.scrollElement}>
-                                <ChewbbacaTable tableData={this.state.tableData.get("chewbbaca")}/>
+                                <ChewbbacaTable tableData={this.state.tableData.get("chewbbaca")}
+                                                reportData={this.state.reportData}
+                                />
                             </Element>
 
                     }

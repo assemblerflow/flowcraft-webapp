@@ -7,16 +7,29 @@ import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails"
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import Typography from "@material-ui/core/Typography";
-import Button from "@material-ui/core/Button";
+import Paper from '@material-ui/core/Paper';
+import Tooltip from '@material-ui/core/Tooltip';
+import Button from '@material-ui/core/Button';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
 
 import styles from "../../styles/reports.css"
+
+// Import Colors
+import red from "@material-ui/core/colors/red";
+import green from "@material-ui/core/colors/green";
+import yellow from "@material-ui/core/colors/yellow";
 
 import {genericTableParser, getTableHeaders} from "./parsers";
 
 const CheckboxTable = checkboxHOC(ReactTable);
 
 
-// Table selection functions
+const statusColor = {
+    "fail": red[300],
+    "pass": green[300],
+    "warning": yellow[300]
+}
 
 
 class FCTable extends React.Component {
@@ -221,7 +234,7 @@ export class ChewbbacaTable extends React.Component {
         super(props);
 
         this.state = {
-            tableData: chewbbacaTableParser(props.tableData)
+            tableData: genericTableParser(props.tableData)
         };
     }
 
@@ -229,7 +242,46 @@ export class ChewbbacaTable extends React.Component {
         this.setState({selection});
     };
 
+    chewbbacaParser = (tableData, originalData) => {
+        console.log(tableData);
+
+        const refDict = {"fail": "label-danger", "warning": "label-warning", "pass": "label-success"};
+
+        // Add status header to table columns
+        tableData[1].splice(1, 0, {
+            Header: <Typography>Status</Typography>,
+            accessor: "status",
+            minWidth: 90
+        });
+
+        for (const row of tableData[0]){
+
+            for (const process of originalData){
+                if(process.processName.indexOf("chewbbaca") > -1){
+                    const statusDict = process.reportJson.status;
+
+                    for (const statusData of statusDict){
+
+                        if(statusData.sample.indexOf(row._id) > -1) {
+                            const lnfPercentage = parseFloat(statusData.lnfPercentage) * 100;
+
+                            const labelLnf = <TableLabel
+                                content={statusData.status}
+                                color={statusColor[statusData.status]}
+                                tooltip={`${lnfPercentage.toFixed(2)}%`}/>;
+
+                            row["status"] = labelLnf;
+                        }
+                    }
+                }
+            }
+        }
+    };
+
     render () {
+        const tableData = genericTableParser(this.props.tableData);
+        this.chewbbacaParser(tableData, this.props.reportData);
+
         return (
             <ExpansionPanel defaultExpanded >
                 <ExpansionPanelSummary  expandIcon={<ExpandMoreIcon/>}>
@@ -237,9 +289,12 @@ export class ChewbbacaTable extends React.Component {
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails>
                     <div className={styles.mainPaper}>
+                        <TableButtons>
+                            <Button>Export</Button>
+                        </TableButtons>
                         <FCTable
-                            data={this.state.tableData[0]}
-                            columns={this.state.tableData[1]}
+                            data={tableData[0]}
+                            columns={tableData[1]}
                             setSelection={this.setSelection}
                         />
                     </div>
@@ -261,6 +316,39 @@ export class CellBar extends React.Component {
                 <div className={styles.columnCell} style={{width: `${(this.props.value / this.props.max) * 100}%`}}>
                 </div>
                 <Typography className={styles.tableCell}>{this.props.value}</Typography>
+            </div>
+        )
+    }
+}
+
+/**
+ * This component renders a cell label with tooltip showing extra values.
+ * Also has option to show tooltip.
+ * props:
+ *  - tooltip -> text to show on tooltip
+ *  - content -> text to show on paper
+ *  - color -> color of the background of the label
+ *             associated with the cell.
+ */
+export class TableLabel extends React.Component {
+    render () {
+        return (
+            <div className={styles.centralCell}>
+                <Tooltip id="tooltip-icon" title={this.props.tooltip} placement="right">
+                    <Paper className={styles.cellLabel} style={{backgroundColor: this.props.color}}>
+                        <Typography className={styles.cellLabelText}>{this.props.content}</Typography>
+                    </Paper>
+                </Tooltip>
+            </div>
+        )
+    }
+}
+
+export class TableButtons extends React.Component {
+    render () {
+        return (
+            <div className={styles.tableButtonsDiv}>
+                {this.props.children}
             </div>
         )
     }

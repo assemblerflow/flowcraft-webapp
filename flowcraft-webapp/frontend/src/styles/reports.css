@@ -1,5 +1,6 @@
 :local(.mainPaper) {
     flex-grow: 1;
+    overflow-x: auto;
 }
 
 :local(.tableCell) {
@@ -40,4 +41,40 @@
 
 :local(.centeredContent) {
     text-align: center!important;
+}
+
+:local(.modalHeader) {
+    margin: 2%!important;
+    display: flex;
+
+}
+
+:local(.modalCloseButton) {
+    height: 25px!important;
+    width: 25px!important;
+}
+
+:local(.cellLabel) {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+:local(.centralCell) {
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+}
+
+:local(.cellLabelText) {
+    color: white!important;
+    font-weight: bold!important;
+}
+
+:local(.tableButtonsDiv) {
+    flex-grow: 1;
+    display: flex;
+    overflow-x: auto;
+    text-align: left;
+    margin-bottom: 5px;
 }

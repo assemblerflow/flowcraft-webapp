@@ -228,13 +228,3 @@ export const genericTableParser = (reportArray) => {
     ]
 
 };
-
-
-/**
- * chewBBACA table parser
- * @param reportArray
- * @returns {*[]}
- */
-export const chewbbacaTableParser = (reportArray, metadata) => {
-
-};

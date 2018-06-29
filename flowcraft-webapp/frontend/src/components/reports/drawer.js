@@ -18,6 +18,7 @@ import SkullIcon from "mdi-react/SkullIcon";
 import ChevronLeftIcon from "mdi-react/ChevronLeftIcon";
 import HeartIcon from "mdi-react/HeartIcon";
 import PillIcon from "mdi-react/PillIcon";
+import AlienIcon from "mdi-react/AlienIcon";
 
 
 import {Header} from "../Header";
@@ -35,7 +36,8 @@ export class ReportsHeader extends React.Component {
             headerMap: {
                 "qc": {"icon": <HeartIcon/>, "text": "Quality Control"},
                 "assembly": {"icon": <SkullIcon/>, "text": "Assembly"},
-                "abricate": {"icon": <PillIcon/>, "text": "AMR"}
+                "abricate": {"icon": <PillIcon/>, "text": "AMR"},
+                "chewbbaca": {"icon": <AlienIcon/>, "text": "chewBBACA"}
             }
         }
     }

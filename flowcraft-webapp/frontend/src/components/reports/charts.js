@@ -77,10 +77,13 @@ export class FastQcCharts extends React.Component {
     };
 
     render () {
+
+        const chartData = this.parsePlotData(this.props.rawReports);
+
         return (
             <ExpansionPanel defaultExpanded >
                 <ExpansionPanelSummary  expandIcon={<ExpandMoreIcon/>}>
-                    <Typography variant={"headline"}>Quality control</Typography>
+                    <Typography variant={"headline"}>FastQC charts</Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails>
                     <div className={styles.mainPaper} style={{"height": "600px"}}>
@@ -96,11 +99,11 @@ export class FastQcCharts extends React.Component {
                             <Tab label={"Sequence length"}/>
                             <Tab label={"Missing data"}/>
                         </Tabs>
-                            {this.state.tabValue === 0  && <FastqcBaseSequenceQuality plotData={this.state.chartData["base_sequence_quality"]}/>}
-                            {this.state.tabValue === 1  && <FastqcSequenceQuality plotData={this.state.chartData["sequence_quality"]}/>}
-                            {this.state.tabValue === 2  && <FastqcGcContent plotData={this.state.chartData["base_gc_content"]}/>}
-                            {this.state.tabValue === 3  && <FastqcSequenceLength plotData={this.state.chartData["sequence_length_dist"]}/>}
-                            {this.state.tabValue === 4  && <FastqcNContent plotData={this.state.chartData["base_n_content"]}/>}
+                            {this.state.tabValue === 0  && <FastqcBaseSequenceQuality plotData={chartData["base_sequence_quality"]}/>}
+                            {this.state.tabValue === 1  && <FastqcSequenceQuality plotData={chartData["sequence_quality"]}/>}
+                            {this.state.tabValue === 2  && <FastqcGcContent plotData={chartData["base_gc_content"]}/>}
+                            {this.state.tabValue === 3  && <FastqcSequenceLength plotData={chartData["sequence_length_dist"]}/>}
+                            {this.state.tabValue === 4  && <FastqcNContent plotData={chartData["base_n_content"]}/>}
                     </div>
                 </ExpansionPanelDetails>
             </ExpansionPanel>
