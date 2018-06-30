@@ -194,10 +194,9 @@ class ReportsApp extends React.Component {
         // data in the this.state.reportData array, and each component should
         // be responsible for handling the data in any way they see fit.
         //
-
         return(
             <div>
-                <ReportsHeader headers={this.state.tables}>
+                <ReportsHeader tableHeaders={this.state.tables} chartHeaders={this.state.charts}>
                     {
                         this.state.tables.includes("qc") &&
                             <Element name={"qcTable"} className={styles.scrollElement}>

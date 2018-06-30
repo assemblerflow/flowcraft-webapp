@@ -6,6 +6,20 @@
     transition: width .5s;
 }
 
+:local(.drawerHeader) {
+    background-color: #f1f1f1 !important;
+    cursor: pointer;
+}
+
+:local(.subDrawerOpen) {
+    max-height: 100%;
+}
+
+:local(.subDrawerClose) {
+    max-height: 0;
+    overflow: hidden;
+}
+
 @media only screen and (min-width: 600px) {
     :local(.drawerPaperClose) {
         overflow-x: hidden!important;

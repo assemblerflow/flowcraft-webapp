@@ -105,7 +105,7 @@ export const findChartSignatures = (reportArray) => {
 
 
 /**
- * Method used to retrieve the JSON array needed for the column headers of
+ * Method used to retrieve the JSON array needed for the column tableHeaders of
  * a ReactTable component. The Headers are sorted by their processId attribute.
  * @param dataArray
  * @returns {{accessor: *, Header: *, processName: *}[]}
@@ -127,7 +127,7 @@ export const getTableHeaders = (dataArray) => {
         }
     }
 
-    // Sort the column headers according to the processId
+    // Sort the column tableHeaders according to the processId
     const sortedColumns = [...columnsMap.entries()].sort((a, b) => {return a[1].num - b[1].num});
 
     return sortedColumns.map((v) => {
@@ -143,7 +143,7 @@ export const getTableHeaders = (dataArray) => {
 
 /**
  * Returns the maximum numeric values for each header in the reportArray. Returns
- * a Map object with headers as keys and the maximum values as values.
+ * a Map object with tableHeaders as keys and the maximum values as values.
  * @param reportArray
  * @returns {Map<any, any>}
  */
@@ -190,7 +190,7 @@ export const genericTableParser = (reportArray) => {
         minWidth: 90
     });
 
-    // Add headers with typography and minWidth
+    // Add tableHeaders with typography and minWidth
     for (const h of tableHeaders){
         columnsArray.push({
             Header: <Typography>{h.Header}</Typography>,
