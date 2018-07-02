@@ -99,7 +99,7 @@ class ChartDrawer extends React.Component {
                 <DrawerHeader onClick={this.toggleDrawer} icon={<ChartLineIcon/>} text={"Charts"}/>
                 <div>
                     {
-                        this.state.chartHeaders.includes("base_n_content") &&
+                        this.props.chartHeaders.includes("base_n_content") &&
                         <Link activeClass={styles.activeSideButton} to={"fastqcCharts"} spy={true} smooth={true} duration={500} offset={-70}>
                             <DrawerButtonEntry icon={<HeartIcon/>}
                                                text={"FastQC"} />
