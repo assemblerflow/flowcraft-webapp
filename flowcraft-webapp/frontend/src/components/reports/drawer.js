@@ -24,6 +24,13 @@ import TableLargeIcon from "mdi-react/TableLargeIcon";
 import ChartLineIcon from "mdi-react/ChartLineIcon";
 import FileDocumentBoxIcon from "mdi-react/FileDocumentBoxIcon"
 
+// Bottom Navigation
+import BottomNavigation from '@material-ui/core/BottomNavigation';
+import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
+import RestoreIcon from '@material-ui/icons/Restore';
+import FavoriteIcon from '@material-ui/icons/Favorite';
+import LocationOnIcon from '@material-ui/icons/LocationOn';
+
 
 import {Header} from "../Header";
 
@@ -68,6 +75,7 @@ export class ReportsHeader extends React.Component {
                         {this.props.tableHeaders && <TableDrawer tableHeaders={this.props.tableHeaders}/>}
                         {this.props.chartHeaders && <ChartDrawer chartHeaders={this.props.chartHeaders}/>}
                     </List>
+                    <DrawerBottomNavigation/>
                 </Drawer>
                 <main className={classNames(styles.content, this.state.drawerOpen && styles.contentShift)}>
                     {this.props.children}
@@ -184,5 +192,36 @@ class DrawerHeader extends React.Component {
                 </ListItem>
             </Paper>
         )
+    }
+}
+
+class DrawerBottomNavigation extends React.Component {
+
+    state = {
+        value: 0,
+    };
+
+    handleChange = (event, value) => {
+        this.setState({value});
+    };
+
+    render() {
+        //const {classes} = this.props;
+        const {value} = this.state;
+
+        return (
+            <BottomNavigation
+                value={value}
+                onChange={this.handleChange}
+                showLabels
+                className={styles.bottomNavDrawer}
+            >
+                <BottomNavigationAction label="Recents" icon={<RestoreIcon/>}/>
+                <BottomNavigationAction label="Favorites"
+                                        icon={<FavoriteIcon/>}/>
+                <BottomNavigationAction label="Nearby"
+                                        icon={<LocationOnIcon/>}/>
+            </BottomNavigation>
+        );
     }
 }

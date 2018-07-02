@@ -74,3 +74,10 @@
 :local(.activeSideButton svg path){
     fill: #5c6bc0!important;
 }
+
+:local(.bottomNavDrawer) {
+    position: absolute;
+    left:0;
+    bottom:0;
+    width:100%;
+}
