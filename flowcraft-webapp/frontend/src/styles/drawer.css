@@ -80,5 +80,14 @@
     left:0!important;
     bottom:0!important;
     width:100%;
-    display: flex;
+    overflow-x: hidden;
+}
+
+:local(.settingsButton){
+    position: absolute!important;
+    left:0!important;
+    bottom:10px!important;
+    width:100%!important;
+    overflow-x: hidden;
+
 }

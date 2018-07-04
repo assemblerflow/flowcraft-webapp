@@ -23,6 +23,7 @@ import AlienIcon from "mdi-react/AlienIcon";
 import TableLargeIcon from "mdi-react/TableLargeIcon";
 import ChartLineIcon from "mdi-react/ChartLineIcon";
 import FileDocumentBoxIcon from "mdi-react/FileDocumentBoxIcon"
+import SettingsIcon from "mdi-react/SettingsIcon";
 
 // Bottom Navigation
 import BottomNavigation from '@material-ui/core/BottomNavigation';
@@ -93,17 +94,25 @@ export class ReportsHeader extends React.Component {
                         </IconButton>
                     </div>
                     <Divider/>
-                    <BottomNavigation value={this.state.tabValue}
-                                      onChange={this.handleChange}
-                                      className={styles.bottomTabsDrawer}>
-                        <BottomNavigationAction label="Recents" value="0"
-                                                icon={<RestoreIcon/>}/>
-                        <BottomNavigationAction label="Favorites"
-                                                value="1"
-                                                icon={<FavoriteIcon/>}/>
-                        <BottomNavigationAction label="Nearby" value="2"
-                                                icon={<LocationOnIcon/>}/>
-                    </BottomNavigation>
+                    {
+                        this.state.drawerOpen ?
+                            <BottomNavigation value={this.state.tabValue}
+                                              onChange={this.handleChange}
+                                              showLabels
+                                              className={styles.bottomTabsDrawer}>
+                                <BottomNavigationAction label="Recents" value="0"
+                                                        icon={<RestoreIcon/>}/>
+                                <BottomNavigationAction label="Favorites"
+                                                        value="1"
+                                                        icon={<FavoriteIcon/>}/>
+                                <BottomNavigationAction label="Nearby" value="2"
+                                                        icon={<LocationOnIcon/>}/>
+                            </BottomNavigation> :
+                            <IconButton onClick={this.openDrawer} className={styles.settingsButton}>
+                                <SettingsIcon/>
+                            </IconButton>
+                    }
+
                     {this.state.tabValue === "0" &&
                         <TableOfContents tableHeaders={this.props.tableHeaders}
                                          chartHeaders={this.props.chartHeaders}
