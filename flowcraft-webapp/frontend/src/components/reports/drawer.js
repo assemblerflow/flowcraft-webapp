@@ -36,6 +36,22 @@ import {Header} from "../Header";
 
 const styles = require("../../styles/drawer.css");
 
+
+class TableOfContents extends React.Component {
+
+    render() {
+
+        return (
+            <List style={{"paddingTop": 0}}>
+                {this.props.tableHeaders &&
+                <TableDrawer tableHeaders={this.props.tableHeaders}/>}
+                {this.props.chartHeaders &&
+                <ChartDrawer chartHeaders={this.props.chartHeaders}/>}
+            </List>
+        )
+    }
+}
+
 export class ReportsHeader extends React.Component {
 
     constructor(props){
@@ -43,6 +59,7 @@ export class ReportsHeader extends React.Component {
 
         this.state = {
             drawerOpen: false,
+            tabValue: "0"
         }
     }
 
@@ -52,6 +69,11 @@ export class ReportsHeader extends React.Component {
 
     closeDrawer = () => {
         this.setState({drawerOpen: false})
+    };
+
+    // Show content of drawer depending on tab selected
+    handleChange = (event, value) => {
+        this.setState({tabValue: value})
     };
 
     render () {
@@ -71,11 +93,22 @@ export class ReportsHeader extends React.Component {
                         </IconButton>
                     </div>
                     <Divider/>
-                    <List style={{"paddingTop": 0}}>
-                        {this.props.tableHeaders && <TableDrawer tableHeaders={this.props.tableHeaders}/>}
-                        {this.props.chartHeaders && <ChartDrawer chartHeaders={this.props.chartHeaders}/>}
-                    </List>
-                    <DrawerBottomNavigation/>
+                    <BottomNavigation value={this.state.tabValue}
+                                      onChange={this.handleChange}
+                                      className={styles.bottomTabsDrawer}>
+                        <BottomNavigationAction label="Recents" value="0"
+                                                icon={<RestoreIcon/>}/>
+                        <BottomNavigationAction label="Favorites"
+                                                value="1"
+                                                icon={<FavoriteIcon/>}/>
+                        <BottomNavigationAction label="Nearby" value="2"
+                                                icon={<LocationOnIcon/>}/>
+                    </BottomNavigation>
+                    {this.state.tabValue === "0" &&
+                        <TableOfContents tableHeaders={this.props.tableHeaders}
+                                         chartHeaders={this.props.chartHeaders}
+                        />
+                    }
                 </Drawer>
                 <main className={classNames(styles.content, this.state.drawerOpen && styles.contentShift)}>
                     {this.props.children}
@@ -192,36 +225,5 @@ class DrawerHeader extends React.Component {
                 </ListItem>
             </Paper>
         )
-    }
-}
-
-class DrawerBottomNavigation extends React.Component {
-
-    state = {
-        value: 0,
-    };
-
-    handleChange = (event, value) => {
-        this.setState({value});
-    };
-
-    render() {
-        //const {classes} = this.props;
-        const {value} = this.state;
-
-        return (
-            <BottomNavigation
-                value={value}
-                onChange={this.handleChange}
-                showLabels
-                className={styles.bottomNavDrawer}
-            >
-                <BottomNavigationAction label="Recents" icon={<RestoreIcon/>}/>
-                <BottomNavigationAction label="Favorites"
-                                        icon={<FavoriteIcon/>}/>
-                <BottomNavigationAction label="Nearby"
-                                        icon={<LocationOnIcon/>}/>
-            </BottomNavigation>
-        );
     }
 }

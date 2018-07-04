@@ -75,9 +75,10 @@
     fill: #5c6bc0!important;
 }
 
-:local(.bottomNavDrawer) {
-    position: absolute;
-    left:0;
-    bottom:0;
+:local(.bottomTabsDrawer) {
+    position: absolute!important;
+    left:0!important;
+    bottom:0!important;
     width:100%;
+    display: flex;
 }
