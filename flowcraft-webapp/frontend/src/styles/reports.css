@@ -1,3 +1,25 @@
+:local(.innuendoHomeContainer) {
+    width: 60%;
+    height: 80px;
+
+    position: absolute;
+    top:0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    margin: auto;
+}
+
+:local(.innuendoHome) {
+
+    display: flex;
+    flex-grow: 1;
+
+    padding: 10px
+}
+
+
 :local(.mainPaper) {
     flex-grow: 1;
     overflow-x: auto;

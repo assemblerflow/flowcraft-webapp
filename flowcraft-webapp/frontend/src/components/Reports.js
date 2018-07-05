@@ -3,12 +3,14 @@ import React from "react"
 
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
+import Paper from "@material-ui/core/Paper";
 
 import {findTableSignatures, findChartSignatures} from "./reports/parsers";
 import {QualityControlTable, AssemblyTable, AbricateTable, ChewbbacaTable} from "./reports/tables";
 import {BasicModal} from "./reports/modals";
 import {FastQcCharts} from "./reports/charts";
 import {ReportsHeader} from "./reports/drawer";
+import {HomeInnuendo} from "./reports/innuendo";
 import {HomeInput} from "./Inspect";
 import {Header} from "./Header";
 
@@ -142,8 +144,17 @@ export class ReportsHome extends React.Component {
                     this.state.reportData ?
                         <ReportsApp reportData={this.state.reportData}/> :
                         <div>
-                            <Header headerTitle={"Reports"}/>
-                            <HomeInput route={"reports"}/>
+                            {
+                                this.props.innuendo ?
+                                    <div>
+                                        <Header headerTitle={"INNUENDO Reports"}/>
+                                        <HomeInnuendo route={"reports"}/>
+                                    </div>:
+                                    <div>
+                                        <Header headerTitle={"Reports"}/>
+                                        <HomeInput route={"reports"}/>
+                                    </div>
+                            }
                         </div>
                 }
             </div>
