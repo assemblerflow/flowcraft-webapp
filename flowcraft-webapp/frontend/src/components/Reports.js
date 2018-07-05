@@ -17,6 +17,7 @@ import {Header} from "./Header";
 import { Link, DirectLink, Element, Events, animateScroll as scroll, scrollSpy, scroller } from 'react-scroll'
 
 import styles from "../styles/reports.css";
+import {service} from "../../config.json"
 
 
 /**
@@ -145,7 +146,7 @@ export class ReportsHome extends React.Component {
                         <ReportsApp reportData={this.state.reportData}/> :
                         <div>
                             {
-                                this.props.innuendo ?
+                                service === "innuendo" ?
                                     <div>
                                         <Header headerTitle={"INNUENDO Reports"}/>
                                         <HomeInnuendo route={"reports"}/>
