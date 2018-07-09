@@ -176,8 +176,6 @@ class ReportsApp extends React.Component {
         const tableData = findTableSignatures(props.reportData);
         const charts = findChartSignatures(props.reportData);
 
-        console.log(tableData);
-
         this.state = {
             reportData: props.reportData,
             tables: [ ...tableData.keys() ],
