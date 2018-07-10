@@ -5,22 +5,43 @@ import React from "react"
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import Paper from "@material-ui/core/Paper";
-import Input from '@material-ui/core/Input';
-import InputLabel from '@material-ui/core/InputLabel';
 import FormControl from '@material-ui/core/FormControl';
 import TextField from '@material-ui/core/TextField';
-import Select from '@material-ui/core/Select';
-import Checkbox from '@material-ui/core/Checkbox';
-import MenuItem from '@material-ui/core/MenuItem';
-import ListItemText from '@material-ui/core/ListItemText';
 import Divider from '@material-ui/core/Divider';
+import AppBar from '@material-ui/core/AppBar';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
+import Grid from '@material-ui/core/Grid';
+import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
+import Select from 'react-select';
 
 // styles
+import {withStyles} from '@material-ui/core/styles';
 import styles from "../../styles/innuendo.css";
+import "../../styles/innuendo.css";
+import 'react-select/dist/react-select.css';
 
-// Other imports
-import axios from "axios";
-import {address} from "../../../config.json"
+// Import Colors
+import red from "@material-ui/core/colors/red";
+import green from "@material-ui/core/colors/green";
+import yellow from "@material-ui/core/colors/yellow";
+
+// Icons
+import ImportContactsIcon from '@material-ui/icons/ImportContacts';
+import BugReportIcon from '@material-ui/icons/BugReport';
+import TimelineIcon from '@material-ui/icons/Timeline';
+
+// Innuendo requests
+import {
+    getInnuendoSpecies,
+    getInnuendoProjects,
+    getInnuendoProjectStrains,
+    getInnuendoReportsByFilter,
+    getInnuendoStrainsMetadata,
+    tryLogin,
+    getStatistics
+} from "./requests"
 
 // utils
 import {parseProjectSearch, getMetadataMapping} from "./utils"
@@ -34,7 +55,7 @@ export class HomeInnuendo extends React.Component {
 
     state = {
         showProjects: false
-    }
+    };
 
     showProjects = () => {
         this.setState({showProjects: true});
@@ -42,14 +63,14 @@ export class HomeInnuendo extends React.Component {
 
     render() {
         return (
-            <Paper className={styles.innuendoHomeContainer}>
+            <div>
                 {
                     this.state.showProjects ?
-                        <InnuendoTabs/> :
+                        <InnuendoHomePage/> :
                         <InnuendoLogin
                             showProjects={this.showProjects}/>
                 }
-            </Paper>
+            </div>
         )
     }
 }
@@ -72,14 +93,7 @@ class InnuendoLogin extends React.Component {
     * Try to login according to the provided username and password
     */
     tryLogin = () => {
-        axios({
-            method: "post",
-            url: address + `app/api/v1.0/user/external/login/`,
-            data: {
-                username: this.state.username,
-                password: this.state.password
-            }
-        })
+        tryLogin(this.state.username, this.state.password)
             .then(
                 (response) => {
                     if (response.data !== null && response.data.access === true) {
@@ -110,51 +124,232 @@ class InnuendoLogin extends React.Component {
 
     render() {
         return (
-            <form onSubmit={this.handleSubmit}>
-                <div className={styles.innuendoLogin}>
-                    <div className={styles.innuendoLoginDiv}>
-                        <Typography variant="title">Sign In</Typography>
-                    </div>
-                    <div className={styles.innuendoFormDiv}>
-                        <TextField className={styles.innuendoInputForm}
-                                   required
-                                   id="username"
-                                   name="username"
-                                   label="Username"
-                                   defaultValue=""
-                                   onChange={this.handleChange}
-                        />
-                    </div>
-                    <div className={styles.innuendoFormDiv}>
-                        <TextField
-                            className={styles.innuendoInputForm}
-                            required
-                            id="password"
-                            name="password"
-                            label="Password"
-                            type="password"
-                            autoComplete="current-password"
-                            onChange={this.handleChange}
-                        />
-                    </div>
-                    <div className={styles.innuendoFormDiv}>
-                        <Button variant="contained" color="primary"
-                                type="submit">
-                            Submit
-                        </Button>
-                    </div>
-                    {
-                        this.state.error &&
-                        <div className={styles.innuendoFormDiv}>
-                            <Typography color="error">Invalid username or
-                                password.</Typography>
+            <Paper className={styles.innuendoHomeContainer}>
+                <form onSubmit={this.handleSubmit}>
+                    <div className={styles.innuendoLogin}>
+                        <div className={styles.innuendoLoginDiv}>
+                            <Typography variant="title">Sign In</Typography>
                         </div>
-                    }
-                </div>
-            </form>
+                        <div className={styles.innuendoFormDiv}>
+                            <TextField className={styles.innuendoInputForm}
+                                       required
+                                       id="username"
+                                       name="username"
+                                       label="Username"
+                                       defaultValue=""
+                                       onChange={this.handleChange}
+                            />
+                        </div>
+                        <div className={styles.innuendoFormDiv}>
+                            <TextField
+                                className={styles.innuendoInputForm}
+                                required
+                                id="password"
+                                name="password"
+                                label="Password"
+                                type="password"
+                                autoComplete="current-password"
+                                onChange={this.handleChange}
+                            />
+                        </div>
+                        <div className={styles.innuendoFormDiv}>
+                            <Button variant="contained" color="primary"
+                                    type="submit">
+                                Submit
+                            </Button>
+                        </div>
+                        {
+                            this.state.error &&
+                            <div className={styles.innuendoFormDiv}>
+                                <Typography color="error">Invalid username or
+                                    password.</Typography>
+                            </div>
+                        }
+                    </div>
+                </form>
+            </Paper>
         )
     }
 }
+
+
+class InnuendoHomePage extends React.Component {
+
+    render() {
+
+        //Inline style
+        const style = {
+            paper: {
+                height: 'auto'
+            }
+        };
+
+        return (
+            <div>
+                <InnuendoGeneralStatistics/>
+                <Paper style={style.paper}>
+                    <InnuendoTabs/>
+                </Paper>
+            </div>
+        )
+    }
+}
+
+
+/**
+ * Component that defines the general statistics part of the INNUENDO
+ * reports home page
+ */
+class InnuendoGeneralStatistics extends React.Component {
+
+    constructor(props) {
+        super(props);
+
+        this.getStatistics();
+
+        this.state = {
+            totalProjects: 0,
+            totalSpecies: 0,
+            totalWgMLST: 0
+
+        }
+    }
+
+    getStatistics = () => {
+        getStatistics().then((response) => {
+
+            let totalSpecies = 0;
+            let totalProjects = 0;
+            let totalWgMLST = 0;
+
+            for (const specieData in response.data) {
+                totalSpecies += 1;
+                totalProjects += response.data[specieData][1];
+                totalWgMLST += response.data[specieData][2];
+            }
+
+            this.setState({
+                totalProjects: totalProjects,
+                totalSpecies: totalSpecies,
+                totalWgMLST: totalWgMLST
+            })
+        })
+    };
+
+
+    render() {
+
+        //Inline style
+        const style = {
+            icon: {
+                fontSize: 45
+            },
+            basicMargin: {
+                marginTop: '5%',
+                marginBottom: '3%'
+            }
+        };
+
+        return (
+            <div style={style.basicMargin}>
+                <Grid container justify="center"
+                      spacing={8}>
+                    <Grid item xs={12} sm={4}>
+                        <InnuendoCard
+                            title="Species"
+                            icon={<BugReportIcon style={style.icon}/>}
+                            text={`${this.state.totalSpecies} Species available`}
+                            color={red[300]}
+                        />
+                    </Grid>
+                    <Grid item xs={12} sm={4}>
+                        <InnuendoCard
+                            title="Projects"
+                            icon={<ImportContactsIcon style={style.icon}/>}
+                            text={`${this.state.totalProjects} Projects available`}
+                            color={green[300]}
+                        />
+                    </Grid>
+                    <Grid item xs={12} sm={4}>
+                        <InnuendoCard
+                            title="wgMLST profiles"
+                            icon={<TimelineIcon style={style.icon}/>}
+                            text={`${this.state.totalWgMLST} wgMLST profiles available`}
+                            color={yellow[300]}
+                        />
+                    </Grid>
+                </Grid>
+            </div>
+        )
+    }
+}
+
+/**
+ * Innuendo Card definition.
+ * @param title
+ * @param icon
+ * @param text
+ * @returns {XML}
+ * @constructor
+ */
+const InnuendoCard = ({title, icon, text, color}) => {
+
+    const style = {
+        cardIcon: {
+            margin: 'auto',
+            textAlign: 'center',
+        },
+        cardText: {
+            textAlign: 'left',
+            color: 'white'
+        },
+        text: {
+            marginTop: '2%'
+        },
+        card: {
+            backgroundColor: color
+        }
+    };
+
+    return (
+        <Card style={style.card}>
+            <CardContent>
+                <Grid container>
+                    <Grid item xs={12} sm={4} style={style.cardIcon}>
+                        {icon}
+                    </Grid>
+                    <Grid item xs={12} sm={8} style={style.cardText}>
+                        <Typography variant="title">{title}</Typography>
+                        <Divider/>
+                        <Typography style={style.text}>{text}</Typography>
+                    </Grid>
+                </Grid>
+            </CardContent>
+        </Card>
+    )
+};
+
+
+/**
+ * Tab container definition.
+ * @param children
+ * @param dir
+ * @returns {XML}
+ * @constructor
+ */
+const TabContainer = ({children, dir}) => {
+    const style = {
+        typography: {
+            padding: 8 * 3,
+        }
+    };
+
+    return (
+        <Typography component="div" dir={dir} style={style.typography}>
+            {children}
+        </Typography>
+    );
+};
 
 
 /**
@@ -163,57 +358,54 @@ class InnuendoLogin extends React.Component {
 class InnuendoTabs extends React.Component {
 
     state = {
-        openTab: 0
+        value: 0
     };
 
-    handleClick = (index) => {
-        this.setState({
-            openTab: index
-        });
+    handleChange = (event, value) => {
+        this.setState({value});
     };
 
     render() {
+
+        //Inline style
+        const style = {
+            swipeView: {
+                overflow: 'none'
+            }
+        };
+
         return (
-            <div>
-                <div className={styles.innuendoTabButtonsDiv}>
-                    <Button
-                        className={styles.innuendoTabButtons}
-                        variant="contained"
-                        color="primary"
-                        name="0"
-                        onClick={() => {
-                            this.handleClick(0)
-                        }}
-                    >
-                        <Typography variant="display1"
-                                    className={styles.innuendoTabButtonText}>Select
-                            Projects</Typography>
-                    </Button>
-                    <Button
-                        className={styles.innuendoTabButtons}
-                        variant="contained"
-                        color="primary"
-                        name="1"
-                        onClick={() => {
-                            this.handleClick(1)
-                        }}
-                    >
-                        <Typography variant="display1"
-                                    className={styles.innuendoTabButtonText}>Saved
-                            Reports</Typography>
-                    </Button>
-                </div>
-                <div>
+            <Grid container spacing={8}>
+                <Grid item xs={12} sm={12}>
+                    <AppBar position="static" color="default">
+                        <Tabs
+                            value={this.state.value}
+                            onChange={this.handleChange}
+                            indicatorColor="primary"
+                            textColor="primary"
+                            fullWidth
+                            centered
+                        >
+                            <Tab label="Project Select"/>
+                            <Tab label="Saved Projects"/>
+                        </Tabs>
+                    </AppBar>
                     {
-                        this.state.openTab === 0 &&
-                        <InnuendoProjects></InnuendoProjects>
+                        this.state.value === 0 &&
+                        <TabContainer>
+                            <InnuendoProjects></InnuendoProjects>
+                        </TabContainer>
                     }
                     {
-                        this.state.openTab === 1 &&
-                        <Typography>1</Typography>
+                        this.state.value === 1 &&
+                        <TabContainer>
+                            <InnuendoSavedReports/>
+                        </TabContainer>
                     }
-                </div>
-            </div>
+
+                </Grid>
+            </Grid>
+
         )
     }
 }
@@ -227,8 +419,6 @@ class InnuendoProjects extends React.Component {
 
     constructor(props) {
         super(props);
-
-        this.loadInnuendoData();
 
         this.state = {
             selectedProjects: [],
@@ -245,6 +435,8 @@ class InnuendoProjects extends React.Component {
             resultsMetadata: []
         };
 
+        this.loadInnuendoData();
+
     }
 
     async loadInnuendoData() {
@@ -256,12 +448,8 @@ class InnuendoProjects extends React.Component {
     Get all the available species at the INNUENDO Platform
      */
     getSpecies = () => {
-        axios({
-            method: "get",
-            url: address + "app/api/v1.0/species/",
 
-        }).then((response) => {
-
+        getInnuendoSpecies().then((response) => {
             let speciesObject = {};
 
             response.data.map(r => {
@@ -273,17 +461,14 @@ class InnuendoProjects extends React.Component {
         });
     };
 
+
     /*
     Get all the available projects. Those are then mapped to their specific
      species.
      */
     getProjects = () => {
 
-        axios({
-            method: "get",
-            url: address + "app/api/v1.0/projects/all/",
-
-        }).then((response) => {
+        getInnuendoProjects().then((response) => {
             const species = this.state.species;
             let projects = [];
             let projectNamesToIds = {};
@@ -306,14 +491,7 @@ class InnuendoProjects extends React.Component {
      */
     getProjectStrains = () => {
 
-        axios({
-            method: "get",
-            url: address + "app/api/v1.0/reports/project/info",
-            params: {
-                project_id: this.state.selectedProjectIds.join(",")
-            }
-
-        }).then((response) => {
+        getInnuendoProjectStrains(this.state.selectedProjectIds).then((response) => {
             const responseData = parseProjectSearch(response.data);
 
             this.setState({
@@ -329,26 +507,12 @@ class InnuendoProjects extends React.Component {
     /*
     Request to get all reports for a set of strains in a given time interval.
      */
-    getReportsByFilter = async (filter) => {
-        return await axios({
-            method: "post",
-            url: address + "app/api/v1.0/reports/project/filter/",
-            data: filter
-
-        });
-    };
+    getReportsByFilter = getInnuendoReportsByFilter;
 
     /*
     Get all metadata associated with a set of strains.
      */
-    getStrainsMetadata = async (filter) => {
-        return await axios({
-            method: "post",
-            url: address + "app/api/v1.0/strains/name/",
-            data: filter
-
-        });
-    };
+    getStrainsMetadata = getInnuendoStrainsMetadata;
 
     /*
     Loads all reports according with the chosen strains.
@@ -388,22 +552,34 @@ class InnuendoProjects extends React.Component {
 
     };
 
-    handleChangeProjects = event => {
+    handleChangeProjects = (selectedValues) => {
 
         const projectIndexes = [];
+        const selectedProjects = [];
 
-        for (const value of event.target.value) {
-            projectIndexes.push(this.state.projectNameToId[value])
+        for (const entry of selectedValues) {
+            projectIndexes.push(this.state.projectNameToId[entry.value]);
+            selectedProjects.push(entry.value);
         }
 
         this.setState({
-            selectedProjects: event.target.value,
-            selectedProjectIds: projectIndexes
+            selectedProjects: selectedProjects,
+            selectedProjectIds: projectIndexes,
         });
+
     };
 
-    handleChangeStrains = event => {
-        this.setState({selectedStrains: event.target.value});
+    handleChangeStrains = (selectedValues) => {
+
+        const selectedStrains = [];
+
+        for (const entry of selectedValues) {
+            selectedStrains.push(entry.value);
+        }
+
+        this.setState({
+            selectedStrains: selectedStrains
+        });
     };
 
     updateDate = (event) => {
@@ -416,27 +592,39 @@ class InnuendoProjects extends React.Component {
     };
 
     render() {
+
         return (
-            <div className={styles.innuendoLogin}>
-                <InnuendoProjectSelector
-                    selectedProjects={this.state.selectedProjects}
-                    handleChangeProjects={this.handleChangeProjects}
-                    projects={this.state.projects}
-                    getProjectStrains={this.getProjectStrains}
-                />
+            <Grid container>
+                <Grid item xs={12} sm={12}>
+                    <InnuendoProjectSelector
+                        handleChangeProjects={this.handleChangeProjects}
+                        projects={this.state.projects}
+                        getProjectStrains={this.getProjectStrains}
+                    />
+                </Grid>
                 {
                     this.state.strains.length > 0 &&
-                    <InnuendoFilters
-                        selectedStrains={this.state.selectedStrains}
-                        handleChangeStrains={this.handleChangeStrains}
-                        strains={this.state.strains}
-                        minDate={this.state.minDate}
-                        maxDate={this.state.maxDate}
-                        updateDate={this.updateDate}
-                        submitStrains={this.submitStrains}
-                    />
+                    <Grid item xs={12} sm={12}>
+                        <InnuendoFilters
+                            handleChangeStrains={this.handleChangeStrains}
+                            strains={this.state.strains}
+                            minDate={this.state.minDate}
+                            maxDate={this.state.maxDate}
+                            updateDate={this.updateDate}
+                            submitStrains={this.submitStrains}
+                        />
+                    </Grid>
                 }
-            </div>
+
+            </Grid>
+        )
+    }
+}
+
+class InnuendoSavedReports extends React.Component {
+    render() {
+        return (
+            <div>BAH</div>
         )
     }
 }
@@ -446,38 +634,67 @@ class InnuendoProjects extends React.Component {
  */
 class InnuendoProjectSelector extends React.Component {
 
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            values: []
+        };
+
+    }
+
+    setOptions = () => {
+        return this.props.projects.map(name => {
+            return {'value': name, 'label': name}
+
+        });
+    };
+
+    handleSelectChange(values) {
+        this.setState({values});
+    };
+
     render() {
+
+        // Inline styling
+        const style = {
+            baseDiv: {
+                textAlign: 'center',
+                marginLeft: '20%',
+                marginRight: '20%'
+            },
+            typoText: {
+                color: 'black',
+                marginBottom: '5px'
+            },
+            selectDiv: {
+                width: '100%',
+                zIndex: 1000,
+
+            },
+            select: {
+                marginBottom: '1%'
+            }
+        };
+
         return (
-            <div>
-                <div className={styles.innuendoLoginDiv}>
-                    <FormControl className={styles.innuendoInputForm}>
-                        <InputLabel
-                            htmlFor="select-multiple-checkbox">Projects</InputLabel>
-                        <Select
-                            multiple
-                            value={this.props.selectedProjects}
-                            onChange={this.props.handleChangeProjects}
-                            input={<Input id="select-multiple-checkbox"/>}
-                            renderValue={selected => this.props.selectedProjects.join(', ')}
-                        >
-                            {
-                                this.props.projects.map(name => (
-                                    <MenuItem key={name} value={name}>
-                                        <Checkbox
-                                            checked={this.props.selectedProjects.indexOf(name) > -1}/>
-                                        <ListItemText primary={name}/>
-                                    </MenuItem>
-                                ))
-                            }
-                        </Select>
-                    </FormControl>
-                </div>
-                <div className={styles.innuendoFormDiv}>
-                    <Button className={styles.innuendoInputForm}
-                            variant="contained" color="primary"
-                            onClick={this.props.getProjectStrains}>
-                        Submit
-                    </Button>
+            <div style={style.baseDiv}>
+                <div style={style.selectDiv}>
+                    <Typography variant="title" style={style.typoText}>Choose
+                        Projects</Typography>
+                    <Select
+                        onClose={this.props.getProjectStrains}
+                        closeOnSelect={false}
+                        multi
+                        value={this.state.values}
+                        onChange={(values) => {
+                            this.props.handleChangeProjects(values);
+                            this.handleSelectChange(values);
+                        }}
+                        options={this.setOptions()}
+                        style={style.select}
+                    />
+                    <Typography style={style.typoText}>Or drag and drop a report file to the page!</Typography>
                 </div>
             </div>
         )
@@ -489,67 +706,115 @@ class InnuendoProjectSelector extends React.Component {
  */
 class InnuendoFilters extends React.Component {
 
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            values: []
+        };
+
+    }
+
+    setOptions = () => {
+        return this.props.strains.map(name => {
+            return {'value': name, 'label': name}
+
+        });
+    };
+
+    handleSelectChange(values) {
+        this.setState({values});
+    };
+
+
     render() {
+
+        //Inline style
+        const style = {
+            divider: {
+                height: '3px',
+                marginTop: '2%',
+                marginBottom: '2%'
+
+            },
+            filterTitle: {
+                color: 'black',
+                marginBottom: '1%'
+            },
+            filterStrainText: {
+                color: 'black',
+                textAlign: 'left',
+                fontSize: '12px'
+            },
+            formControl: {
+                width: '100%',
+                textAlign: 'center'
+            },
+            submitButton: {
+                backgroundColor: green[300],
+                color: 'white'
+            }
+        };
+
         return (
             <div>
-                <Divider className={styles.innuendoDivider}/>
-                <Typography
-                    className={styles.innuendoTitle}>Filters:</Typography>
-                <FormControl className={styles.innuendoInputForm}>
-                    <InputLabel
-                        htmlFor="select-multiple-checkbox">Strains</InputLabel>
-                    <Select
-                        multiple
-                        label="Strains"
-                        value={this.props.selectedStrains}
-                        onChange={this.props.handleChangeStrains}
-                        input={<Input
-                            id="select-multiple-checkbox"/>}
-                        renderValue={selected => this.props.selectedStrains.join(', ')}
-                    >
-                        {
-                            this.props.strains.map(name => (
-                                <MenuItem key={name} value={name}>
-                                    <Checkbox
-                                        checked={this.props.selectedStrains.indexOf(name) > -1}/>
-                                    <ListItemText primary={name}/>
-                                </MenuItem>
-                            ))
-                        }
-                    </Select>
+                <Divider style={style.divider}/>
+                <Typography variant="title"
+                            style={style.filterTitle}>Filters:</Typography>
+                <FormControl style={style.formControl}>
+                    <Grid container spacing={8}>
+                        <Grid item sm={6}>
+                            <Typography
+                                style={style.filterStrainText}>Strains</Typography>
+                            <Select
+                                closeOnSelect={false}
+                                multi
+                                label="Strains"
+                                value={this.state.values}
+                                onChange={(values) => {
+                                    this.props.handleChangeStrains(values);
+                                    this.handleSelectChange(values)
+                                }}
+                                options={this.setOptions()}
+                            />
+                        </Grid>
+                        <Grid item sm={2}>
 
-                    <TextField
-                        id="startDate"
-                        label="From"
-                        type="date"
-                        name="minDate"
-                        InputLabelProps={{
-                            shrink: true,
-                        }}
-                        defaultValue={this.props.minDate}
-                    />
-
-                    <TextField
-                        id="endDate"
-                        label="To"
-                        type="date"
-                        name="maxDate"
-                        InputLabelProps={{
-                            shrink: true,
-                        }}
-                        defaultValue={this.props.maxDate}
-                        onChange={this.props.updateDate}
-                    />
+                            <TextField
+                                id="startDate"
+                                label="From"
+                                type="date"
+                                name="minDate"
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
+                                defaultValue={this.props.minDate}
+                            />
+                        </Grid>
+                        <Grid item sm={2}>
+                            <TextField
+                                id="endDate"
+                                label="To"
+                                type="date"
+                                name="maxDate"
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
+                                defaultValue={this.props.maxDate}
+                                onChange={this.props.updateDate}
+                            />
+                        </Grid>
+                        <Grid item sm={2}>
+                            <Button className={styles.innuendoInputForm}
+                                    variant="contained"
+                                    size="large"
+                                    style={style.submitButton}
+                                    onClick={this.props.submitStrains}>
+                                Submit
+                            </Button>
+                        </Grid>
+                    </Grid>
                 </FormControl>
-
-                <div className={styles.innuendoFormDiv}>
-                    <Button className={styles.innuendoInputForm}
-                            variant="contained" color="primary"
-                            onClick={this.props.submitStrains}>
-                        Submit
-                    </Button>
-                </div>
-
             </div>
         )
     }

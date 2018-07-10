@@ -1,12 +1,24 @@
 :local(.innuendoHomeContainer) {
-    width: 60%;
+    width: 89%!important;
     height: auto!important;
     position: absolute;
-    top:20%;
     left: 0;
     right: 0;
 
     margin: auto;
+}
+
+.Select.is-open {
+    position: relative!important;
+    z-index: 1000!important;
+}
+
+.Select-menu-outer {
+  z-index: 999!important;
+}
+
+:local(.basicMargin) {
+    margin-bottom: 2%!important;
 }
 
 :local(.innuendoHome) {
@@ -43,13 +55,6 @@
 
 :local(.innuendoTabButtonText) {
     color: white!important;
-}
-
-:local(.innuendoDivider) {
-    width:100%!important;
-    margin-top: 30px!important;
-    height: 5px!important;
-    background-color: grey!important;
 }
 
 :local(.innuendoGrid) {
