@@ -2,6 +2,7 @@
 import React from "react"
 
 import Button from '@material-ui/core/Button';
+import Tooltip from "@material-ui/core/Tooltip";
 
 import PlusIcon from "mdi-react/PlusIcon"
 import MagnifyIcon from "mdi-react/MagnifyIcon"
@@ -23,7 +24,6 @@ export class TaskButtons extends React.Component {
     }
 
     showTaskButtons (e) {
-        console.log(this)
         this.setState({"active": true})
     }
 
@@ -51,9 +51,11 @@ class SearchTask extends React.Component {
     render () {
         return (
             <div className={styles.taskButton} style={{"opacity": this.props.active ? 1 : 0, "marginBottom": this.props.active ? "15px" : "0" }}>
-                <Button mini variant={"fab"} color={"default"}>
-                    <MagnifyIcon/>
-                </Button>
+                <Tooltip id={"tooltip-search"} title={"Search samples"} placement={"left"}>
+                    <Button mini variant={"fab"} color={"default"}>
+                        <MagnifyIcon/>
+                    </Button>
+                </Tooltip>
             </div>
         )
     }
@@ -64,9 +66,11 @@ class FilterTask extends React.Component {
     render () {
         return (
             <div className={styles.taskButton} style={{"opacity": this.props.active ? 1 : 0, "marginBottom": this.props.active ? "15px" : "0" }}>
-                <Button mini variant={"fab"} color={"default"}>
-                    <FilterIcon/>
-                </Button>
+                <Tooltip id={"tooltip-filter"} title={"Filter samples"} placement={"left"}>
+                    <Button mini variant={"fab"} color={"default"}>
+                        <FilterIcon/>
+                    </Button>
+                </Tooltip>
             </div>
         )
     }
