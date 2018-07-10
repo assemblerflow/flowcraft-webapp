@@ -209,7 +209,7 @@ export const genericTableParser = (reportArray) => {
                         <Typography className={styles.tableSecondaryHeader}>{h.processName}</Typography>
                     </div>,
             accessor: h.accessor,
-            minWidth: 90
+            minWidth: 120
         })
     }
 
