@@ -171,13 +171,24 @@ const getColumnMax = (reportArray) => {
  * as is. Additional modifications to the table cell can still be performed
  * conditional on the present of certain keys in the JSON (columnBar for instance)
  * @param reportArray
- * @returns {*[]}
+ * @returns {{tableArray: Array, columnsArray: Array, rawTableArray: Array}}
  */
 export const genericTableParser = (reportArray) => {
 
+    // Temporary data object. Will be used to generate the finalDataDict array
     let dataDict = {};
+
+    // Stores the column array, ready to be provided to react table
     let columnsArray = [];
-    let finalDataDict = [];
+
+    // Stores the final processed data to display in the table, already
+    // with the final components of the table cells
+    let tableArray = [];
+
+    // Stores the final array, but contains the raw values, instead of the
+    // processed cell components used in the tableArray.
+    let rawDataDict = {};
+    let rawTableArray = [];
 
 
     const tableHeaders  = getTableHeaders(reportArray);
@@ -214,20 +225,27 @@ export const genericTableParser = (reportArray) => {
                 "_id": cell.rowId,
                 "rowId": <Typography className={styles.tableCell}>{cell.rowId}</Typography>
             };
+            rawDataDict[cell.rowId] = {
+                "rowId": cell.rowId
+            };
             dataDict[cell.rowId][accessor] = <CellBar value={cell.value} max={columnMaxVals.get(cell.header)}/>;
+            rawDataDict[cell.rowId][accessor] = cell.value;
         } else {
             dataDict[cell.rowId][accessor] = <CellBar value={cell.value} max={columnMaxVals.get(cell.header)}/>;
+            rawDataDict[cell.rowId][accessor] = cell.value;
         }
     }
 
     // Create array of data by row
     for (const id in dataDict){
-        finalDataDict.push(dataDict[id]);
+        tableArray.push(dataDict[id]);
+        rawTableArray.push(rawDataDict[id])
     }
 
-    return [
-        finalDataDict,
-        columnsArray
-    ]
+    return {
+        tableArray,
+        columnsArray,
+        rawTableArray,
+    }
 
 };

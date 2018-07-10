@@ -2,16 +2,22 @@ import React from "react";
 import ReactTable from "react-table";
 import checkboxHOC from "react-table/lib/hoc/selectTable";
 
+import {CSVLink} from 'react-csv';
+
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary"
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails"
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import DialogContent from "@material-ui/core/DialogContent";
+import DialogActions from "@material-ui/core/DialogActions";
+import FormControl from "@material-ui/core/FormControl";
+import Input from "@material-ui/core/Input";
+import DialogTitle from "@material-ui/core/DialogTitle";
 import Typography from "@material-ui/core/Typography";
-import Paper from '@material-ui/core/Paper';
-import Tooltip from '@material-ui/core/Tooltip';
-import Button from '@material-ui/core/Button';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
+import Tooltip from "@material-ui/core/Tooltip";
+import Dialog from "@material-ui/core/Dialog";
+import Paper from "@material-ui/core/Paper";
+import Button from "@material-ui/core/Button";
 
 import styles from "../../styles/reports.css"
 
@@ -88,9 +94,14 @@ class FCTable extends React.Component {
         return this.state.selection.includes(key);
     };
 
-
-
     render () {
+
+        const style = {
+            toolbar: {
+                marginBottom: "20px",
+            }
+        };
+
         const { toggleSelection, toggleAll, isSelected } = this;
         const { selectAll } = this.state;
 
@@ -114,14 +125,20 @@ class FCTable extends React.Component {
         };
 
         return (
-            <CheckboxTable
-                ref={r => (this.checkboxTable = r)}
-                data={this.props.data}
-                columns={this.props.columns}
-                defaultPageSize={10}
-                className={"-striped -highlight"}
-                {...checkboxProps}
-            />
+            <div>
+                <div style={style.toolbar}>
+                    <ExportTooltipButton tableData={this.props.rawData}
+                                         tableHeaders={this.props.rawColumns} />
+                </div>
+                <CheckboxTable
+                    ref={r => (this.checkboxTable = r)}
+                    data={this.props.data}
+                    columns={this.props.columns}
+                    defaultPageSize={10}
+                    className={"-striped -highlight"}
+                    {...checkboxProps}
+                />
+            </div>
         )
     }
 
@@ -145,8 +162,9 @@ export class QualityControlTable extends React.Component {
                 <ExpansionPanelDetails>
                     <div className={styles.mainPaper}>
                         <FCTable
-                            data={tableData[0]}
-                            columns={tableData[1]}
+                            data={tableData.tableArray}
+                            columns={tableData.columnsArray}
+                            rawData={tableData.rawTableArray}
                             setSelection={this.setSelection}
                         />
                     </div>
@@ -182,8 +200,9 @@ export class AssemblyTable extends React.Component {
                 <ExpansionPanelDetails>
                     <div className={styles.mainPaper}>
                         <FCTable
-                            data={tableData[0]}
-                            columns={tableData[1]}
+                            data={tableData.tableArray}
+                            columns={tableData.columnsArray}
+                            rawData={tableData.rawTableArray}
                             setSelection={this.setSelection}
                         />
                     </div>
@@ -218,8 +237,9 @@ export class AbricateTable extends React.Component {
                 <ExpansionPanelDetails>
                     <div className={styles.mainPaper}>
                         <FCTable
-                            data={tableData[0]}
-                            columns={tableData[1]}
+                            data={tableData.tableArray}
+                            columns={tableData.columnsArray}
+                            rawData={tableData.rawTableArray}
                             setSelection={this.setSelection}
                         />
                     </div>
@@ -247,13 +267,13 @@ export class ChewbbacaTable extends React.Component {
         const refDict = {"fail": "label-danger", "warning": "label-warning", "pass": "label-success"};
 
         // Add status header to table columns
-        tableData[1].splice(1, 0, {
+        tableData.columnsArray.splice(1, 0, {
             Header: <Typography>Status</Typography>,
             accessor: "status",
             minWidth: 90
         });
 
-        for (const row of tableData[0]){
+        for (const row of tableData.tableArray){
 
             for (const process of originalData){
                 if(process.processName.indexOf("chewbbaca") > -1){
@@ -292,8 +312,9 @@ export class ChewbbacaTable extends React.Component {
                             <Button>Export</Button>
                         </TableButtons>
                         <FCTable
-                            data={tableData[0]}
-                            columns={tableData[1]}
+                            data={tableData.tableArray}
+                            columns={tableData.columnsArray}
+                            rawData={tableData.rawTableArray}
                             setSelection={this.setSelection}
                         />
                     </div>
@@ -348,6 +369,20 @@ export class TableButtons extends React.Component {
         return (
             <div className={styles.tableButtonsDiv}>
                 {this.props.children}
+            </div>
+        )
+    }
+}
+
+
+class ExportTooltipButton extends React.Component {
+
+    render () {
+        return (
+            <div>
+                <CSVLink data={this.props.tableData} style={{"textDecoration": "none"}}>
+                    <Button onClick={this.handleClickOpen} variant={"contained"} color={"primary"}>Export CSV</Button>
+                </CSVLink>
             </div>
         )
     }
