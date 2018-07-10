@@ -29,7 +29,7 @@ const statusColor = {
     "fail": red[300],
     "pass": green[300],
     "warning": yellow[300]
-}
+};
 
 
 class FCTable extends React.Component {
@@ -107,7 +107,7 @@ class FCTable extends React.Component {
                 const selected = this.isSelected(r.original._id);
                 return {
                     style: {
-                        backgroundColor: selected ? "lightgreen" : "inherit"
+                        backgroundColor: selected ? green[100] : "inherit"
                     }
                 };
             }
@@ -119,7 +119,7 @@ class FCTable extends React.Component {
                 data={this.props.data}
                 columns={this.props.columns}
                 defaultPageSize={10}
-                className="-striped -highlight"
+                className={"-striped -highlight"}
                 {...checkboxProps}
             />
         )
@@ -243,7 +243,6 @@ export class ChewbbacaTable extends React.Component {
     };
 
     chewbbacaParser = (tableData, originalData) => {
-        console.log(tableData);
 
         const refDict = {"fail": "label-danger", "warning": "label-warning", "pass": "label-success"};
 

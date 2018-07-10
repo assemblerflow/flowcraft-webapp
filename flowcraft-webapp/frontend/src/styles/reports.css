@@ -92,5 +92,15 @@
 :local(.taskButton) {
     margin-bottom: 0;
     z-index: 99;
-    transition: opacity ease-in 0.2s, margin-bottom ease-in 0.2s;
+    transition: opacity ease-in 0.15s, margin-bottom ease-in 0.15s;
+}
+
+:local(.tableMainHeader) {
+    font-weight: bold!important;
+}
+
+:local(.tableSecondaryHeader) {
+    font-size: 12px!important;
+    font-weight: bold!important;
+    color: #525252 !important;
 }

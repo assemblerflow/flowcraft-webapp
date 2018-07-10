@@ -132,7 +132,7 @@ export const getTableHeaders = (dataArray) => {
 
     return sortedColumns.map((v) => {
         return {
-            accessor: v[0],
+            accessor: `${v[0]}${v[1].processName}`,
             Header: v[1].header,
             processName: v[1].processName,
         }
@@ -193,7 +193,10 @@ export const genericTableParser = (reportArray) => {
     // Add tableHeaders with typography and minWidth
     for (const h of tableHeaders){
         columnsArray.push({
-            Header: <Typography>{h.Header}</Typography>,
+            Header: <div>
+                        <Typography className={styles.tableMainHeader}>{h.Header}</Typography>
+                        <Typography className={styles.tableSecondaryHeader}>{h.processName}</Typography>
+                    </div>,
             accessor: h.accessor,
             minWidth: 90
         })
@@ -201,7 +204,7 @@ export const genericTableParser = (reportArray) => {
 
     for (const cell of reportArray) {
 
-        const joinHeader = cell.header.split(" ").join("");
+        const accessor = `${cell.header.split(" ").join("")}${cell.processName}`;
 
         // Add values to dictionary by rowId
         if (!dataDict.hasOwnProperty(cell.rowId)) {
@@ -211,9 +214,9 @@ export const genericTableParser = (reportArray) => {
                 "_id": cell.rowId,
                 "rowId": <Typography className={styles.tableCell}>{cell.rowId}</Typography>
             };
-            dataDict[cell.rowId][joinHeader] = <CellBar value={cell.value} max={columnMaxVals.get(cell.header)}/>;
+            dataDict[cell.rowId][accessor] = <CellBar value={cell.value} max={columnMaxVals.get(cell.header)}/>;
         } else {
-            dataDict[cell.rowId][joinHeader] = <CellBar value={cell.value} max={columnMaxVals.get(cell.header)}/>;
+            dataDict[cell.rowId][accessor] = <CellBar value={cell.value} max={columnMaxVals.get(cell.header)}/>;
         }
     }
 

@@ -209,7 +209,7 @@ class ReportsApp extends React.Component {
         console.log(this.state)
         return(
             <div>
-                <TaskButtons/>
+                <TaskButtons tableData={this.state.tableData}/>
                 <ReportsHeader tableHeaders={this.state.tables} chartHeaders={this.state.charts}>
                     {
                         this.state.tables.includes("qc") &&
