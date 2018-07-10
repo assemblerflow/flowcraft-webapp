@@ -19,6 +19,8 @@ import { Link, DirectLink, Element, Events, animateScroll as scroll, scrollSpy, 
 import styles from "../styles/reports.css";
 import {service} from "../../config.json"
 
+import {TaskButtons} from "./reports/task_buttons"
+
 
 /**
  * Full component for Reports home page. It is responsible for handling
@@ -204,8 +206,10 @@ class ReportsApp extends React.Component {
         // data in the this.state.reportData array, and each component should
         // be responsible for handling the data in any way they see fit.
         //
+        console.log(this.state)
         return(
             <div>
+                <TaskButtons/>
                 <ReportsHeader tableHeaders={this.state.tables} chartHeaders={this.state.charts}>
                     {
                         this.state.tables.includes("qc") &&

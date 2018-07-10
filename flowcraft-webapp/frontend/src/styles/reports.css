@@ -79,3 +79,18 @@
     text-align: left;
     margin-bottom: 5px;
 }
+
+:local(.moreOptionsButton) {
+    position: fixed;
+    bottom: 2%;
+    right: 5px;
+    z-index: 100;
+    display: block;
+    text-align: center;
+}
+
+:local(.taskButton) {
+    margin-bottom: 0;
+    z-index: 99;
+    transition: opacity ease-in 0.2s, margin-bottom ease-in 0.2s;
+}
