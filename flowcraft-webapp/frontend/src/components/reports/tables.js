@@ -380,7 +380,7 @@ class ExportTooltipButton extends React.Component {
     render () {
         return (
             <div>
-                <CSVLink data={this.props.tableData} style={{"textDecoration": "none"}}>
+                <CSVLink data={this.props.tableData} filename="table_data.csv" style={{"textDecoration": "none"}}>
                     <Button onClick={this.handleClickOpen} variant={"contained"} color={"primary"}>Export CSV</Button>
                 </CSVLink>
             </div>
