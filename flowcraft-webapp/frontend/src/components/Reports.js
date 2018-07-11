@@ -8,7 +8,7 @@ import Paper from "@material-ui/core/Paper";
 import {findTableSignatures, findChartSignatures} from "./reports/parsers";
 import {QualityControlTable, AssemblyTable, AbricateTable, ChewbbacaTable} from "./reports/tables";
 import {BasicModal} from "./reports/modals";
-import {FastQcCharts} from "./reports/charts";
+import {AssemblySizeDistChart, FastQcCharts} from "./reports/charts";
 import {ReportsHeader} from "./reports/drawer";
 import {HomeInnuendo} from "./reports/innuendo";
 import {HomeInput} from "./Inspect";
@@ -241,9 +241,15 @@ class ReportsApp extends React.Component {
                     }
                     {
                         this.state.charts.includes("base_n_content") &&
-                             <Element name={"fastqcCharts"} className={styles.scrollElement}>
+                             <Element name={"base_n_contentChart"} className={styles.scrollElement}>
                                 <FastQcCharts rawReports={this.state.reportData}/>
                              </Element>
+                    }
+                    {
+                        this.state.charts.includes("size_dist") &&
+                        <Element name={"size_distChart"} className={styles.scrollElement}>
+                            <AssemblySizeDistChart rawReports={this.state.reportData}/>
+                        </Element>
                     }
                 </ReportsHeader>
             </div>

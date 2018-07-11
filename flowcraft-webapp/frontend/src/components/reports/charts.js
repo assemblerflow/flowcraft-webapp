@@ -301,3 +301,106 @@ class FastqcNContent extends React.Component {
         )
     }
 }
+
+
+export class AssemblySizeDistChart extends React.Component {
+
+    constructor(props){
+        super(props);
+
+        const data = this.parsePlotData(props.rawReports);
+
+        this.state = {
+            chartData: data.chartData,
+            categories: data.categories
+        }
+    }
+
+    spreadData = (dataArray, index) => {
+
+        let offset = index - 0.25;
+        const step = 0.5 / dataArray.length;
+        let data = [];
+
+        for (const point of dataArray){
+            data.push([offset + step, point]);
+            offset += step
+        }
+
+        return data;
+
+    };
+
+    parsePlotData = (reportData) => {
+
+        const chartSignature = "size_dist";
+        let chartData = [];
+        let categories = [];
+        let sampleCounter = 0;
+
+        for (const r of reportData){
+            if (!r.reportJson.hasOwnProperty("plotData")){
+                continue
+            }
+
+            for (const el of r.reportJson.plotData){
+                if (!el.hasOwnProperty("data")){
+                    continue
+                }
+
+                for (const [plot, data] of Object.entries(el.data)){
+                    if (plot === chartSignature){
+
+                        chartData.push({
+                            name: el.sample,
+                            index: sampleCounter,
+                            color: "grey",
+                            data: this.spreadData(data, sampleCounter),
+                            marker: {symbol: "circle"}
+                        });
+                        categories.push(el.sample);
+                        sampleCounter += 1
+                    }
+                }
+            }
+        }
+
+        return {
+            chartData,
+            categories
+        }
+    };
+
+    render () {
+
+        console.log(this.state)
+
+        let config = new Chart({
+            title: "Contig size distribution",
+            axisLabels: {x: "Sample", y: "Contig size"},
+            series: this.state.chartData
+        });
+
+        config.extend("chart", {type: "scatter"});
+        config.extend("chart", {height: "550px"});
+        config.extend("xAxis", {
+            categories: this.state.categories,
+            labels: {rotation: -45}
+        });
+
+        return (
+            <div>
+            <ExpansionPanel defaultExpanded >
+                <ExpansionPanelSummary  expandIcon={<ExpandMoreIcon/>}>
+                    <Typography variant={"headline"}>Assembled contig size distribution</Typography>
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails>
+                    <div className={styles.mainPaper} style={{"height": "600px"}}>
+                        <ReactHighcharts config={config.layout} ref="assemblySizeDist"></ReactHighcharts>
+                    </div>
+                </ExpansionPanelDetails>
+            </ExpansionPanel>
+            </div>
+        )
+    }
+}

@@ -121,16 +121,27 @@ class ChartDrawer extends React.Component {
     }
 
     render () {
+
+        const headerMap =  {
+            "base_n_content": {"icon": <HeartIcon/>, "text": "FastQC"},
+            "size_dist": {"icon": <FileDocumentBoxIcon/>, "text": "Contig size distribution"},
+        };
+
         return (
             <div>
                 <DrawerHeader onClick={this.toggleDrawer} icon={<ChartLineIcon/>} text={"Charts"}/>
-                <div>
+                <div className={classNames(this.state.expanded ? styles.subDrawerOpen : styles.subDrawerClose)}>
                     {
-                        this.props.chartHeaders.includes("base_n_content") &&
-                        <Link activeClass={styles.activeSideButton} to={"fastqcCharts"} spy={true} smooth={true} duration={500} offset={-70}>
-                            <DrawerButtonEntry icon={<HeartIcon/>}
-                                               text={"FastQC"} />
-                        </Link>
+                        this.props.chartHeaders.map((h) => {
+                            if (headerMap.hasOwnProperty(h)){
+                                return (
+                                    <Link activeClass={styles.activeSideButton} key={h} to={`${h}Chart`} spy={true} smooth={true} duration={500} offset={-70}>
+                                        <DrawerButtonEntry icon={headerMap[h].icon}
+                                                           text={headerMap[h].text}/>
+                                    </Link>
+                                )
+                            }
+                        })
                     }
                 </div>
             </div>
