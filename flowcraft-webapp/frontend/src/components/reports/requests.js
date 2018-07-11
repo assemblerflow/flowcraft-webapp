@@ -94,3 +94,17 @@ export const getInnuendoStrainsMetadata = async (filter) => {
 
     });
 };
+
+/*
+Get innuendo saved reports
+ */
+export const getSavedReports = async (userId) => {
+
+    return await axios({
+        method: 'get',
+        url: address + 'app/api/v1.0/reports/saved/',
+        params: {
+            user_id: userId
+        }
+    })
+};

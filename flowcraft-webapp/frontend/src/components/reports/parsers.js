@@ -80,16 +80,16 @@ export const findChartSignatures = (reportArray) => {
 
     let charts = [];
 
-    for (const r of reportArray){
+    for (const r of reportArray) {
 
         // Skip entries without the plotData signature
-        if (!r.reportJson.hasOwnProperty("plotData")){
+        if (!r.reportJson.hasOwnProperty("plotData")) {
             continue
         }
 
-        for (const el of r.reportJson.plotData){
+        for (const el of r.reportJson.plotData) {
 
-            if (!el.hasOwnProperty("data")){
+            if (!el.hasOwnProperty("data")) {
                 continue
             }
 
@@ -128,7 +128,9 @@ export const getTableHeaders = (dataArray) => {
     }
 
     // Sort the column tableHeaders according to the processId
-    const sortedColumns = [...columnsMap.entries()].sort((a, b) => {return a[1].num - b[1].num});
+    const sortedColumns = [...columnsMap.entries()].sort((a, b) => {
+        return a[1].num - b[1].num
+    });
 
     return sortedColumns.map((v) => {
         return {
@@ -151,9 +153,9 @@ const getColumnMax = (reportArray) => {
 
     let columnMax = new Map();
 
-    for (const cell of reportArray){
+    for (const cell of reportArray) {
 
-        if (!columnMax.has(cell.header)){
+        if (!columnMax.has(cell.header)) {
             columnMax.set(cell.header, parseFloat(cell.value))
         } else if (parseFloat(cell.value) > columnMax.get(cell.header)) {
             columnMax.set(cell.header, parseFloat(cell.value))
@@ -191,7 +193,7 @@ export const genericTableParser = (reportArray) => {
     let rawTableArray = [];
 
 
-    const tableHeaders  = getTableHeaders(reportArray);
+    const tableHeaders = getTableHeaders(reportArray);
     const columnMaxVals = getColumnMax(reportArray);
 
     // Add ID to columns
@@ -202,12 +204,14 @@ export const genericTableParser = (reportArray) => {
     });
 
     // Add tableHeaders with typography and minWidth
-    for (const h of tableHeaders){
+    for (const h of tableHeaders) {
         columnsArray.push({
             Header: <div>
-                        <Typography className={styles.tableMainHeader}>{h.Header}</Typography>
-                        <Typography className={styles.tableSecondaryHeader}>{h.processName}</Typography>
-                    </div>,
+                <Typography
+                    className={styles.tableMainHeader}>{h.Header}</Typography>
+                <Typography
+                    className={styles.tableSecondaryHeader}>{h.processName}</Typography>
+            </div>,
             accessor: h.accessor,
             minWidth: 120
         })
@@ -223,7 +227,8 @@ export const genericTableParser = (reportArray) => {
             // React-table
             dataDict[cell.rowId] = {
                 "_id": cell.rowId,
-                "rowId": <Typography className={styles.tableCell}>{cell.rowId}</Typography>
+                "rowId": <Typography
+                    className={styles.tableCell}>{cell.rowId}</Typography>
             };
             rawDataDict[cell.rowId] = {
                 "rowId": cell.rowId
@@ -248,4 +253,38 @@ export const genericTableParser = (reportArray) => {
         rawTableArray,
     }
 
+};
+
+
+export const InnuendoReportsTableParser = (reportsArray) => {
+
+    let columnsArray = [];
+    let finalDataArray = [];
+
+    const headers = [
+        {header: "Name", accessor: "name"},
+        {header: "Username", accessor: "username"},
+        {header: "Description", accessor: "description"},
+        {header: "Timestamp", accessor: "timestamp"}];
+
+    for (const header of headers) {
+        columnsArray.push({
+            Header: <div>
+                <Typography
+                    className={styles.tableMainHeader}>{header.header}</Typography>
+            </div>,
+            accessor: header.accessor,
+            minWidth: 90
+        })
+    }
+
+    for (const report of reportsArray) {
+        report['_id'] = report.name;
+        finalDataArray.push(report);
+    }
+
+    return [
+        finalDataArray,
+        columnsArray
+    ]
 };

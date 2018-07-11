@@ -14,7 +14,8 @@ import Tab from '@material-ui/core/Tab';
 import Grid from '@material-ui/core/Grid';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
-import Select from 'react-select';
+import Select from '../SelectPlusAll';
+import {FCTable} from './tables';
 
 // styles
 import {withStyles} from '@material-ui/core/styles';
@@ -40,11 +41,15 @@ import {
     getInnuendoReportsByFilter,
     getInnuendoStrainsMetadata,
     tryLogin,
-    getStatistics
+    getStatistics,
+    getSavedReports
 } from "./requests"
 
 // utils
 import {parseProjectSearch, getMetadataMapping} from "./utils"
+
+//parsers
+import {InnuendoReportsTableParser} from './parsers';
 
 
 /**
@@ -54,11 +59,18 @@ import {parseProjectSearch, getMetadataMapping} from "./utils"
 export class HomeInnuendo extends React.Component {
 
     state = {
-        showProjects: false
+        showProjects: false,
+        userId: ''
     };
 
     showProjects = () => {
         this.setState({showProjects: true});
+    };
+
+    setCredentials = (credentials) => {
+        this.setState({
+            userId: credentials.user_id
+        })
     };
 
     render() {
@@ -66,9 +78,12 @@ export class HomeInnuendo extends React.Component {
             <div>
                 {
                     this.state.showProjects ?
-                        <InnuendoHomePage/> :
+                        <InnuendoHomePage
+                            userId={this.state.userId}
+                        /> :
                         <InnuendoLogin
-                            showProjects={this.showProjects}/>
+                            showProjects={this.showProjects}
+                            setCredentials={this.setCredentials}/>
                 }
             </div>
         )
@@ -92,12 +107,13 @@ class InnuendoLogin extends React.Component {
     * Login to innuendo platform externally.
     * Try to login according to the provided username and password
     */
-    tryLogin = () => {
+    _tryLogin = () => {
         tryLogin(this.state.username, this.state.password)
             .then(
                 (response) => {
                     if (response.data !== null && response.data.access === true) {
                         this.props.showProjects();
+                        this.props.setCredentials(response.data);
                     }
                     else {
                         this.setState({error: true});
@@ -118,7 +134,7 @@ class InnuendoLogin extends React.Component {
     };
 
     handleSubmit = event => {
-        this.tryLogin();
+        this._tryLogin();
         event.preventDefault();
     };
 
@@ -188,7 +204,8 @@ class InnuendoHomePage extends React.Component {
             <div>
                 <InnuendoGeneralStatistics/>
                 <Paper style={style.paper}>
-                    <InnuendoTabs/>
+                    <InnuendoTabs
+                        userId={this.props.userId}/>
                 </Paper>
             </div>
         )
@@ -205,7 +222,7 @@ class InnuendoGeneralStatistics extends React.Component {
     constructor(props) {
         super(props);
 
-        this.getStatistics();
+        this._getStatistics();
 
         this.state = {
             totalProjects: 0,
@@ -215,7 +232,7 @@ class InnuendoGeneralStatistics extends React.Component {
         }
     }
 
-    getStatistics = () => {
+    _getStatistics = () => {
         getStatistics().then((response) => {
 
             let totalSpecies = 0;
@@ -386,8 +403,8 @@ class InnuendoTabs extends React.Component {
                             fullWidth
                             centered
                         >
-                            <Tab label="Project Select"/>
-                            <Tab label="Saved Projects"/>
+                            <Tab label="Project Selection"/>
+                            <Tab label="Saved Reports"/>
                         </Tabs>
                     </AppBar>
                     {
@@ -399,7 +416,7 @@ class InnuendoTabs extends React.Component {
                     {
                         this.state.value === 1 &&
                         <TabContainer>
-                            <InnuendoSavedReports/>
+                            <InnuendoSavedReports userId={this.props.userId}/>
                         </TabContainer>
                     }
 
@@ -491,17 +508,27 @@ class InnuendoProjects extends React.Component {
      */
     getProjectStrains = () => {
 
-        getInnuendoProjectStrains(this.state.selectedProjectIds).then((response) => {
-            const responseData = parseProjectSearch(response.data);
+        if (this.state.selectedProjectIds.length > 0) {
+            getInnuendoProjectStrains(this.state.selectedProjectIds).then((response) => {
+                const responseData = parseProjectSearch(response.data);
 
+                this.setState({
+                    strains: responseData.totalNames,
+                    minDate: responseData.minDate,
+                    maxDate: responseData.maxDate,
+                    reportInfo: response.data
+                })
+
+            });
+        }
+        else {
             this.setState({
-                strains: responseData.totalNames,
-                minDate: responseData.minDate,
-                maxDate: responseData.maxDate,
-                reportInfo: response.data
+                strains: [],
+                minDate: '',
+                maxDate: '',
+                reportInfo: []
             })
-
-        });
+        }
     };
 
     /*
@@ -544,6 +571,8 @@ class InnuendoProjects extends React.Component {
             selectedProjects: metadataMap[0],
             selectedStrains: metadataMap[1]
         });
+
+        console.log(resultsReports, resultsMetadata);
 
         this.setState({
             resultsReports: resultsReports,
@@ -621,10 +650,63 @@ class InnuendoProjects extends React.Component {
     }
 }
 
+
+/**
+ * Component that defines the saved reports section of the innuendo
+ * Loads a table with the saved reports and gets the selected reports upon
+ * user input.
+ */
 class InnuendoSavedReports extends React.Component {
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            tableData: [],
+            selection: []
+        };
+
+        this._getSavedReports();
+
+    }
+
+    setSelection = (selection) => {
+        this.setState({selection});
+    };
+
+    _getSavedReports = () => {
+        getSavedReports(this.props.userId).then((response) => {
+            if (response.data.length > 0) {
+                this.setState({
+                    tableData: response.data
+                });
+            }
+        });
+    };
+
+
     render() {
+        const tableData = InnuendoReportsTableParser(this.state.tableData);
+
+        //Inline style
+        const style = {
+            savedReports: {
+                textAlign: "center"
+            }
+        }
+
         return (
-            <div>BAH</div>
+            <div style={style.savedReports}>
+            {
+                tableData[0].length > 0 ?
+                    <FCTable
+                        data={tableData[0]}
+                        columns={tableData[1]}
+                        setSelection={this.setSelection}
+                    /> :
+                    <Typography>No saved reports available!</Typography>
+            }
+            </div>
         )
     }
 }
@@ -686,6 +768,7 @@ class InnuendoProjectSelector extends React.Component {
                         onClose={this.props.getProjectStrains}
                         closeOnSelect={false}
                         multi
+                        allowSelectAll={true}
                         value={this.state.values}
                         onChange={(values) => {
                             this.props.handleChangeProjects(values);
@@ -694,7 +777,8 @@ class InnuendoProjectSelector extends React.Component {
                         options={this.setOptions()}
                         style={style.select}
                     />
-                    <Typography style={style.typoText}>Or drag and drop a report file to the page!</Typography>
+                    <Typography style={style.typoText}>Or drag and drop a report
+                        file to the page!</Typography>
                 </div>
             </div>
         )
@@ -769,6 +853,7 @@ class InnuendoFilters extends React.Component {
                             <Select
                                 closeOnSelect={false}
                                 multi
+                                allowSelectAll={true}
                                 label="Strains"
                                 value={this.state.values}
                                 onChange={(values) => {

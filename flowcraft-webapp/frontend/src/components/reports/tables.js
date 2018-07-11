@@ -38,7 +38,7 @@ const statusColor = {
 };
 
 
-class FCTable extends React.Component {
+export class FCTable extends React.Component {
 
     constructor(props) {
         super(props);
