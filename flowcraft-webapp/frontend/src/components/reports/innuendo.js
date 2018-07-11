@@ -688,20 +688,14 @@ class InnuendoSavedReports extends React.Component {
     render() {
         const tableData = InnuendoReportsTableParser(this.state.tableData);
 
-        //Inline style
-        const style = {
-            savedReports: {
-                textAlign: "center"
-            }
-        }
-
         return (
-            <div style={style.savedReports}>
+            <div>
             {
-                tableData[0].length > 0 ?
+                tableData.tableArray.length > 0 ?
                     <FCTable
-                        data={tableData[0]}
-                        columns={tableData[1]}
+                        data={tableData.tableArray}
+                        columns={tableData.columnsArray}
+                        rawData={tableData.rawTableArray}
                         setSelection={this.setSelection}
                     /> :
                     <Typography>No saved reports available!</Typography>

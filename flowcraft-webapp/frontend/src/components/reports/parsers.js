@@ -259,7 +259,7 @@ export const genericTableParser = (reportArray) => {
 export const InnuendoReportsTableParser = (reportsArray) => {
 
     let columnsArray = [];
-    let finalDataArray = [];
+    let tableArray = [];
 
     const headers = [
         {header: "Name", accessor: "name"},
@@ -280,11 +280,13 @@ export const InnuendoReportsTableParser = (reportsArray) => {
 
     for (const report of reportsArray) {
         report['_id'] = report.name;
-        finalDataArray.push(report);
+        tableArray.push(report);
     }
 
-    return [
-        finalDataArray,
-        columnsArray
-    ]
+    return {
+        tableArray,
+        columnsArray,
+        // rawTableData is the same as finalDataArray in this case
+        rawTableArray: tableArray
+    }
 };
