@@ -103,6 +103,85 @@ export const findChartSignatures = (reportArray) => {
     return charts;
 };
 
+/**
+ * This method searches the raw report JSON for warnings and fails. This
+ * information will be stored in a Map object that will contain the following
+ * structure:
+ *      {<table>: {
+ *          <sample>: {
+ *              fail: [<fail object>]
+ *              warnings: [<warning object>]
+ *          }
+ *      }}
+ *
+ * NOTE: This function will only populate the Map object when the warnings/fails
+ * exist. Otherwise, the entries will not appear. For instance, if there are no
+ * warnings/fails for a given table, that table will not appear in the Map object.
+ *
+ * @param reportArray
+ * @returns {Map<any, any>}
+ */
+export const findQcWarnings = (reportArray) => {
+
+    let qcInfo = new Map();
+
+    for (const r of reportArray){
+
+        // Parse fails
+        if (r.reportJson.hasOwnProperty("fail")){
+            for (const f of r.reportJson.fail){
+
+                const failObj = {
+                    process: r.processName,
+                    message: f.value
+                };
+
+                // In case the table does not exist yet
+                if (!qcInfo.has(f.table)){
+                    qcInfo.set(f.table, new Map([[f.sample, {"fail": [failObj]}]]))
+                // When the table already exists, but not the current sample
+                } else if (!qcInfo.get(f.table).has(f.sample)){
+                    qcInfo.get(f.table).set(f.sample, {"fail": [failObj]})
+                } else {
+                    // When the table and sample exist, but not the fail entry
+                    if (qcInfo.get(f.table).get(f.sample).hasOwnProperty("fail")){
+                        qcInfo.get(f.table).get(f.sample)["fail"].push(failObj)
+                    } else {
+                        qcInfo.get(f.table).get(f.sample)["fail"] = [failObj]
+                    }
+                }
+            }
+        }
+
+        // Parse warnings
+        if (r.reportJson.hasOwnProperty("warnings")){
+            for (const f of r.reportJson.warnings){
+
+                const failObj = {
+                    process: r.processName,
+                    message: f.value
+                };
+
+                // In case the table does not exist yet
+                if (!qcInfo.has(f.table)){
+                    qcInfo.set(f.table, new Map([[f.sample, {"warnings": [failObj]}]]))
+                // When the table already exists, but not the current sample
+                } else if (!qcInfo.get(f.table).has(f.sample)){
+                    qcInfo.get(f.table).set(f.sample, {"warnings": [failObj]})
+                } else {
+                    // When the table and sample exist, but not the fail entry
+                    if (qcInfo.get(f.table).get(f.sample).hasOwnProperty("warnings")){
+                        qcInfo.get(f.table).get(f.sample)["warnings"].push(failObj)
+                    } else {
+                        qcInfo.get(f.table).get(f.sample)["warnings"] = [failObj]
+                    }
+                }
+            }
+        }
+    }
+
+    return qcInfo;
+};
 
 /**
  * Method used to retrieve the JSON array needed for the column tableHeaders of
@@ -200,7 +279,7 @@ export const genericTableParser = (reportArray) => {
     columnsArray.push({
         Header: <Typography>ID</Typography>,
         accessor: "rowId",
-        minWidth: 90
+        minWidth: 150
     });
 
     // Add tableHeaders with typography and minWidth

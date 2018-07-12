@@ -5,7 +5,11 @@ import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import Paper from "@material-ui/core/Paper";
 
-import {findTableSignatures, findChartSignatures} from "./reports/parsers";
+import {
+    findTableSignatures,
+    findChartSignatures,
+    findQcWarnings
+} from "./reports/parsers";
 import {QualityControlTable, AssemblyTable, AbricateTable, ChewbbacaTable} from "./reports/tables";
 import {BasicModal} from "./reports/modals";
 import {AssemblySizeDistChart, FastQcCharts} from "./reports/charts";
@@ -177,6 +181,7 @@ class ReportsApp extends React.Component {
 
         const tableData = findTableSignatures(props.reportData);
         const charts = findChartSignatures(props.reportData);
+        const qcInfo = findQcWarnings(props.reportData);
 
         this.state = {
             reportData: props.reportData,
@@ -190,12 +195,14 @@ class ReportsApp extends React.Component {
 
         const tableData = findTableSignatures(props.reportData);
         const charts = findChartSignatures(props.reportData);
+        const qcInfo = findQcWarnings(props.reportData);
 
         return {
             reportData: props.reportData,
             tables: [ ...tableData.keys() ],
             tableData: tableData,
             charts: charts,
+            qcInfo
         }
     }
 
@@ -214,7 +221,8 @@ class ReportsApp extends React.Component {
                     {
                         this.state.tables.includes("qc") &&
                             <Element name={"qcTable"} className={styles.scrollElement}>
-                                <QualityControlTable tableData={this.state.tableData.get("qc")}/>
+                                <QualityControlTable tableData={this.state.tableData.get("qc")}
+                                                     qcInfo={this.state.qcInfo}/>
                             </Element>
                     }
                     {

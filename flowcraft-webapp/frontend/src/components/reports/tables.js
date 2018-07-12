@@ -8,14 +8,9 @@ import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary"
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails"
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import DialogContent from "@material-ui/core/DialogContent";
-import DialogActions from "@material-ui/core/DialogActions";
-import FormControl from "@material-ui/core/FormControl";
-import Input from "@material-ui/core/Input";
-import DialogTitle from "@material-ui/core/DialogTitle";
 import Typography from "@material-ui/core/Typography";
+import Popover from "@material-ui/core/Popover";
 import Tooltip from "@material-ui/core/Tooltip";
-import Dialog from "@material-ui/core/Dialog";
 import Paper from "@material-ui/core/Paper";
 import Button from "@material-ui/core/Button";
 
@@ -29,6 +24,10 @@ import yellow from "@material-ui/core/colors/yellow";
 import {genericTableParser, getTableHeaders} from "./parsers";
 
 const CheckboxTable = checkboxHOC(ReactTable);
+
+import ApprovalIcon from "mdi-react/ApprovalIcon";
+import AlertOctagonIcon from "mdi-react/AlertOctagonIcon";
+import AlertIcon from "mdi-react/AlertIcon";
 
 
 const statusColor = {
@@ -147,12 +146,75 @@ export class FCTable extends React.Component {
 
 export class QualityControlTable extends React.Component {
 
+    style = {
+        qcColumn: {
+            margin: "auto"
+        },
+        qcTextHeader: {
+            fontWeight: "bold",
+            marginBottom: "10px"
+        }
+
+    };
+
     setSelection = (selection) => {
         this.setState({selection});
     };
 
+    /**
+     * This function extends the table data retrieve from the genericTableParser
+     * to include information about the quality control of each sample. It adds
+     * a new "QC" column and an icon button with information about the quality
+     * control.
+     * @param tableData : Processed table data retrieved from genericTableParser
+     * @param originalData : Original table data received in the component's props
+     * @param qcInfo : qcInfo Map object in the component's props
+     */
+    qcParseAdditionalData = (tableData, originalData, qcInfo) => {
+
+        // Add new column
+        tableData.columnsArray.splice(1, 0, {
+            Header: <Typography>QC</Typography>,
+            accessor: "qc",
+            minWidth: 33,
+            style: this.style.qcColumn
+        });
+
+        // Iterate over each row in table and add the corresponding QC icon and
+        // content
+        for (const row of tableData.tableArray){
+
+            const sample = row.rowId.props.children;
+
+            // The default QC icon if no warnings/fails are found for this sample
+            row["qc"] = <QcPopover status={"pass"}
+                                   content={<Typography><b>The sample has passed all quality control checks!</b></Typography>}/>;
+
+            if (qcInfo.has("qc")){
+                if (qcInfo.get("qc").has(sample)) {
+                    // Check for fail messages for sample
+                    if (qcInfo.get("qc").get(sample).hasOwnProperty("fail")) {
+                        const failContent =
+                            <div>
+                                <Typography style={this.style.qcTextHeader}>The sample has failed quality a control check:</Typography>
+                                <Typography><b>Process:</b> {qcInfo.get("qc").get(sample).fail[0].process}</Typography>
+                                <Typography><b>Cause: </b>{qcInfo.get("qc").get(sample).fail[0].message}</Typography>
+                            </div>;
+                        row["qc"] = <QcPopover status={"fail"}
+                                               content={failContent}/>;
+                    // Check for warning messages for sample
+                    } else if (qcInfo.get("qc").get(sample).hasOwnProperty("warnings")) {
+                        row["qc"] = <QcPopover status={"warnings"}/>;
+                    }
+                }
+            }
+        }
+    };
+
     render () {
         const tableData = genericTableParser(this.props.tableData);
+        this.qcParseAdditionalData(tableData, this.props.tableData,
+            this.props.qcInfo);
 
         return (
             <ExpansionPanel defaultExpanded >
@@ -324,6 +386,10 @@ export class ChewbbacaTable extends React.Component {
     }
 }
 
+/*
+    SUB COMPONENTS FOR TABLES
+ */
+
 /**
  * This component renders a simple table cell bar, whose with is a percentage
  * of its props.value, relative to the props.max. The bar is rendered behing the
@@ -383,6 +449,70 @@ class ExportTooltipButton extends React.Component {
                 <CSVLink data={this.props.tableData} filename="table_data.csv" style={{"textDecoration": "none"}}>
                     <Button onClick={this.handleClickOpen} variant={"contained"} color={"primary"}>Export CSV</Button>
                 </CSVLink>
+            </div>
+        )
+    }
+}
+
+class QcPopover extends React.Component {
+
+    state = {
+        anchorEl: null,
+    };
+
+    style = {
+        container: {
+            padding: "15px",
+            backgroundColor: this.props.status === "pass" ? green[200] : this.props.status === "warnings" ? yellow[200] : red[200]
+        },
+        qcIcon: {
+            cursor: "pointer",
+            display: "block",
+            margin: "auto"
+        }
+    };
+
+    icons = {
+        "pass": <ApprovalIcon color={green[300]} style={this.style.qcIcon}/>,
+        "warnings": <AlertIcon color={yellow[300]} style={this.style.qcIcon}/>,
+        "fail": <AlertOctagonIcon color={red[300]} style={this.style.qcIcon}/>
+    };
+
+    handleClick = event => {
+        this.setState({
+            anchorEl: event.currentTarget,
+        });
+    };
+
+    handleClose = () => {
+        this.setState({
+            anchorEl: null,
+        });
+    };
+
+    render() {
+        const {anchorEl} = this.state;
+
+        return (
+            <div>
+                <div onClick={this.handleClick}>
+                    {this.icons[this.props.status]}
+                </div>
+                <Popover open={Boolean(anchorEl)}
+                         anchorEl={anchorEl}
+                         onClose={this.handleClose}
+                         anchorOrigin={{
+                             vertical: "center",
+                             horizontal: "right"
+                         }}
+                         transformOrigin={{
+                             vertical: "center",
+                             horizontal: "left"
+                         }}>
+                    <div style={this.style.container}>
+                        {this.props.content}
+                    </div>
+                </Popover>
             </div>
         )
     }
