@@ -352,8 +352,9 @@ export const qcParseAdditionalData = (tableData, originalData, qcInfo, signature
         },
         qcTextHeader: {
             fontWeight: "bold",
-            marginBottom: "10px"
-        }
+            marginBottom: "10px",
+            marginTop: "5px",
+        },
     };
 
     // Add new column
@@ -372,41 +373,58 @@ export const qcParseAdditionalData = (tableData, originalData, qcInfo, signature
 
         // The default QC icon if no warnings/fails are found for this sample
         row["qc"] = <QcPopover status={"pass"}
-                               content={<Typography><b>The sample has passed all quality control checks!</b></Typography>}/>;
+                               content={<Typography><b>Sample '{sample}' has passed all quality control checks!</b></Typography>}/>;
+        let status = "pass";
+        let content = [];
+        let badgeCount = 0;
 
         if (qcInfo.has(signature)){
             if (qcInfo.get(signature).has(sample)) {
                 // Check for fail messages for sample
-                if (qcInfo.get(signature).get(sample).hasOwnProperty("fail")) {
-                    const failContent =
-                        <div>
-                            <Typography style={style.qcTextHeader}>The sample has failed quality a control check:</Typography>
-                            <Typography><b>Process:</b> {qcInfo.get(signature).get(sample).fail[0].process}</Typography>
-                            <Typography><b>Cause: </b>{qcInfo.get(signature).get(sample).fail[0].message}</Typography>
-                        </div>;
-                    row["qc"] = <QcPopover status={"fail"}
-                                           content={failContent}/>;
-                // Check for warning messages for sample
-                } else if (qcInfo.get(signature).get(sample).hasOwnProperty("warnings")) {
-                    const warningsContent =
-                        <div>
-                            <Typography style={style.qcTextHeader}>Quality control warnings found:</Typography>
+                if (qcInfo.get(signature).get(sample).hasOwnProperty("warnings")) {
+                    status = "warnings";
+                    badgeCount += qcInfo.get(signature).get(sample).warnings.length;
+                    content.push(
+                        <div key={"warnings"}>
+                            <Typography style={style.qcTextHeader}>Sample '{sample}' has failed quality control checks:</Typography>
                             {
                                 qcInfo.get(signature).get(sample).warnings.map((el) => {
                                     return (
                                         <div key={el.process}>
                                             <Typography><b>Process:</b> {el.process}</Typography>
-                                            <Typography><b>Cause: </b>{el.message}</Typography>
+                                            <Typography style={{"marginBottom": "7px"}}><b>Cause: </b>{el.message}</Typography>
+                                        </div>
+                                    )
+                                })
+                            }
+                        </div>
+                    );
+                }
+
+                // Check for warning messages for sample
+                if (qcInfo.get(signature).get(sample).hasOwnProperty("fail")) {
+                    status = "fail";
+                    badgeCount += qcInfo.get(signature).get(sample).fail.length;
+                    content.push(
+                        <div key={"fail"}>
+                            <Typography style={style.qcTextHeader}>Sample '{sample}' has quality control warnings:</Typography>
+                            {
+                                qcInfo.get(signature).get(sample).fail.map((el) => {
+                                    return (
+                                        <div key={el.process}>
+                                            <Typography><b>Process:</b> {el.process}</Typography>
+                                            <Typography style={{"marginBottom": "7px"}}><b>Cause: </b>{el.message}</Typography>
                                         </div>
                                         )
                                 })
                             }
-                        </div>;
-                    row["qc"] = <QcPopover status={"warnings"}
-                                           content={warningsContent}/>;
-                    console.log()
+                        </div>
+                    );
                 }
             }
+            row["qc"] = <QcPopover status={status}
+                                   content={content}
+                                   badgeCount={badgeCount}/>;
         }
     }
 };

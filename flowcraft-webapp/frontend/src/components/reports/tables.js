@@ -11,6 +11,7 @@ import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import Typography from "@material-ui/core/Typography";
 import Popover from "@material-ui/core/Popover";
 import Tooltip from "@material-ui/core/Tooltip";
+import Badge from "@material-ui/core/Badge";
 import Paper from "@material-ui/core/Paper";
 import Button from "@material-ui/core/Button";
 
@@ -420,6 +421,12 @@ export class QcPopover extends React.Component {
             cursor: "pointer",
             display: "block",
             margin: "auto"
+        },
+        warningBadge: {
+            fontSize: "13px",
+            height: "18px",
+            width: "18px",
+            top: "-6px"
         }
     };
 
@@ -443,11 +450,15 @@ export class QcPopover extends React.Component {
 
     render() {
         const {anchorEl} = this.state;
+        const badgeCount = this.props.badgeCount ? this.props.badgeCount : null;
 
         return (
             <div>
                 <div onClick={this.handleClick}>
-                    {this.icons[this.props.status]}
+                    {
+                        badgeCount ? <Badge badgeContent={badgeCount} color={"primary"} classes={{badge: styles.warningBadge}}> {this.icons[this.props.status]} </Badge> :
+                            this.icons[this.props.status]
+                    }
                 </div>
                 <Popover open={Boolean(anchorEl)}
                          anchorEl={anchorEl}

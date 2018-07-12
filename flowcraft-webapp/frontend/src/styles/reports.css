@@ -104,3 +104,11 @@
     font-weight: bold!important;
     color: #525252 !important;
 }
+
+:local(.warningBadge) {
+    font-size: 13px!important;
+    height: 18px!important;
+    width: 18px!important;
+    top: -6px!important;
+    background-color: #9b9b9b !important;
+}
