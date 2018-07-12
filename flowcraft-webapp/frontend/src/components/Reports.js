@@ -228,7 +228,8 @@ class ReportsApp extends React.Component {
                     {
                         this.state.tables.includes("assembly") &&
                              <Element name={"assemblyTable"} className={styles.scrollElement}>
-                                <AssemblyTable tableData={this.state.tableData.get("assembly")}/>
+                                <AssemblyTable tableData={this.state.tableData.get("assembly")}
+                                               qcInfo={this.state.qcInfo}/>
                              </Element>
                     }
                     {

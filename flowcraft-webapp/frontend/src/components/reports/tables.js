@@ -20,8 +20,9 @@ import styles from "../../styles/reports.css"
 import red from "@material-ui/core/colors/red";
 import green from "@material-ui/core/colors/green";
 import yellow from "@material-ui/core/colors/yellow";
+import amber from "@material-ui/core/colors/amber";
 
-import {genericTableParser, getTableHeaders} from "./parsers";
+import {genericTableParser, qcParseAdditionalData} from "./parsers";
 
 const CheckboxTable = checkboxHOC(ReactTable);
 
@@ -72,7 +73,7 @@ export class FCTable extends React.Component {
 
 
     toggleAll = () => {
-        const selectAll = this.state.selectAll ? false : true;
+        const selectAll = !this.state.selectAll;
         const selection = [];
         if (selectAll) {
           // we need to get at the internals of ReactTable
@@ -146,75 +147,23 @@ export class FCTable extends React.Component {
 
 export class QualityControlTable extends React.Component {
 
-    style = {
-        qcColumn: {
-            margin: "auto"
-        },
-        qcTextHeader: {
-            fontWeight: "bold",
-            marginBottom: "10px"
-        }
+    constructor(props){
+        super(props);
 
-    };
+        this.state = {
+            tableData: genericTableParser(props.tableData),
+            selection: []
+        };
+    }
 
     setSelection = (selection) => {
         this.setState({selection});
     };
 
-    /**
-     * This function extends the table data retrieve from the genericTableParser
-     * to include information about the quality control of each sample. It adds
-     * a new "QC" column and an icon button with information about the quality
-     * control.
-     * @param tableData : Processed table data retrieved from genericTableParser
-     * @param originalData : Original table data received in the component's props
-     * @param qcInfo : qcInfo Map object in the component's props
-     */
-    qcParseAdditionalData = (tableData, originalData, qcInfo) => {
-
-        // Add new column
-        tableData.columnsArray.splice(1, 0, {
-            Header: <Typography>QC</Typography>,
-            accessor: "qc",
-            minWidth: 33,
-            style: this.style.qcColumn
-        });
-
-        // Iterate over each row in table and add the corresponding QC icon and
-        // content
-        for (const row of tableData.tableArray){
-
-            const sample = row.rowId.props.children;
-
-            // The default QC icon if no warnings/fails are found for this sample
-            row["qc"] = <QcPopover status={"pass"}
-                                   content={<Typography><b>The sample has passed all quality control checks!</b></Typography>}/>;
-
-            if (qcInfo.has("qc")){
-                if (qcInfo.get("qc").has(sample)) {
-                    // Check for fail messages for sample
-                    if (qcInfo.get("qc").get(sample).hasOwnProperty("fail")) {
-                        const failContent =
-                            <div>
-                                <Typography style={this.style.qcTextHeader}>The sample has failed quality a control check:</Typography>
-                                <Typography><b>Process:</b> {qcInfo.get("qc").get(sample).fail[0].process}</Typography>
-                                <Typography><b>Cause: </b>{qcInfo.get("qc").get(sample).fail[0].message}</Typography>
-                            </div>;
-                        row["qc"] = <QcPopover status={"fail"}
-                                               content={failContent}/>;
-                    // Check for warning messages for sample
-                    } else if (qcInfo.get("qc").get(sample).hasOwnProperty("warnings")) {
-                        row["qc"] = <QcPopover status={"warnings"}/>;
-                    }
-                }
-            }
-        }
-    };
-
     render () {
         const tableData = genericTableParser(this.props.tableData);
-        this.qcParseAdditionalData(tableData, this.props.tableData,
-            this.props.qcInfo);
+        qcParseAdditionalData(tableData, this.props.tableData,
+            this.props.qcInfo, "qc");
 
         return (
             <ExpansionPanel defaultExpanded >
@@ -253,6 +202,8 @@ export class AssemblyTable extends React.Component {
 
     render () {
         const tableData = genericTableParser(this.props.tableData);
+        qcParseAdditionalData(tableData, this.props.tableData,
+            this.props.qcInfo, "assembly");
 
         return (
             <ExpansionPanel defaultExpanded >
@@ -454,7 +405,7 @@ class ExportTooltipButton extends React.Component {
     }
 }
 
-class QcPopover extends React.Component {
+export class QcPopover extends React.Component {
 
     state = {
         anchorEl: null,

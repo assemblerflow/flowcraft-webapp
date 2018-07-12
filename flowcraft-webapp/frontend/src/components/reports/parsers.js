@@ -3,6 +3,7 @@ import React from "react";
 import Typography from "@material-ui/core/Typography";
 
 import {CellBar} from "./tables";
+import {QcPopover} from "./tables";
 
 import styles from "../../styles/reports.css"
 
@@ -312,12 +313,10 @@ export const genericTableParser = (reportArray) => {
             rawDataDict[cell.rowId] = {
                 "rowId": cell.rowId
             };
-            dataDict[cell.rowId][accessor] = <CellBar value={cell.value} max={columnMaxVals.get(cell.header)}/>;
-            rawDataDict[cell.rowId][accessor] = cell.value;
-        } else {
-            dataDict[cell.rowId][accessor] = <CellBar value={cell.value} max={columnMaxVals.get(cell.header)}/>;
-            rawDataDict[cell.rowId][accessor] = cell.value;
         }
+
+        dataDict[cell.rowId][accessor] = <CellBar value={cell.value} max={columnMaxVals.get(cell.header)}/>;
+        rawDataDict[cell.rowId][accessor] = cell.value;
     }
 
     // Create array of data by row
@@ -332,6 +331,84 @@ export const genericTableParser = (reportArray) => {
         rawTableArray,
     }
 
+};
+
+
+/**
+ * This function extends the table data retrieve from the genericTableParser
+ * to include information about the quality control of each sample. It adds
+ * a new "QC" column and an icon button with information about the quality
+ * control.
+ * @param tableData : Object Processed table data retrieved from genericTableParser
+ * @param originalData : Array Original table data received in the component's props
+ * @param qcInfo : Map qcInfo Map object in the component's props
+ * @param signature: String The signature of the QC data that will be fetched from qcInfo
+ */
+export const qcParseAdditionalData = (tableData, originalData, qcInfo, signature) => {
+
+    const style = {
+        qcColumn: {
+            margin: "auto"
+        },
+        qcTextHeader: {
+            fontWeight: "bold",
+            marginBottom: "10px"
+        }
+    };
+
+    // Add new column
+    tableData.columnsArray.splice(1, 0, {
+        Header: <Typography>QC</Typography>,
+        accessor: "qc",
+        minWidth: 33,
+        style: style.qcColumn
+    });
+
+    // Iterate over each row in table and add the corresponding QC icon and
+    // content
+    for (const row of tableData.tableArray){
+
+        const sample = row.rowId.props.children;
+
+        // The default QC icon if no warnings/fails are found for this sample
+        row["qc"] = <QcPopover status={"pass"}
+                               content={<Typography><b>The sample has passed all quality control checks!</b></Typography>}/>;
+
+        if (qcInfo.has(signature)){
+            if (qcInfo.get(signature).has(sample)) {
+                // Check for fail messages for sample
+                if (qcInfo.get(signature).get(sample).hasOwnProperty("fail")) {
+                    const failContent =
+                        <div>
+                            <Typography style={style.qcTextHeader}>The sample has failed quality a control check:</Typography>
+                            <Typography><b>Process:</b> {qcInfo.get(signature).get(sample).fail[0].process}</Typography>
+                            <Typography><b>Cause: </b>{qcInfo.get(signature).get(sample).fail[0].message}</Typography>
+                        </div>;
+                    row["qc"] = <QcPopover status={"fail"}
+                                           content={failContent}/>;
+                // Check for warning messages for sample
+                } else if (qcInfo.get(signature).get(sample).hasOwnProperty("warnings")) {
+                    const warningsContent =
+                        <div>
+                            <Typography style={style.qcTextHeader}>Quality control warnings found:</Typography>
+                            {
+                                qcInfo.get(signature).get(sample).warnings.map((el) => {
+                                    return (
+                                        <div key={el.process}>
+                                            <Typography><b>Process:</b> {el.process}</Typography>
+                                            <Typography><b>Cause: </b>{el.message}</Typography>
+                                        </div>
+                                        )
+                                })
+                            }
+                        </div>;
+                    row["qc"] = <QcPopover status={"warnings"}
+                                           content={warningsContent}/>;
+                    console.log()
+                }
+            }
+        }
+    }
 };
 
 
