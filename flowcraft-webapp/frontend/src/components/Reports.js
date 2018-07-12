@@ -67,6 +67,15 @@ export class ReportsHome extends React.Component {
         this.setState({openModal:value});
     };
 
+    shouldComponentUpdate(nextProps, nextState){
+        if (this.state.reportData === nextState.reportData &&
+                this.state.openModal === nextState.openModal){
+            return false
+        } else {
+            return true
+        }
+    }
+
     /*
     Function to load reports app by changing the state of the reportData
      */
@@ -110,7 +119,6 @@ export class ReportsHome extends React.Component {
         }.bind(this);
 
         reader.readAsText(data);
-
     }
 
     _dragOver(ev){
