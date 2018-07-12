@@ -205,7 +205,7 @@ export const getTableHeaders = (dataArray) => {
         if (!speciesMap.has(el.rowId)) {
             speciesMap.set(el.rowId, [columnAccessor]);
         } else {
-            if (speciesMap.get(el.rowId).includes(columnAccessor)){
+            if (speciesMap.get(el.rowId).includes(columnAccessor) && !duplicateAccessors.includes(columnAccessor)){
                 duplicateAccessors.push(columnAccessor);
             } else {
                 speciesMap.get(el.rowId).push(columnAccessor);
@@ -229,8 +229,8 @@ export const getTableHeaders = (dataArray) => {
 
     const tableHeaders = sortedColumns.map((v) => {
 
-        const finalAccessor = duplicateAccessors.includes(v) ?
-            `${v[0]}${v[1].processName}` :
+        const finalAccessor = duplicateAccessors.includes(v[0]) ?
+            `${v[1].header.split(" ").join("")}${v[1].processName}` :
             v[0].split("___")[0];
 
         return {
@@ -300,6 +300,7 @@ export const genericTableParser = (reportArray) => {
 
 
     const {tableHeaders, duplicateAccessors} = getTableHeaders(reportArray);
+    console.log(tableHeaders, duplicateAccessors)
 
     const columnMaxVals = getColumnMax(reportArray);
 
@@ -312,6 +313,8 @@ export const genericTableParser = (reportArray) => {
 
     // Add tableHeaders with typography and minWidth
     for (const h of tableHeaders) {
+
+        console.log(h.accessor)
 
         const header = `${h.Header.split(" ").join("")}___${h.processName.replace(h.processId, "").slice(0, -1)}`;
         const processName = duplicateAccessors.includes(header) ?
@@ -425,7 +428,7 @@ export const qcParseAdditionalData = (tableData, originalData, qcInfo, signature
                     badgeCount += qcInfo.get(signature).get(sample).warnings.length;
                     content.push(
                         <div key={"warnings"}>
-                            <Typography style={style.qcTextHeader}>Sample '{sample}' has failed quality control checks:</Typography>
+                            <Typography style={style.qcTextHeader}>Sample '{sample}' has quality control warnings:</Typography>
                             {
                                 qcInfo.get(signature).get(sample).warnings.map((el) => {
                                     return (
@@ -446,7 +449,7 @@ export const qcParseAdditionalData = (tableData, originalData, qcInfo, signature
                     badgeCount += qcInfo.get(signature).get(sample).fail.length;
                     content.push(
                         <div key={"fail"}>
-                            <Typography style={style.qcTextHeader}>Sample '{sample}' has quality control warnings:</Typography>
+                            <Typography style={style.qcTextHeader}>Sample '{sample}' has failed quality control checks:</Typography>
                             {
                                 qcInfo.get(signature).get(sample).fail.map((el) => {
                                     return (
@@ -461,9 +464,11 @@ export const qcParseAdditionalData = (tableData, originalData, qcInfo, signature
                     );
                 }
             }
-            row["qc"] = <QcPopover status={status}
-                                   content={content}
-                                   badgeCount={badgeCount}/>;
+            if (status !== "pass"){
+                row["qc"] = <QcPopover status={status}
+                                       content={content}
+                                       badgeCount={badgeCount}/>;
+            }
         }
     }
 };
