@@ -423,7 +423,8 @@ export const qcParseAdditionalData = (tableData, originalData, qcInfo, signature
 
     const style = {
         qcColumn: {
-            margin: "auto"
+            margin: "auto",
+            textAlign: "center"
         },
         qcTextHeader: {
             fontWeight: "bold",
@@ -436,7 +437,7 @@ export const qcParseAdditionalData = (tableData, originalData, qcInfo, signature
     tableData.columnsArray.splice(1, 0, {
         Header: <Typography>QC</Typography>,
         accessor: "qc",
-        minWidth: 33,
+        minWidth: 55,
         style: style.qcColumn
     });
 

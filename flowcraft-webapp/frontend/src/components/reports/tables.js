@@ -412,30 +412,6 @@ export class QcPopover extends React.Component {
         anchorEl: null,
     };
 
-    style = {
-        container: {
-            padding: "15px",
-            backgroundColor: this.props.status === "pass" ? green[200] : this.props.status === "warnings" ? yellow[200] : red[200]
-        },
-        qcIcon: {
-            cursor: "pointer",
-            display: "block",
-            margin: "auto"
-        },
-        warningBadge: {
-            fontSize: "13px",
-            height: "18px",
-            width: "18px",
-            top: "-6px"
-        }
-    };
-
-    icons = {
-        "pass": <ApprovalIcon color={green[300]} style={this.style.qcIcon}/>,
-        "warnings": <AlertIcon color={amber[300]} style={this.style.qcIcon}/>,
-        "fail": <AlertOctagonIcon color={red[300]} style={this.style.qcIcon}/>
-    };
-
     handleClick = event => {
         this.setState({
             anchorEl: event.currentTarget,
@@ -452,12 +428,36 @@ export class QcPopover extends React.Component {
         const {anchorEl} = this.state;
         const badgeCount = this.props.badgeCount ? this.props.badgeCount : null;
 
+        const style = {
+            container: {
+                padding: "15px",
+                backgroundColor: this.props.status === "pass" ? green[200] : this.props.status === "warnings" ? yellow[200] : red[200]
+            },
+            qcIcon: {
+                cursor: "pointer",
+                display: "block",
+                margin: "auto"
+            },
+            warningBadge: {
+                fontSize: "13px",
+                height: "18px",
+                width: "18px",
+                top: "-6px"
+            }
+        };
+
+        const icons = {
+            "pass": <ApprovalIcon color={green[300]} style={style.qcIcon}/>,
+            "warnings": <AlertIcon color={amber[300]} style={style.qcIcon}/>,
+            "fail": <AlertOctagonIcon color={red[300]} style={style.qcIcon}/>
+        };
+
         return (
             <div>
                 <div onClick={this.handleClick}>
                     {
-                        badgeCount ? <Badge badgeContent={badgeCount} color={"primary"} classes={{badge: styles.warningBadge}}> {this.icons[this.props.status]} </Badge> :
-                            this.icons[this.props.status]
+                        badgeCount ? <Badge badgeContent={badgeCount} color={"primary"} classes={{badge: styles.warningBadge}}> {icons[this.props.status]} </Badge> :
+                            icons[this.props.status]
                     }
                 </div>
                 <Popover open={Boolean(anchorEl)}
@@ -471,7 +471,7 @@ export class QcPopover extends React.Component {
                              vertical: "center",
                              horizontal: "left"
                          }}>
-                    <div style={this.style.container}>
+                    <div style={style.container}>
                         {this.props.content}
                     </div>
                 </Popover>
