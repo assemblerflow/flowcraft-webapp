@@ -425,7 +425,7 @@ export class QcPopover extends React.Component {
 
     icons = {
         "pass": <ApprovalIcon color={green[300]} style={this.style.qcIcon}/>,
-        "warnings": <AlertIcon color={yellow[300]} style={this.style.qcIcon}/>,
+        "warnings": <AlertIcon color={amber[300]} style={this.style.qcIcon}/>,
         "fail": <AlertOctagonIcon color={red[300]} style={this.style.qcIcon}/>
     };
 
