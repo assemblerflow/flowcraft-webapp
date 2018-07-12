@@ -184,25 +184,40 @@ export const findQcWarnings = (reportArray) => {
     return qcInfo;
 };
 
+
 /**
  * Method used to retrieve the JSON array needed for the column tableHeaders of
  * a ReactTable component. The Headers are sorted by their processId attribute.
  * @param dataArray
- * @returns {{accessor: *, Header: *, processName: *}[]}
+ * @returns {{tableHeaders: {accessor: string, Header: *, processName: *}[], duplicateAccessors: Array}}
  */
 export const getTableHeaders = (dataArray) => {
 
     let columnsMap = new Map();
+    let speciesMap = new Map();
+    let duplicateAccessors = [];
 
-    // Build the unsorted Map object for each column eader
+    // Build the unsorted Map object for each column header
     for (const el of dataArray){
-        const columnAccessor = el.header.split(" ").join("");
+        const columnAccessor = `${el.header.split(" ").join("")}___${el.processName.replace(el.processId, "").slice(0, -1)}`;
         const processNum = el.processId.split("_").slice(-1);
+
+        if (!speciesMap.has(el.rowId)) {
+            speciesMap.set(el.rowId, [columnAccessor]);
+        } else {
+            if (speciesMap.get(el.rowId).includes(columnAccessor)){
+                duplicateAccessors.push(columnAccessor);
+            } else {
+                speciesMap.get(el.rowId).push(columnAccessor);
+            }
+        }
+
         if (!columnsMap.has(columnAccessor)) {
             columnsMap.set(columnAccessor, {
                 num: parseInt(processNum),
                 header: el.header,
-                processName: el.processName
+                processName: el.processName,
+                processId: el.processId
             })
         }
     }
@@ -212,13 +227,24 @@ export const getTableHeaders = (dataArray) => {
         return a[1].num - b[1].num
     });
 
-    return sortedColumns.map((v) => {
+    const tableHeaders = sortedColumns.map((v) => {
+
+        const finalAccessor = duplicateAccessors.includes(v) ?
+            `${v[0]}${v[1].processName}` :
+            v[0].split("___")[0];
+
         return {
-            accessor: `${v[0]}${v[1].processName}`,
+            accessor: finalAccessor,
             Header: v[1].header,
             processName: v[1].processName,
+            processId: v[1].processId
         }
-    })
+    });
+
+    return {
+        tableHeaders,
+        duplicateAccessors
+    }
 
 };
 
@@ -273,7 +299,8 @@ export const genericTableParser = (reportArray) => {
     let rawTableArray = [];
 
 
-    const tableHeaders = getTableHeaders(reportArray);
+    const {tableHeaders, duplicateAccessors} = getTableHeaders(reportArray);
+
     const columnMaxVals = getColumnMax(reportArray);
 
     // Add ID to columns
@@ -285,12 +312,18 @@ export const genericTableParser = (reportArray) => {
 
     // Add tableHeaders with typography and minWidth
     for (const h of tableHeaders) {
+
+        const header = `${h.Header.split(" ").join("")}___${h.processName.replace(h.processId, "").slice(0, -1)}`;
+        const processName = duplicateAccessors.includes(header) ?
+            h.processName :
+            `${h.processName.replace(h.processId, "").slice(0, -1)}`;
+
         columnsArray.push({
             Header: <div>
                 <Typography
                     className={styles.tableMainHeader}>{h.Header}</Typography>
                 <Typography
-                    className={styles.tableSecondaryHeader}>{h.processName}</Typography>
+                    className={styles.tableSecondaryHeader}>{processName}</Typography>
             </div>,
             accessor: h.accessor,
             minWidth: 120
@@ -299,7 +332,13 @@ export const genericTableParser = (reportArray) => {
 
     for (const cell of reportArray) {
 
-        const accessor = `${cell.header.split(" ").join("")}${cell.processName}`;
+        // Check if the header is repeated for the same sample. If so, the
+        // accessor should used the processName variable. Otherwise, use only
+        // the header.
+        const header = `${cell.header.split(" ").join("")}___${cell.processName.replace(cell.processId, "").slice(0, -1)}`;
+        const accessor = duplicateAccessors.includes(header) ?
+            `${cell.header.split(" ").join("")}${cell.processName}` :
+            cell.header.split(" ").join("");
 
         // Add values to dictionary by rowId
         if (!dataDict.hasOwnProperty(cell.rowId)) {
