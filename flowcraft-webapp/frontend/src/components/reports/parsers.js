@@ -196,11 +196,19 @@ export const getTableHeaders = (dataArray) => {
     let columnsMap = new Map();
     let speciesMap = new Map();
     let duplicateAccessors = [];
+    let headerPidMap = new Map();
 
     // Build the unsorted Map object for each column header
     for (const el of dataArray){
-        const columnAccessor = `${el.header.split(" ").join("")}___${el.processName.replace(el.processId, "").slice(0, -1)}`;
+        const headerStrip = el.header.split(" ").join("")
+        const columnAccessor = `${headerStrip}___${el.processName.replace(el.processId, "").slice(0, -1)}`;
         const processNum = el.processId.split("_").slice(-1);
+
+        if (!headerPidMap.has(headerStrip)){
+            headerPidMap.set(headerStrip, [el.processName])
+        } else if (!headerPidMap.get(headerStrip).includes(el.processName)){
+            headerPidMap.get(headerStrip).push(el.processName)
+        }
 
         if (!speciesMap.has(el.rowId)) {
             speciesMap.set(el.rowId, [columnAccessor]);
@@ -227,19 +235,32 @@ export const getTableHeaders = (dataArray) => {
         return a[1].num - b[1].num
     });
 
-    const tableHeaders = sortedColumns.map((v) => {
 
-        const finalAccessor = duplicateAccessors.includes(v[0]) ?
-            `${v[1].header.split(" ").join("")}${v[1].processName}` :
-            v[0].split("___")[0];
+    let tableHeaders = [];
 
-        return {
-            accessor: finalAccessor,
-            Header: v[1].header,
-            processName: v[1].processName,
-            processId: v[1].processId
+    for (const v of sortedColumns){
+
+        if (duplicateAccessors.includes(v[0])){
+            const headerStrip = v[1].header.split(" ").join("");
+            for (const pname of headerPidMap.get(headerStrip)){
+                tableHeaders.push({
+                    accessor: `${headerStrip}${pname}`,
+                    Header: v[1].header,
+                    processName: pname,
+                    processId: v[1].processId
+                })
+            }
+        } else {
+            tableHeaders.push({
+                accessor: v[0].split("___")[0],
+                Header: v[1].header,
+                processName: v[1].processName,
+                processId: v[1].processId
+            })
         }
-    });
+    }
+
+    console.log(headerPidMap)
 
     return {
         tableHeaders,
@@ -314,8 +335,6 @@ export const genericTableParser = (reportArray) => {
     // Add tableHeaders with typography and minWidth
     for (const h of tableHeaders) {
 
-        console.log(h.accessor)
-
         const header = `${h.Header.split(" ").join("")}___${h.processName.replace(h.processId, "").slice(0, -1)}`;
         const processName = duplicateAccessors.includes(header) ?
             h.processName :
@@ -326,7 +345,7 @@ export const genericTableParser = (reportArray) => {
                 <Typography
                     className={styles.tableMainHeader}>{h.Header}</Typography>
                 <Typography
-                    className={styles.tableSecondaryHeader}>{processName}</Typography>
+                    className={styles.tableSecondaryHeader}>{h.processName}</Typography>
             </div>,
             accessor: h.accessor,
             minWidth: 120
