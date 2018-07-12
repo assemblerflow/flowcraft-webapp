@@ -10,6 +10,8 @@ import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
 
 const ReactHighcharts = require("react-highcharts");
+import Boost  from 'highcharts/modules/boost';
+Boost(ReactHighcharts.Highcharts);
 
 import {Chart} from "./chart_utils";
 
@@ -305,17 +307,6 @@ class FastqcNContent extends React.Component {
 
 export class AssemblySizeDistChart extends React.Component {
 
-    constructor(props){
-        super(props);
-
-        const data = this.parsePlotData(props.rawReports);
-
-        this.state = {
-            chartData: data.chartData,
-            categories: data.categories
-        }
-    }
-
     spreadData = (dataArray, index) => {
 
         let offset = index - 0.25;
@@ -354,9 +345,12 @@ export class AssemblySizeDistChart extends React.Component {
                         chartData.push({
                             name: el.sample,
                             index: sampleCounter,
-                            color: "grey",
+                            color: "gray",
                             data: this.spreadData(data, sampleCounter),
-                            marker: {symbol: "circle"}
+                            marker: {
+                                symbol: "circle",
+                                lineColor: "white"
+                            }
                         });
                         categories.push(el.sample);
                         sampleCounter += 1
@@ -373,18 +367,21 @@ export class AssemblySizeDistChart extends React.Component {
 
     render () {
 
-        console.log(this.state)
+        const data = this.parsePlotData(this.props.rawReports);
 
         let config = new Chart({
             title: "Contig size distribution",
             axisLabels: {x: "Sample", y: "Contig size"},
-            series: this.state.chartData
+            series: data.chartData
         });
 
+        config.extend("plotOptions", {
+            "scatter": {boostThreshold: 1}
+        });
         config.extend("chart", {type: "scatter"});
         config.extend("chart", {height: "550px"});
         config.extend("xAxis", {
-            categories: this.state.categories,
+            categories: data.categories,
             labels: {rotation: -45}
         });
 
