@@ -193,9 +193,20 @@ export const findQcWarnings = (reportArray) => {
  */
 export const getTableHeaders = (dataArray) => {
 
+    // Stores the unsorted columns gathered from the dataArray in a Map object.
+    // The keys will be temporary accessor built from the column header name
+    // and the corresponding process without PID (e.g.: 'Reads___integrity_coverage')
     let columnsMap = new Map();
+    // A Map object that will store the sample names (rowId) as keys and the
+    // corresponding column accessors (the same as columnsMap). When more than
+    // one temporary accessor is found for any given sample, that accessor
+    // is added to the duplicateAccessors array to indicate that this column
+    // should appear multiple times in the table, with different process names
     let speciesMap = new Map();
+    // Stores duplicated temporary accessors
     let duplicateAccessors = [];
+    // Stores the processNames of each column header. This is used to fetch
+    // the processNames of column when there are duplicate accessors.
     let headerPidMap = new Map();
 
     // Build the unsorted Map object for each column header
@@ -204,12 +215,16 @@ export const getTableHeaders = (dataArray) => {
         const columnAccessor = `${headerStrip}___${el.processName.replace(el.processId, "").slice(0, -1)}`;
         const processNum = el.processId.split("_").slice(-1);
 
+        // Update the headerPidMap object with the processNames associated to each
+        // column header
         if (!headerPidMap.has(headerStrip)){
             headerPidMap.set(headerStrip, [el.processName])
         } else if (!headerPidMap.get(headerStrip).includes(el.processName)){
             headerPidMap.get(headerStrip).push(el.processName)
         }
 
+        // Update and check whether there are duplicate accessors of column headers
+        // for the same sample (rowID)
         if (!speciesMap.has(el.rowId)) {
             speciesMap.set(el.rowId, [columnAccessor]);
         } else {
@@ -236,12 +251,17 @@ export const getTableHeaders = (dataArray) => {
     });
 
 
+    // Build the final table headers. If a column header was found to be duplicated
+    // for the same sample, create duplicate column headers with the corresponding
+    // process names. This happens when there is a fork in a pipeline and there
+    // are multiple identical headers from different process in the pipeline.
     let tableHeaders = [];
-
     for (const v of sortedColumns){
 
+        // In case there are duplicate headers
         if (duplicateAccessors.includes(v[0])){
             const headerStrip = v[1].header.split(" ").join("");
+            // Add each individual header with the different process names
             for (const pname of headerPidMap.get(headerStrip)){
                 tableHeaders.push({
                     accessor: `${headerStrip}${pname}`,
@@ -250,6 +270,7 @@ export const getTableHeaders = (dataArray) => {
                     processId: v[1].processId
                 })
             }
+        // When there are no header duplications
         } else {
             tableHeaders.push({
                 accessor: v[0].split("___")[0],
@@ -259,8 +280,6 @@ export const getTableHeaders = (dataArray) => {
             })
         }
     }
-
-    console.log(headerPidMap)
 
     return {
         tableHeaders,
@@ -334,11 +353,6 @@ export const genericTableParser = (reportArray) => {
 
     // Add tableHeaders with typography and minWidth
     for (const h of tableHeaders) {
-
-        const header = `${h.Header.split(" ").join("")}___${h.processName.replace(h.processId, "").slice(0, -1)}`;
-        const processName = duplicateAccessors.includes(header) ?
-            h.processName :
-            `${h.processName.replace(h.processId, "").slice(0, -1)}`;
 
         columnsArray.push({
             Header: <div>
