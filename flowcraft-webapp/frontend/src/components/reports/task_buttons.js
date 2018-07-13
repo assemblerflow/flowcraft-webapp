@@ -4,6 +4,7 @@ import React from "react"
 import Select from "react-select";
 
 import DialogActions from "@material-ui/core/DialogActions";
+import DialogContent from "@material-ui/core/DialogContent";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import Tooltip from "@material-ui/core/Tooltip";
 import Divider from "@material-ui/core/Divider";
@@ -40,8 +41,8 @@ export class TaskButtons extends React.Component {
     render () {
         return (
             <div className={styles.moreOptionsButton}
-                 onMouseLeave={this.hideTaskButtons}
-                 onMouseEnter={this.showTaskButtons}
+                 onMouseLeave={this.state.active ? this.hideTaskButtons :  () => {}}
+                 onMouseEnter={!this.state.active ? this.showTaskButtons : () => {}}
                  onTouchStart={this.showTaskButtons}
                  onClick={this.hideTaskButtons}>
                 <FilterTask tableData={this.props.tableData} tableSamples={this.props.tableSamples} active={this.state.active}/>
@@ -96,6 +97,7 @@ class SearchDialog extends React.Component {
 
         this.state = {
             tableSamples: this.fetchTableSamples(props.tableSamples),
+            values: []
         }
     }
 
@@ -113,12 +115,12 @@ class SearchDialog extends React.Component {
         return suggestions
     };
 
-    handleChange = (selectedOption) => {
-        this.setState({ selectedOption });
+    handleChange = (values) => {
+        this.setState({ values });
         // selectedOption can be null when the `x` (close) button is clicked
-        if (selectedOption) {
-            console.log(`Selected: ${selectedOption.label}`);
-        }
+        // if (selectedOption) {
+        //     console.log(`Selected: ${selectedOption}`);
+        // }
     };
 
     render () {
@@ -126,20 +128,31 @@ class SearchDialog extends React.Component {
         const style = {
             selectContainer: {
                 width: "100%",
-                zIndex: 1000
+                zIndex: 1000,
+                paddingTop: "10px",
+                paddingBottom: "20px"
             }
         };
 
-        console.log(this.state)
         return (
-            <Dialog classes={{paperScrollPaper: styles.taskDialogContainer}} open={this.props.open} onClose={this.props.onClose}>
+            <Dialog classes={{paper: styles.taskDialogContainer}} open={this.props.open} onClose={this.props.onClose}>
                 <DialogTitle>Search samples</DialogTitle>
                 <div style={style.selectContainer}>
                     <Select name={"teste"}
-                            value={"none"}
-                            onChange={this.handleChange}
+                            value={this.state.values}
+                            multi={true}
+                            autoFocus
+                            onChange={(vals) => {this.handleChange(vals)}}
                             options={this.state.tableSamples} />
                 </div>
+                <DialogActions>
+                    <Button color={"primary"} variant={"contained"}>
+                        Search
+                    </Button>
+                    <Button color={"default"} variant={"contained"}>
+                        Cancel
+                    </Button>
+                </DialogActions>
             </Dialog>
         )
     }
