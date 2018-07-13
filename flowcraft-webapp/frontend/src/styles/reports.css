@@ -112,3 +112,10 @@
     top: -6px!important;
     background-color: #9b9b9b !important;
 }
+
+:local(.taskDialogContainer) {
+    position: absolute!important;
+    top: 0!important;
+    min-width: 400px;
+    overflow-y: visible!important;
+}

@@ -187,7 +187,7 @@ class ReportsApp extends React.Component {
     constructor(props) {
         super(props);
 
-        const tableData = findTableSignatures(props.reportData);
+        const {tableData, tableSamples} = findTableSignatures(props.reportData);
         const charts = findChartSignatures(props.reportData);
         const qcInfo = findQcWarnings(props.reportData);
 
@@ -195,20 +195,23 @@ class ReportsApp extends React.Component {
             reportData: props.reportData,
             tables: [ ...tableData.keys() ],
             tableData,
+            tableSamples,
             charts,
+            qcInfo,
         };
     }
 
     static getDerivedStateFromProps(props, state) {
 
-        const tableData = findTableSignatures(props.reportData);
+        const {tableData, tableSamples} = findTableSignatures(props.reportData);
         const charts = findChartSignatures(props.reportData);
         const qcInfo = findQcWarnings(props.reportData);
 
         return {
             reportData: props.reportData,
             tables: [ ...tableData.keys() ],
-            tableData: tableData,
+            tableData,
+            tableSamples,
             charts: charts,
             qcInfo
         }
@@ -224,7 +227,8 @@ class ReportsApp extends React.Component {
         console.log(this.state)
         return(
             <div>
-                <TaskButtons tableData={this.state.tableData}/>
+                <TaskButtons tableData={this.state.tableData}
+                             tableSamples={this.state.tableSamples}/>
                 <ReportsHeader tableHeaders={this.state.tables} chartHeaders={this.state.charts}>
                     {
                         this.state.tables.includes("qc") &&

@@ -26,6 +26,9 @@ export const findTableSignatures = (reportArray) => {
     // array of JSON for those tables
     let tables = new Map();
 
+    // Stores the list of samples
+    let samples = [];
+
     const signatures = ["tableRow"];
 
     for (const r of reportArray){
@@ -44,6 +47,9 @@ export const findTableSignatures = (reportArray) => {
 
                 for (const cell of tr.data){
 
+                    // Add to samples array, if new sample
+                    !samples.includes(tr.sample) && samples.push(tr.sample);
+
                     cell.rowId = tr.sample;
                     cell.projectId = r.projectid;
                     cell.processName = r.processName;
@@ -61,7 +67,10 @@ export const findTableSignatures = (reportArray) => {
 
     }
 
-    return tables;
+    return {
+        tableData: tables,
+        tableSamples: samples,
+    };
 
 };
 
