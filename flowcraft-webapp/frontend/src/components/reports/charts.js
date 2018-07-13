@@ -325,9 +325,13 @@ export class AssemblySizeDistChart extends React.Component {
     parsePlotData = (reportData) => {
 
         const chartSignature = "size_dist";
+        let chartDataByProcess = new Map();
         let chartData = [];
         let categories = [];
         let sampleCounter = 0;
+
+        let colorIndexMap = new Map();
+        let colorIndex = 0;
 
         for (const r of reportData){
             if (!r.reportJson.hasOwnProperty("plotData")){
@@ -342,22 +346,64 @@ export class AssemblySizeDistChart extends React.Component {
                 for (const [plot, data] of Object.entries(el.data)){
                     if (plot === chartSignature){
 
-                        chartData.push({
+                        let linkedTo = null;
+
+                        // Determine the color index based on the process name
+                        // Different process names should get different colors
+                        if (!colorIndexMap.has(r.processName)){
+                            colorIndexMap.set(r.processName, {
+                                colorIndex,
+                                sample: el.sample
+                            });
+                            colorIndex += 1;
+                        } else {
+                            linkedTo = colorIndexMap.get(r.processName).sample
+                            linkedTo = r.processName
+                        }
+                        //
+                        // Create new array associated with a new process name
+                        if (!chartDataByProcess.has(r.processName)){
+                            chartDataByProcess.set(r.processName, [])
+                        }
+
+                        chartDataByProcess.get(r.processName).push({
+                            linkedTo: linkedTo,
+                            id: r.processName,
                             name: el.sample,
-                            index: sampleCounter,
-                            color: "gray",
-                            data: this.spreadData(data, sampleCounter),
-                            marker: {
-                                symbol: "circle",
-                                lineColor: "white"
-                            }
+                            data,
+
                         });
-                        categories.push(el.sample);
-                        sampleCounter += 1
+                        // categories.push(el.sample);
+                        // sampleCounter += 1
                     }
                 }
             }
         }
+
+        for (const data of chartDataByProcess.values()){
+
+
+            for (const point of data){
+
+                chartData.push({
+                    linkedTo: point.linkedTo,
+                    id: point.id,
+                    name: point.name,
+                    index: sampleCounter,
+                    colorIndex: colorIndexMap.get(point.id).colorIndex,
+                    data: this.spreadData(point.data, sampleCounter),
+                    marker: {
+                        symbol: "circle",
+                    }
+                });
+
+                sampleCounter += 1;
+                categories.push(point.name);
+            }
+        }
+
+        console.log(categories)
+        console.log(chartData)
 
         return {
             chartData,
@@ -376,13 +422,58 @@ export class AssemblySizeDistChart extends React.Component {
         });
 
         config.extend("plotOptions", {
-            "scatter": {boostThreshold: 1}
+            "scatter": {
+                boostThreshold: 1,
+                events: {
+                    legendItemClick () {
+                        // Get the process name
+                        const seriesId = this.userOptions.id;
+                        // Get series
+                        const series = this.chart.series;
+                        const vis = !this.visible;
+
+                        // Do nothing is toggling the last visible series
+                        let visible = [];
+                        for (const el of series){
+                            if (!visible.includes(el.userOptions.id) && el.visible){
+                                visible.push(el.userOptions.id)
+                            }
+                        }
+                        if (visible.length === 1 && this.userOptions.id === visible[0]){
+                            return false
+                        }
+
+                        // Overrides the redraw function to disable time consuming
+                        // redrawing each time a point is hidden.
+                        const _redraw = this.chart.redraw;
+                        this.chart.redraw = function(){};
+
+                        for (const el of series.reverse()){
+                            // console.log(el.userOptions.id)
+                            if (el.userOptions.id === seriesId) {
+                                el.setVisible(vis, false)
+                            }
+                        }
+
+                        // Restore the redraw function and redraw
+                        this.chart.redraw = _redraw;
+                        this.chart.redraw();
+                        return false;
+                    }
+                }
+            },
         });
         config.extend("chart", {type: "scatter"});
-        config.extend("chart", {height: "550px"});
+        config.extend("chart", {height: "600px"});
         config.extend("xAxis", {
             categories: data.categories,
             labels: {rotation: -45}
+        });
+        config.extend("legend", {
+            enabled: true,
+            labelFormatter () {
+                return this.userOptions.id
+            }
         });
 
         return (
