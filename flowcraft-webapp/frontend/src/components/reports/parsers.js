@@ -349,7 +349,6 @@ export const genericTableParser = (reportArray) => {
 
 
     const {tableHeaders, duplicateAccessors} = getTableHeaders(reportArray);
-    console.log(tableHeaders, duplicateAccessors)
 
     const columnMaxVals = getColumnMax(reportArray);
 

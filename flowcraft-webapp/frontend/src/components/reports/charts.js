@@ -402,9 +402,6 @@ export class AssemblySizeDistChart extends React.Component {
             }
         }
 
-        console.log(categories)
-        console.log(chartData)
-
         return {
             chartData,
             categories
