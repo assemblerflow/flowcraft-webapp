@@ -127,6 +127,8 @@ export class ReportsHome extends React.Component {
     }
 
     render() {
+
+        console.log(this.state);
         return(
             <div>
                 {
@@ -177,7 +179,7 @@ export class ReportsHome extends React.Component {
     }
 }
 
-class ReportsBase extends React.Component {
+export class ReportsRedirect extends React.Component {
 
     render () {
         return(

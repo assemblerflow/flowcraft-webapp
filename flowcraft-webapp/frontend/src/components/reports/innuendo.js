@@ -1,5 +1,6 @@
 // React imports
-import React from "react"
+import React from "react";
+import { Redirect } from "react-router-dom";
 
 // React imports
 import Typography from '@material-ui/core/Typography';
@@ -47,6 +48,8 @@ import {
 
 // utils
 import {parseProjectSearch, getMetadataMapping} from "./utils"
+
+import {ReportsHome} from "../Reports";
 
 //parsers
 import {InnuendoReportsTableParser} from './parsers';
@@ -392,36 +395,33 @@ class InnuendoTabs extends React.Component {
         };
 
         return (
-            <Grid container spacing={8}>
-                <Grid item xs={12} sm={12}>
-                    <AppBar position="static" color="default">
-                        <Tabs
-                            value={this.state.value}
-                            onChange={this.handleChange}
-                            indicatorColor="primary"
-                            textColor="primary"
-                            fullWidth
-                            centered
-                        >
-                            <Tab label="Project Selection"/>
-                            <Tab label="Saved Reports"/>
-                        </Tabs>
-                    </AppBar>
-                    {
-                        this.state.value === 0 &&
-                        <TabContainer>
-                            <InnuendoProjects></InnuendoProjects>
-                        </TabContainer>
-                    }
-                    {
-                        this.state.value === 1 &&
-                        <TabContainer>
-                            <InnuendoSavedReports userId={this.props.userId}/>
-                        </TabContainer>
-                    }
-
-                </Grid>
-            </Grid>
+            <div>
+                <AppBar position="static" color="default">
+                    <Tabs
+                        value={this.state.value}
+                        onChange={this.handleChange}
+                        indicatorColor="primary"
+                        textColor="primary"
+                        fullWidth
+                        centered
+                    >
+                        <Tab label="Project Selection"/>
+                        <Tab label="Saved Reports"/>
+                    </Tabs>
+                </AppBar>
+                {
+                    this.state.value === 0 &&
+                    <TabContainer>
+                        <InnuendoProjects></InnuendoProjects>
+                    </TabContainer>
+                }
+                {
+                    this.state.value === 1 &&
+                    <TabContainer>
+                        <InnuendoSavedReports userId={this.props.userId}/>
+                    </TabContainer>
+                }
+            </div>
 
         )
     }
@@ -575,9 +575,11 @@ class InnuendoProjects extends React.Component {
         console.log(resultsReports, resultsMetadata);
 
         this.setState({
-            resultsReports: resultsReports,
-            resultsMetadata: resultsMetadata
+            resultsReports: resultsReports.data,
+            resultsMetadata: resultsMetadata.data
         })
+
+
 
     };
 
@@ -623,29 +625,39 @@ class InnuendoProjects extends React.Component {
     render() {
 
         return (
-            <Grid container>
-                <Grid item xs={12} sm={12}>
-                    <InnuendoProjectSelector
-                        handleChangeProjects={this.handleChangeProjects}
-                        projects={this.state.projects}
-                        getProjectStrains={this.getProjectStrains}
-                    />
-                </Grid>
+            <div>
                 {
-                    this.state.strains.length > 0 &&
+                    this.state.resultsReports.length > 0 &&
+                        <Redirect to={{
+                            pathname:"/reports/innuendo",
+                            state: {data:this.state.resultsReports}
+                        }}
+                        />
+                }
+                <Grid container>
                     <Grid item xs={12} sm={12}>
-                        <InnuendoFilters
-                            handleChangeStrains={this.handleChangeStrains}
-                            strains={this.state.strains}
-                            minDate={this.state.minDate}
-                            maxDate={this.state.maxDate}
-                            updateDate={this.updateDate}
-                            submitStrains={this.submitStrains}
+                        <InnuendoProjectSelector
+                            handleChangeProjects={this.handleChangeProjects}
+                            projects={this.state.projects}
+                            getProjectStrains={this.getProjectStrains}
                         />
                     </Grid>
-                }
+                    {
+                        this.state.strains.length > 0 &&
+                        <Grid item xs={12} sm={12}>
+                            <InnuendoFilters
+                                handleChangeStrains={this.handleChangeStrains}
+                                strains={this.state.strains}
+                                minDate={this.state.minDate}
+                                maxDate={this.state.maxDate}
+                                updateDate={this.updateDate}
+                                submitStrains={this.submitStrains}
+                            />
+                        </Grid>
+                    }
 
-            </Grid>
+                </Grid>
+            </div>
         )
     }
 }
@@ -690,16 +702,16 @@ class InnuendoSavedReports extends React.Component {
 
         return (
             <div>
-            {
-                tableData.tableArray.length > 0 ?
-                    <FCTable
-                        data={tableData.tableArray}
-                        columns={tableData.columnsArray}
-                        rawData={tableData.rawTableArray}
-                        setSelection={this.setSelection}
-                    /> :
-                    <Typography>No saved reports available!</Typography>
-            }
+                {
+                    tableData.tableArray.length > 0 ?
+                        <FCTable
+                            data={tableData.tableArray}
+                            columns={tableData.columnsArray}
+                            rawData={tableData.rawTableArray}
+                            setSelection={this.setSelection}
+                        /> :
+                        <Typography>No saved reports available!</Typography>
+                }
             </div>
         )
     }
@@ -841,7 +853,7 @@ class InnuendoFilters extends React.Component {
                             style={style.filterTitle}>Filters:</Typography>
                 <FormControl style={style.formControl}>
                     <Grid container spacing={8}>
-                        <Grid item sm={6}>
+                        <Grid item xs={12} sm={6}>
                             <Typography
                                 style={style.filterStrainText}>Strains</Typography>
                             <Select
@@ -857,7 +869,7 @@ class InnuendoFilters extends React.Component {
                                 options={this.setOptions()}
                             />
                         </Grid>
-                        <Grid item sm={2}>
+                        <Grid item xs={12} sm={2}>
 
                             <TextField
                                 id="startDate"
@@ -870,7 +882,7 @@ class InnuendoFilters extends React.Component {
                                 defaultValue={this.props.minDate}
                             />
                         </Grid>
-                        <Grid item sm={2}>
+                        <Grid item xs={12} sm={2}>
                             <TextField
                                 id="endDate"
                                 label="To"
@@ -883,7 +895,7 @@ class InnuendoFilters extends React.Component {
                                 onChange={this.props.updateDate}
                             />
                         </Grid>
-                        <Grid item sm={2}>
+                        <Grid item xs={12} sm={2}>
                             <Button className={styles.innuendoInputForm}
                                     variant="contained"
                                     size="large"
