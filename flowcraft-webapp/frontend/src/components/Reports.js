@@ -177,6 +177,15 @@ export class ReportsHome extends React.Component {
     }
 }
 
+class ReportsBase extends React.Component {
+
+    render () {
+        return(
+                <ReportsApp reportData={this.props.location.state.data}/>
+            )
+    }
+}
+
 /**
  * Main Reports application component. It requires the reportData array of
  * JSONs to correctly render. The rendering of the specific components in the
