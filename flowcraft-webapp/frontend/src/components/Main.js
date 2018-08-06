@@ -21,6 +21,7 @@ export class Main extends React.Component {
                     <Route exact path="/inspect/:runId" component={Inspect} setHeader={this.props.setHeader}/>
                     <Route exact path="/reports" component={ReportsHome}/>
                     <Route exact path="/reports/innuendo" component={ReportsRedirect}/>
+                    <Route exact path="/reports/app" component={ReportsRedirect}/>
                     <Route exact path="/reports/fc/:runId" component={Reports} setHeader={this.props.setHeader}/>
                     <Route component={NotFound}/>
                 </Switch>

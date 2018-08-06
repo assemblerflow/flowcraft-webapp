@@ -38,7 +38,17 @@ const statusColor = {
     "warning": yellow[300]
 };
 
-
+/**
+ * General component for rendering a React Table. It accepts four main props:
+ *
+ *  - rawData: Array of JSON objects with the raw table data.
+ *  - data: Array of JSON objects with the processed and final table data that
+ *          will be feed into the react table
+ *  - columns: Array of JSON objects with the header information for react table
+ *
+ *  Additional buttons to the button toolbar above the table can be provided
+ *  as the content of the component and accessible in the props.children.
+ */
 export class FCTable extends React.Component {
 
     constructor(props) {
@@ -125,11 +135,13 @@ export class FCTable extends React.Component {
             }
         };
 
+        console.log(this.props)
+
         return (
             <div>
                 <div style={style.toolbar}>
-                    <ExportTooltipButton tableData={this.props.rawData}
-                                         tableHeaders={this.props.rawColumns} />
+                    <ExportTooltipButton tableData={this.props.rawData}/>
+                    { this.props.children }
                 </div>
                 <CheckboxTable
                     ref={r => (this.checkboxTable = r)}
@@ -240,6 +252,30 @@ export class AbricateTable extends React.Component {
         this.setState({selection});
     };
 
+    exportGeneNames = (data, columns) => {
+
+        let dataMap = new Map();
+        let finalData = [];
+
+        for (const cell of data){
+            let header = cell.header;
+            let geneList = cell.geneList;
+            if (!dataMap.has(cell.rowId)){
+                dataMap.set(cell.rowId, {
+                    rowId: cell.rowId
+                })
+            }
+
+            dataMap.get(cell.rowId)[header] = geneList.join(";")
+        }
+
+        for (const [rowId, row] of dataMap.entries()){
+            finalData.push(row);
+        }
+        return finalData;
+
+    };
+
     render () {
         const tableData = genericTableParser(this.props.tableData);
 
@@ -251,11 +287,15 @@ export class AbricateTable extends React.Component {
                 <ExpansionPanelDetails>
                     <div className={styles.mainPaper}>
                         <FCTable
-                            data={tableData.tableArray}
-                            columns={tableData.columnsArray}
-                            rawData={tableData.rawTableArray}
-                            setSelection={this.setSelection}
-                        />
+                                data={tableData.tableArray}
+                                columns={tableData.columnsArray}
+                                rawData={tableData.rawTableArray}
+                                setSelection={this.setSelection}>
+                            {/*CSV export button that exports the table gene names*/}
+                            <CSVLink data={this.exportGeneNames(this.props.tableData)}>
+                                <Button variant={"contained"} color={"primary"}>Export genesS</Button>
+                            </CSVLink>
+                        </FCTable>
                     </div>
                 </ExpansionPanelDetails>
             </ExpansionPanel>
@@ -397,11 +437,9 @@ class ExportTooltipButton extends React.Component {
 
     render () {
         return (
-            <div>
-                <CSVLink data={this.props.tableData} filename="table_data.csv" style={{"textDecoration": "none"}}>
-                    <Button onClick={this.handleClickOpen} variant={"contained"} color={"primary"}>Export CSV</Button>
-                </CSVLink>
-            </div>
+            <CSVLink data={this.props.tableData} filename="table_data.csv" style={{"textDecoration": "none"}}>
+                <Button onClick={this.handleClickOpen} variant={"contained"} color={"primary"}>Export CSV</Button>
+            </CSVLink>
         )
     }
 }
