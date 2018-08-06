@@ -28,27 +28,40 @@ import {service} from "../../config.json"
 import {TaskButtons} from "./reports/task_buttons"
 
 
+/**
+ * This is a base component that provides drag and drop functionality to the
+ * reports home and reports app routes. It should be used as an extension
+ * for these components only, not for general use.
+ */
 export class DraggableView extends React.Component {
 
+    /*
+    Add event listeners for drag and drop functionality
+     */
     componentDidMount(){
-        // Add event listeners for drag and drop functionality
         window.addEventListener("drop", this._drop.bind(this));
         window.addEventListener("dragover", this._dragOver);
     }
 
+    /*
+    Remove event listeners for drag and drop functionality
+     */
     componentWillUnmount(){
-        // Remove event listeners for drag and drop functionality
         window.removeEventListener("drop", this._drop);
         window.removeEventListener("dragover", this._dragOver);
     }
 
     /*
-     Required to trigger modal open and close
+     Toggle the open state of the modal
      */
     setModalState = (value) => {
         this.setState({openModal:value});
     };
 
+    /*
+    Trigger component update only when there is a change on the report data
+    that is stored in the state.
+     */
     shouldComponentUpdate(nextProps, nextState){
         if (this.state.reportData === nextState.reportData &&
             this.state.openModal === nextState.openModal){
@@ -58,12 +71,17 @@ export class DraggableView extends React.Component {
         }
     }
 
-        /*
-    Function to load reports app by changing the state of the reportData
+    /*
+    Function to load reports app by changing the state of the reportData and
+    by changing the state associated with the URL. This change in the URL state
+    allows the page to be refreshed and keep the last data set in view.
      */
     loadReports = (reportData) => {
+        // Change state to trigger re-rendering of the app
         this.setState({"reportData": reportData});
+        // Close modal
         this.setModalState(false);
+        // Update the state associated with the URL
         this.props.history.push({
             pathname: "/reports/app",
             state: {
@@ -81,6 +99,9 @@ export class DraggableView extends React.Component {
         this.loadReports(mergedData);
     };
 
+    /*
+    Function triggered when a file is dropped in view.
+    */
     _drop(ev){
         ev.preventDefault();
 
@@ -123,6 +144,10 @@ export class DraggableView extends React.Component {
     }
 }
 
+/**
+ * Simple modal that is shown when a new reports file is drag and dropped
+ * into the reports app.
+ */
 class DragAndDropModal extends React.Component {
     render() {
         return (
@@ -178,7 +203,6 @@ export class ReportsHome extends DraggableView{
 
     render() {
 
-        console.log(this.state);
         return(
             <div>
                 {
@@ -214,6 +238,15 @@ export class ReportsHome extends DraggableView{
     }
 }
 
+/**
+ * This is the main component interface with the reports app. The reports
+ * application should be mounted via Redirect to this component for two reasons:
+ *
+ *  1. It provides drag and drop functionality for more reports
+ *  2. It allows the state of the reports to be saved and associated with the
+ *  URL. In this way, refreshing the reports app will retain the last saved
+ *  data set.
+ */
 export class ReportsRedirect extends DraggableView {
 
     constructor(props){
