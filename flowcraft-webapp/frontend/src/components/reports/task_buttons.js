@@ -17,6 +17,11 @@ import FilterIcon from "mdi-react/FilterIcon"
 
 import styles from "../../styles/reports.css";
 
+/**
+ * This component wraps all Task buttons (e.g. Search, Filter). It controls
+ * their order and show/hide behaviour. It is also the entry point of
+ * callbacks that may need to be be passed to the Task activities themselves
+ */
 export class TaskButtons extends React.Component {
 
     constructor(props){
@@ -55,7 +60,9 @@ export class TaskButtons extends React.Component {
     }
 }
 
-
+/**
+ * The Search Task Button and dialog wrapper.
+ */
 class SearchTask extends React.Component {
 
     state = {
@@ -63,7 +70,6 @@ class SearchTask extends React.Component {
     };
 
     handleClickOpen = () => {
-        console.log(this)
         this.setState({open: true});
     };
 
@@ -90,6 +96,9 @@ class SearchTask extends React.Component {
     }
 }
 
+/**
+ * Dialog for the Search task.
+ */
 class SearchDialog extends React.Component {
 
     constructor(props){
@@ -117,10 +126,6 @@ class SearchDialog extends React.Component {
 
     handleChange = (values) => {
         this.setState({ values });
-        // selectedOption can be null when the `x` (close) button is clicked
-        // if (selectedOption) {
-        //     console.log(`Selected: ${selectedOption}`);
-        // }
     };
 
     render () {
@@ -149,7 +154,7 @@ class SearchDialog extends React.Component {
                     <Button color={"primary"} variant={"contained"}>
                         Search
                     </Button>
-                    <Button color={"default"} variant={"contained"}>
+                    <Button onClick={this.props.onClose} color={"default"} variant={"contained"}>
                         Cancel
                     </Button>
                 </DialogActions>
@@ -158,7 +163,9 @@ class SearchDialog extends React.Component {
     }
 }
 
-
+/**
+ * The Search Task Button and dialog wrapper.
+ */
 class FilterTask extends React.Component {
     render () {
         return (
