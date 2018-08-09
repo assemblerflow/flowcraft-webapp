@@ -572,10 +572,11 @@ class InnuendoProjects extends React.Component {
             selectedStrains: metadataMap[1]
         });
 
-        console.log(resultsReports, resultsMetadata);
+        // Merge reports and metadata results
+        const finalResults = [...resultsReports.data, ...resultsMetadata.data];
 
         this.setState({
-            resultsReports: resultsReports.data,
+            resultsReports: finalResults,
             resultsMetadata: resultsMetadata.data
         })
 

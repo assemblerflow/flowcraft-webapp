@@ -61,9 +61,11 @@ parsed to get min and max date for filtering.
 */
 export const getInnuendoProjectStrains = (projectIds) => {
 
+    console.log(address, projectIds)
+
     return axios({
         method: "get",
-        url: address + "app/api/v1.0/reports/project/info",
+        url: address + "app/api/v1.0/reports/project/info/",
         params: {
             project_id: projectIds.join(",")
         }

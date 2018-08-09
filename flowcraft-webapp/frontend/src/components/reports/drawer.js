@@ -172,7 +172,8 @@ class TableDrawer extends React.Component {
             "qc": {"icon": <HeartIcon/>, "text": "Quality Control"},
             "assembly": {"icon": <FileDocumentBoxIcon/>, "text": "Assembly"},
             "abricate": {"icon": <PillIcon/>, "text": "AMR"},
-            "chewbbaca": {"icon": <AlienIcon/>, "text": "chewBBACA"}
+            "chewbbaca": {"icon": <AlienIcon/>, "text": "chewBBACA"},
+            "typing": {"icon": <PillIcon/>, "text": "Typing"}
         };
 
         return (

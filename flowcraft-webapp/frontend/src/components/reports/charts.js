@@ -64,27 +64,29 @@ export class FastQcCharts extends React.Component {
         const chartSignatures = [...Object.keys(qcCharts)];
 
         for (const r of reportData){
-            if (!r.reportJson.hasOwnProperty("plotData")){
-                continue
-            }
-
-            for (const el of r.reportJson.plotData){
-                if (!el.hasOwnProperty("data")){
+            if(r.hasOwnProperty("reportJson")){
+                if (!r.reportJson.hasOwnProperty("plotData")){
                     continue
                 }
 
-                for (const [plot, data] of Object.entries(el.data)){
-                    if (chartSignatures.includes(plot)){
+                for (const el of r.reportJson.plotData){
+                    if (!el.hasOwnProperty("data")){
+                        continue
+                    }
 
-                        const parsedData = data.data[0].map((v) => {
-                            return parseFloat(v)
-                        });
+                    for (const [plot, data] of Object.entries(el.data)){
+                        if (chartSignatures.includes(plot)){
 
-                        qcCharts[plot].push({
-                            name: el.sample,
-                            data: parsedData,
-                            color: "#626262"
-                        })
+                            const parsedData = data.data[0].map((v) => {
+                                return parseFloat(v)
+                            });
+
+                            qcCharts[plot].push({
+                                name: el.sample,
+                                data: parsedData,
+                                color: "#626262"
+                            })
+                        }
                     }
                 }
             }
@@ -386,47 +388,49 @@ export class AssemblySizeDistChart extends React.Component {
         let colorIndex = 0;
 
         for (const r of reportData){
-            if (!r.reportJson.hasOwnProperty("plotData")){
-                continue
-            }
-
-            for (const el of r.reportJson.plotData){
-                if (!el.hasOwnProperty("data")){
+            if(r.hasOwnProperty("reportJson")) {
+                if (!r.reportJson.hasOwnProperty("plotData")) {
                     continue
                 }
 
-                for (const [plot, data] of Object.entries(el.data)){
-                    if (plot === chartSignature){
+                for (const el of r.reportJson.plotData) {
+                    if (!el.hasOwnProperty("data")) {
+                        continue
+                    }
 
-                        let linkedTo = null;
+                    for (const [plot, data] of Object.entries(el.data)) {
+                        if (plot === chartSignature) {
 
-                        // Determine the color index based on the process name
-                        // Different process names should get different colors
-                        if (!colorIndexMap.has(r.processName)){
-                            colorIndexMap.set(r.processName, {
-                                colorIndex,
-                                sample: el.sample
+                            let linkedTo = null;
+
+                            // Determine the color index based on the process name
+                            // Different process names should get different colors
+                            if (!colorIndexMap.has(r.processName)) {
+                                colorIndexMap.set(r.processName, {
+                                    colorIndex,
+                                    sample: el.sample
+                                });
+                                colorIndex += 1;
+                            } else {
+                                linkedTo = colorIndexMap.get(r.processName).sample
+                                linkedTo = r.processName
+                            }
+                            //
+                            // Create new array associated with a new process name
+                            if (!chartDataByProcess.has(r.processName)) {
+                                chartDataByProcess.set(r.processName, [])
+                            }
+
+                            chartDataByProcess.get(r.processName).push({
+                                linkedTo: linkedTo,
+                                id: r.processName,
+                                name: el.sample,
+                                data,
+
                             });
-                            colorIndex += 1;
-                        } else {
-                            linkedTo = colorIndexMap.get(r.processName).sample
-                            linkedTo = r.processName
+                            // categories.push(el.sample);
+                            // sampleCounter += 1
                         }
-                        //
-                        // Create new array associated with a new process name
-                        if (!chartDataByProcess.has(r.processName)){
-                            chartDataByProcess.set(r.processName, [])
-                        }
-
-                        chartDataByProcess.get(r.processName).push({
-                            linkedTo: linkedTo,
-                            id: r.processName,
-                            name: el.sample,
-                            data,
-
-                        });
-                        // categories.push(el.sample);
-                        // sampleCounter += 1
                     }
                 }
             }

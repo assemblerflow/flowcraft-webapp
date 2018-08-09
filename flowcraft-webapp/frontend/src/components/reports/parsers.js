@@ -33,36 +33,40 @@ export const findTableSignatures = (reportArray) => {
 
     for (const r of reportArray){
 
-        for (const s of signatures){
+        // Only process if entry is a report
+        // Pass if metadata
+        if (r.hasOwnProperty("reportJson")) {
+            for (const s of signatures){
 
-            // Skip entries without the tableRow signture
-            if (!r.reportJson.hasOwnProperty(s)){
-                continue
-            }
-
-            for (const tr of r.reportJson[s]){
-                if (!tr.hasOwnProperty("data")){
+                // Skip entries without the tableRow signture
+                if (!r.reportJson.hasOwnProperty(s)){
                     continue
                 }
 
-                for (const cell of tr.data){
+                for (const tr of r.reportJson[s]){
+                    if (!tr.hasOwnProperty("data")){
+                        continue
+                    }
 
-                    // Add to samples array, if new sample
-                    !samples.includes(tr.sample) && samples.push(tr.sample);
+                    for (const cell of tr.data){
 
-                    cell.rowId = tr.sample;
-                    cell.projectId = r.projectid;
-                    cell.processName = r.processName;
-                    cell.processId = r.processId;
+                        // Add to samples array, if new sample
+                        !samples.includes(tr.sample) && samples.push(tr.sample);
 
-                    if (!tables.has(cell.table)){
-                        tables.set(cell.table, [cell])
-                    } else {
-                        tables.get(cell.table).push(cell)
+                        cell.rowId = tr.sample;
+                        cell.projectId = r.projectid;
+                        cell.processName = r.processName;
+                        cell.processId = r.processId;
+
+                        if (!tables.has(cell.table)){
+                            tables.set(cell.table, [cell])
+                        } else {
+                            tables.get(cell.table).push(cell)
+                        }
                     }
                 }
-            }
 
+            }
         }
 
     }
@@ -91,21 +95,22 @@ export const findChartSignatures = (reportArray) => {
     let charts = [];
 
     for (const r of reportArray) {
-
-        // Skip entries without the plotData signature
-        if (!r.reportJson.hasOwnProperty("plotData")) {
-            continue
-        }
-
-        for (const el of r.reportJson.plotData) {
-
-            if (!el.hasOwnProperty("data")) {
+        if (r.hasOwnProperty("reportJson")) {
+            // Skip entries without the plotData signature
+            if (!r.reportJson.hasOwnProperty("plotData")) {
                 continue
             }
 
-            for (const plot of Object.keys(el.data)) {
+            for (const el of r.reportJson.plotData) {
 
-                !charts.includes(plot) && charts.push(plot)
+                if (!el.hasOwnProperty("data")) {
+                    continue
+                }
+
+                for (const plot of Object.keys(el.data)) {
+
+                    !charts.includes(plot) && charts.push(plot)
+                }
             }
         }
     }
@@ -137,53 +142,55 @@ export const findQcWarnings = (reportArray) => {
 
     for (const r of reportArray){
 
-        // Parse fails
-        if (r.reportJson.hasOwnProperty("fail")){
-            for (const f of r.reportJson.fail){
+        if (r.hasOwnProperty("reportJson")) {
+            // Parse fails
+            if (r.reportJson.hasOwnProperty("fail")) {
+                for (const f of r.reportJson.fail) {
 
-                const failObj = {
-                    process: r.processName,
-                    message: f.value
-                };
+                    const failObj = {
+                        process: r.processName,
+                        message: f.value
+                    };
 
-                // In case the table does not exist yet
-                if (!qcInfo.has(f.table)){
-                    qcInfo.set(f.table, new Map([[f.sample, {"fail": [failObj]}]]))
-                // When the table already exists, but not the current sample
-                } else if (!qcInfo.get(f.table).has(f.sample)){
-                    qcInfo.get(f.table).set(f.sample, {"fail": [failObj]})
-                } else {
-                    // When the table and sample exist, but not the fail entry
-                    if (qcInfo.get(f.table).get(f.sample).hasOwnProperty("fail")){
-                        qcInfo.get(f.table).get(f.sample)["fail"].push(failObj)
+                    // In case the table does not exist yet
+                    if (!qcInfo.has(f.table)) {
+                        qcInfo.set(f.table, new Map([[f.sample, {"fail": [failObj]}]]))
+                        // When the table already exists, but not the current sample
+                    } else if (!qcInfo.get(f.table).has(f.sample)) {
+                        qcInfo.get(f.table).set(f.sample, {"fail": [failObj]})
                     } else {
-                        qcInfo.get(f.table).get(f.sample)["fail"] = [failObj]
+                        // When the table and sample exist, but not the fail entry
+                        if (qcInfo.get(f.table).get(f.sample).hasOwnProperty("fail")) {
+                            qcInfo.get(f.table).get(f.sample)["fail"].push(failObj)
+                        } else {
+                            qcInfo.get(f.table).get(f.sample)["fail"] = [failObj]
+                        }
                     }
                 }
             }
-        }
 
-        // Parse warnings
-        if (r.reportJson.hasOwnProperty("warnings")){
-            for (const f of r.reportJson.warnings){
+            // Parse warnings
+            if (r.reportJson.hasOwnProperty("warnings")) {
+                for (const f of r.reportJson.warnings) {
 
-                const failObj = {
-                    process: r.processName,
-                    message: f.value
-                };
+                    const failObj = {
+                        process: r.processName,
+                        message: f.value
+                    };
 
-                // In case the table does not exist yet
-                if (!qcInfo.has(f.table)){
-                    qcInfo.set(f.table, new Map([[f.sample, {"warnings": [failObj]}]]))
-                // When the table already exists, but not the current sample
-                } else if (!qcInfo.get(f.table).has(f.sample)){
-                    qcInfo.get(f.table).set(f.sample, {"warnings": [failObj]})
-                } else {
-                    // When the table and sample exist, but not the fail entry
-                    if (qcInfo.get(f.table).get(f.sample).hasOwnProperty("warnings")){
-                        qcInfo.get(f.table).get(f.sample)["warnings"].push(failObj)
+                    // In case the table does not exist yet
+                    if (!qcInfo.has(f.table)) {
+                        qcInfo.set(f.table, new Map([[f.sample, {"warnings": [failObj]}]]))
+                        // When the table already exists, but not the current sample
+                    } else if (!qcInfo.get(f.table).has(f.sample)) {
+                        qcInfo.get(f.table).set(f.sample, {"warnings": [failObj]})
                     } else {
-                        qcInfo.get(f.table).get(f.sample)["warnings"] = [failObj]
+                        // When the table and sample exist, but not the fail entry
+                        if (qcInfo.get(f.table).get(f.sample).hasOwnProperty("warnings")) {
+                            qcInfo.get(f.table).get(f.sample)["warnings"].push(failObj)
+                        } else {
+                            qcInfo.get(f.table).get(f.sample)["warnings"] = [failObj]
+                        }
                     }
                 }
             }

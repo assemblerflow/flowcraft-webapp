@@ -13,7 +13,12 @@ import {
     findQcWarnings
 } from "./reports/parsers";
 
-import {QualityControlTable, AssemblyTable, AbricateTable, ChewbbacaTable} from "./reports/tables";
+import {
+    QualityControlTable,
+    AssemblyTable,
+    AbricateTable,
+    ChewbbacaTable
+} from "./reports/tables";
 import {BasicModal} from "./reports/modals";
 import {AssemblySizeDistChart, FastQcCharts} from "./reports/charts";
 import {ReportsHeader} from "./reports/drawer";
@@ -21,7 +26,15 @@ import {HomeInnuendo} from "./reports/innuendo";
 import {HomeInput} from "./Inspect";
 import {Header} from "./Header";
 
-import { Link, DirectLink, Element, Events, animateScroll as scroll, scrollSpy, scroller } from 'react-scroll'
+import {
+    Link,
+    DirectLink,
+    Element,
+    Events,
+    animateScroll as scroll,
+    scrollSpy,
+    scroller
+} from 'react-scroll'
 
 import styles from "../styles/reports.css";
 import {service} from "../../config.json"
@@ -39,7 +52,7 @@ export class DraggableView extends React.Component {
     /*
     Add event listeners for drag and drop functionality
      */
-    componentDidMount(){
+    componentDidMount() {
         window.addEventListener("drop", this._drop.bind(this));
         window.addEventListener("dragover", this._dragOver);
     }
@@ -47,7 +60,7 @@ export class DraggableView extends React.Component {
     /*
     Remove event listeners for drag and drop functionality
      */
-    componentWillUnmount(){
+    componentWillUnmount() {
         window.removeEventListener("drop", this._drop);
         window.removeEventListener("dragover", this._dragOver);
     }
@@ -56,16 +69,19 @@ export class DraggableView extends React.Component {
      Toggle the open state of the modal
      */
     setModalState = (value) => {
-        this.setState({openModal:value});
+        this.setState({openModal: value});
     };
 
     /*
     Trigger component update only when there is a change on the report data
     that is stored in the state.
      */
-    shouldComponentUpdate(nextProps, nextState){
+    shouldComponentUpdate(nextProps, nextState) {
+        if (this.state.loading !== nextState.loading)
+            return true;
+
         if (this.state.reportData === nextState.reportData &&
-            this.state.openModal === nextState.openModal){
+            this.state.openModal === nextState.openModal) {
             return false
         } else {
             return true
@@ -95,13 +111,16 @@ export class DraggableView extends React.Component {
     /*
     Function triggered when a file is dropped in view.
     */
-    _drop(ev){
+    _drop(ev) {
         ev.preventDefault();
 
         const data = ev.dataTransfer.files[0];
         const reader = new FileReader();
 
-        reader.onload = function(e) {
+        reader.onload = function (e) {
+
+            this.setState({"loading": true});
+
             try {
                 const jsonData = JSON.parse(e.target.result).data.results;
 
@@ -115,7 +134,7 @@ export class DraggableView extends React.Component {
                     this.setState({dropData: jsonData});
                     this.setModalState(true);
                 }
-            } catch(e) {
+            } catch (e) {
                 console.log(e);
             }
         }.bind(this);
@@ -123,16 +142,18 @@ export class DraggableView extends React.Component {
         reader.readAsText(data);
     }
 
-    _dragOver(ev){
+    _dragOver(ev) {
         ev.preventDefault();
         ev.stopPropagation();
     }
 
-    render(){
-        return(
-            <span>
-                {this.props.children}
-            </span>
+    render() {
+        return (
+            <div>
+                <span>
+                    {this.props.children}
+                </span>
+            </div>
         )
     }
 }
@@ -151,16 +172,23 @@ class DragAndDropModal extends React.Component {
                 <div className={styles.modalBody}>
 
                     {/* Prototype for modal content */}
-                    <Typography className={styles.centeredContent}>Uploaded {this.props.dropData.length} new processes!</Typography>
-                    <Typography className={styles.centeredContent}>What do you want to do?!</Typography>
+                    <Typography
+                        className={styles.centeredContent}>Uploaded {this.props.dropData.length}
+                        new processes!</Typography>
+                    <Typography className={styles.centeredContent}>What do you
+                        want to do?!</Typography>
 
                     {/* dropData: is the current data uploaded using
                              dragNdrop */}
                     <div className={styles.centeredContent}>
                         <Button color="primary"
-                                onClick={() => {this.props.mergeReports(this.props.dropData)}}>Merge</Button>
+                                onClick={() => {
+                                    this.props.mergeReports(this.props.dropData)
+                                }}>Merge</Button>
                         <Button color="secondary"
-                                onClick={() => {this.props.loadReports(this.props.dropData)}}>
+                                onClick={() => {
+                                    this.props.loadReports(this.props.dropData)
+                                }}>
                             Remove Previous
                         </Button>
                     </div>
@@ -185,9 +213,9 @@ class DragAndDropModal extends React.Component {
  * the state of the URL.
  *
  */
-export class ReportsHome extends DraggableView{
+export class ReportsHome extends DraggableView {
 
-    constructor(props){
+    constructor(props) {
         super(props);
 
         this.props.history.push("/reports");
@@ -196,14 +224,24 @@ export class ReportsHome extends DraggableView{
             "runId": "",
             "reportData": null,
             "openModal": false,
-            "dropData": []
+            "dropData": [],
+            "loading": false
         };
     }
 
+
     render() {
 
-        return(
+        console.log(this.state.loading);
+
+        return (
             <div>
+                {
+                    this.state.loading &&
+                    <div>
+                        <LoadingScreen/>
+                    </div>
+                }
                 {
                     this.state.reportData &&
                     <DragAndDropModal openModal={this.state.openModal}
@@ -222,9 +260,10 @@ export class ReportsHome extends DraggableView{
                             {
                                 service === "innuendo" ?
                                     <div>
-                                        <Header headerTitle={"INNUENDO Reports"}/>
+                                        <Header
+                                            headerTitle={"INNUENDO Reports"}/>
                                         <HomeInnuendo route={"reports"}/>
-                                    </div>:
+                                    </div> :
                                     <div>
                                         <Header headerTitle={"Reports"}/>
                                         <HomeInput route={"reports"}/>
@@ -232,6 +271,34 @@ export class ReportsHome extends DraggableView{
                             }
                         </div>
                 }
+            </div>
+        )
+    }
+}
+
+class LoadingScreen extends React.Component {
+
+    render() {
+
+        const style = {
+            loadingScreen: {
+                "width": "100%",
+                "height": "100%",
+                "zIndex": "1000"
+            },
+            loadingSpinner: {
+                "top": "0",
+                "bottom": "0",
+                "left": "0",
+                "right": "0",
+                "margin": "auto",
+                "position": "absolute"
+            }
+        };
+
+        return (
+            <div style={style.loadingSpinner}>
+                <CircularProgress style={style.loadingSpinner}/>
             </div>
         )
     }
@@ -248,7 +315,7 @@ export class ReportsHome extends DraggableView{
  */
 export class ReportsRedirect extends DraggableView {
 
-    constructor(props){
+    constructor(props) {
         super(props);
 
         this.state = {
@@ -262,7 +329,7 @@ export class ReportsRedirect extends DraggableView {
     Method that restores the state of the URL to the last saved report data
     state.
      */
-    _restoreUrlState(){
+    _restoreUrlState() {
         this.props.history.replace("/reports/app", {
             data: this.state.reportData
         });
@@ -271,7 +338,7 @@ export class ReportsRedirect extends DraggableView {
     /*
     Overwrites the method from the DraggableView component
      */
-    componentDidMount(){
+    componentDidMount() {
         window.addEventListener("drop", this._drop.bind(this));
         window.addEventListener("dragover", this._dragOver);
         this.props.history.replace("/reports/app", {data: []});
@@ -282,13 +349,13 @@ export class ReportsRedirect extends DraggableView {
     /*
     Overwrites the method from the DraggableView component
      */
-    componentWillUnmount(){
+    componentWillUnmount() {
         window.removeEventListener("drop", this._drop);
         window.removeEventListener("dragover", this._dragOver);
     }
 
-    render () {
-        return(
+    render() {
+        return (
             <div>
                 <DragAndDropModal openModal={this.state.openModal}
                                   setModalState={this.setModalState}
@@ -317,7 +384,7 @@ class ReportsApp extends React.Component {
 
         this.state = {
             reportData: props.reportData,
-            tables: [ ...tableData.keys() ],
+            tables: [...tableData.keys()],
             tableData,
             tableSamples,
             charts,
@@ -327,7 +394,7 @@ class ReportsApp extends React.Component {
 
     static getDerivedStateFromProps(props, state) {
 
-        if (props.reportData === state.reportData){
+        if (props.reportData === state.reportData) {
             return null
         }
 
@@ -337,7 +404,7 @@ class ReportsApp extends React.Component {
 
         return {
             reportData: props.reportData,
-            tables: [ ...tableData.keys() ],
+            tables: [...tableData.keys()],
             tableData,
             tableSamples,
             charts: charts,
@@ -350,57 +417,68 @@ class ReportsApp extends React.Component {
         return nextProps.reportData !== this.state.reportData;
     }
 
-    render(){
+    render() {
         //
         // This is the main element where the Reports components will be added,
         // Their addition should be conditional on the presence of relevant
         // data in the this.state.reportData array, and each component should
         // be responsible for handling the data in any way they see fit.
         //
-        console.log(this.state)
-        return(
+        return (
             <div>
                 <TaskButtons tableData={this.state.tableData}
                              tableSamples={this.state.tableSamples}/>
-                <ReportsHeader tableHeaders={this.state.tables} chartHeaders={this.state.charts}>
+                <ReportsHeader tableHeaders={this.state.tables}
+                               chartHeaders={this.state.charts}>
                     {
                         this.state.tables.includes("qc") &&
-                            <Element name={"qcTable"} className={styles.scrollElement}>
-                                <QualityControlTable tableData={this.state.tableData.get("qc")}
-                                                     qcInfo={this.state.qcInfo}/>
-                            </Element>
+                        <Element name={"qcTable"}
+                                 className={styles.scrollElement}>
+                            <QualityControlTable
+                                tableData={this.state.tableData.get("qc")}
+                                qcInfo={this.state.qcInfo}/>
+                        </Element>
                     }
                     {
                         this.state.tables.includes("assembly") &&
-                             <Element name={"assemblyTable"} className={styles.scrollElement}>
-                                <AssemblyTable tableData={this.state.tableData.get("assembly")}
-                                               qcInfo={this.state.qcInfo}/>
-                             </Element>
+                        <Element name={"assemblyTable"}
+                                 className={styles.scrollElement}>
+                            <AssemblyTable
+                                tableData={this.state.tableData.get("assembly")}
+                                qcInfo={this.state.qcInfo}/>
+                        </Element>
                     }
                     {
                         this.state.tables.includes("abricate") &&
-                            <Element name={"abricateTable"} className={styles.scrollElement}>
-                                <AbricateTable tableData={this.state.tableData.get("abricate")}/>
-                            </Element>
+                        <Element name={"abricateTable"}
+                                 className={styles.scrollElement}>
+                            <AbricateTable
+                                tableData={this.state.tableData.get("abricate")}/>
+                        </Element>
                     }
                     {
                         this.state.tables.includes("chewbbaca") &&
-                            <Element name={"chewbbacaTable"} className={styles.scrollElement}>
-                                <ChewbbacaTable tableData={this.state.tableData.get("chewbbaca")}
-                                                reportData={this.state.reportData}
-                                />
-                            </Element>
+                        <Element name={"chewbbacaTable"}
+                                 className={styles.scrollElement}>
+                            <ChewbbacaTable
+                                tableData={this.state.tableData.get("chewbbaca")}
+                                reportData={this.state.reportData}
+                            />
+                        </Element>
                     }
                     {
                         this.state.charts.includes("base_n_content") &&
-                             <Element name={"base_n_contentChart"} className={styles.scrollElement}>
-                                <FastQcCharts rawReports={this.state.reportData}/>
-                             </Element>
+                        <Element name={"base_n_contentChart"}
+                                 className={styles.scrollElement}>
+                            <FastQcCharts rawReports={this.state.reportData}/>
+                        </Element>
                     }
                     {
                         this.state.charts.includes("size_dist") &&
-                        <Element name={"size_distChart"} className={styles.scrollElement}>
-                            <AssemblySizeDistChart rawReports={this.state.reportData}/>
+                        <Element name={"size_distChart"}
+                                 className={styles.scrollElement}>
+                            <AssemblySizeDistChart
+                                rawReports={this.state.reportData}/>
                         </Element>
                     }
                 </ReportsHeader>
