@@ -29,6 +29,73 @@ import {TaskButtons} from "./reports/task_buttons"
 
 
 /**
+ * Entry point for /reports URL
+ *
+ * Full component for Reports home page. It is responsible for handling
+ * the Drag and Drop of report files OR the specification of runID for
+ * fetching report data to the database. Other Home components can be
+ * added depending on the service option stored in
+ * flowcraft/frontend/config.json
+ *
+ * These components are responsible for gathering the report data JSON array
+ * and then redirect to the /reports/app URL providing the report data in
+ * the state of the URL.
+ *
+ */
+export class ReportsHome extends DraggableView{
+
+    constructor(props){
+        super(props);
+
+        this.props.history.push("/reports");
+
+        this.state = {
+            "runId": "",
+            "reportData": null,
+            "openModal": false,
+            "dropData": []
+        };
+    }
+
+    render() {
+
+        return(
+            <div>
+                {
+                    this.state.reportData &&
+                    <DragAndDropModal openModal={this.state.openModal}
+                                      setModalState={this.setModalState}
+                                      dropData={this.state.dropData}
+                                      mergeReports={this.mergeReports}
+                                      loadReports={this.loadReports}/>
+                }
+                {
+                    this.state.reportData ?
+                        <Redirect to={{
+                            pathname: "/reports/app",
+                            state: {"data": this.state.reportData}
+                        }}/> :
+                        <div>
+                            {
+                                service === "innuendo" ?
+                                    <div>
+                                        <Header headerTitle={"INNUENDO Reports"}/>
+                                        <HomeInnuendo route={"reports"}/>
+                                    </div>:
+                                    <div>
+                                        <Header headerTitle={"Reports"}/>
+                                        <HomeInput route={"reports"}/>
+                                    </div>
+                            }
+                        </div>
+                }
+            </div>
+        )
+    }
+}
+
+
+/**
  * This is a base component that provides drag and drop functionality to the
  * reports home and reports app routes. It should be used as an extension
  * for these components only, not for general use.
@@ -72,22 +139,14 @@ export class DraggableView extends React.Component {
     }
 
     /*
-    Function to load reports app by changing the state of the reportData and
-    by changing the state associated with the URL. This change in the URL state
-    allows the page to be refreshed and keep the last data set in view.
+    Sets the reportData state of the child component. It overwrites the
+    previous one. For merging, see mergeReports method.
      */
     loadReports = (reportData) => {
         // Change state to trigger re-rendering of the app
         this.setState({"reportData": reportData});
         // Close modal
         this.setModalState(false);
-        // Update the state associated with the URL
-        this.props.history.push({
-            pathname: "/reports/app",
-            state: {
-                data: reportData
-            }
-        })
     };
 
     /*
@@ -177,66 +236,6 @@ class DragAndDropModal extends React.Component {
     }
 }
 
-/**
- * Full component for Reports home page. It is responsible for handling
- * the Drag and Drop of report files OR the specification of runID for
- * fetching report data to the database. It then mounts the actual ReportsApp
- * component.
- *
- * On drag and drop: The ReportsApp is mounted on the current URL.
- * On runID: The ReportsApp is mount on the runID URL.
- */
-export class ReportsHome extends DraggableView{
-
-    constructor(props){
-        super(props);
-
-        this.props.history.push("/reports");
-
-        this.state = {
-            "runId": "",
-            "reportData": null,
-            "openModal": false,
-            "dropData": []
-        };
-    }
-
-    render() {
-
-        return(
-            <div>
-                {
-                    this.state.reportData &&
-                    <DragAndDropModal openModal={this.state.openModal}
-                                      setModalState={this.setModalState}
-                                      dropData={this.state.dropData}
-                                      mergeReports={this.mergeReports}
-                                      loadReports={this.loadReports}/>
-                }
-                {
-                    this.state.reportData ?
-                        <Redirect to={{
-                            pathname: "/reports/app",
-                            state: {"data": this.state.reportData}
-                        }}/> :
-                        <div>
-                            {
-                                service === "innuendo" ?
-                                    <div>
-                                        <Header headerTitle={"INNUENDO Reports"}/>
-                                        <HomeInnuendo route={"reports"}/>
-                                    </div>:
-                                    <div>
-                                        <Header headerTitle={"Reports"}/>
-                                        <HomeInput route={"reports"}/>
-                                    </div>
-                            }
-                        </div>
-                }
-            </div>
-        )
-    }
-}
 
 /**
  * This is the main component interface with the reports app. The reports
@@ -250,7 +249,6 @@ export class ReportsHome extends DraggableView{
 export class ReportsRedirect extends DraggableView {
 
     constructor(props){
-
         super(props);
 
         this.state = {
@@ -258,6 +256,35 @@ export class ReportsRedirect extends DraggableView {
             "openModal": false,
             "dropData": []
         };
+    }
+
+    /*
+    Method that restores the state of the URL to the last saved report data
+    state.
+     */
+    _restoreUrlState(){
+        this.props.history.replace("/reports/app", {
+            data: this.state.reportData
+        });
+    }
+
+    /*
+    Overwrites the method from the DraggableView component
+     */
+    componentDidMount(){
+        window.addEventListener("drop", this._drop.bind(this));
+        window.addEventListener("dragover", this._dragOver);
+        this.props.history.replace("/reports/app", {data: []});
+        this.props.history.state = {data: []};
+        window.addEventListener("beforeunload", this._restoreUrlState.bind(this))
+    }
+
+    /*
+    Overwrites the method from the DraggableView component
+     */
+    componentWillUnmount(){
+        window.removeEventListener("drop", this._drop);
+        window.removeEventListener("dragover", this._dragOver);
     }
 
     render () {

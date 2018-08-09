@@ -135,8 +135,6 @@ export class FCTable extends React.Component {
             }
         };
 
-        console.log(this.props)
-
         return (
             <div>
                 <div style={style.toolbar}>
