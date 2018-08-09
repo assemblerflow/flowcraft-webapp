@@ -3,6 +3,7 @@ import React from "react"
 
 import {Redirect} from "react-router-dom";
 
+import CircularProgress from "@material-ui/core/CircularProgress";
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 
@@ -326,6 +327,10 @@ class ReportsApp extends React.Component {
 
     static getDerivedStateFromProps(props, state) {
 
+        if (props.reportData === state.reportData){
+            return null
+        }
+
         const {tableData, tableSamples} = findTableSignatures(props.reportData);
         const charts = findChartSignatures(props.reportData);
         const qcInfo = findQcWarnings(props.reportData);
@@ -338,6 +343,11 @@ class ReportsApp extends React.Component {
             charts: charts,
             qcInfo
         }
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+
+        return nextProps.reportData !== this.state.reportData;
     }
 
     render(){
@@ -372,7 +382,6 @@ class ReportsApp extends React.Component {
                             <Element name={"abricateTable"} className={styles.scrollElement}>
                                 <AbricateTable tableData={this.state.tableData.get("abricate")}/>
                             </Element>
-
                     }
                     {
                         this.state.tables.includes("chewbbaca") &&
@@ -381,7 +390,6 @@ class ReportsApp extends React.Component {
                                                 reportData={this.state.reportData}
                                 />
                             </Element>
-
                     }
                     {
                         this.state.charts.includes("base_n_content") &&

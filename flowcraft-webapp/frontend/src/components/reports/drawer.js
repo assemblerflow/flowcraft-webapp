@@ -135,8 +135,8 @@ class ChartDrawer extends React.Component {
                         this.props.chartHeaders.map((h) => {
                             if (headerMap.hasOwnProperty(h)){
                                 return (
-                                    <Link activeClass={styles.activeSideButton} key={h} to={`${h}Chart`} spy={true} smooth={true} duration={500} offset={-70}>
-                                        <DrawerButtonEntry icon={headerMap[h].icon}
+                                    <Link activeClass={styles.activeSideButton} key={h} to={`${h}Chart`} smooth={true} duration={500} offset={-70}>
+                                        <DrawerButtonEntry key={h} icon={headerMap[h].icon}
                                                            text={headerMap[h].text}/>
                                     </Link>
                                 )
@@ -182,7 +182,7 @@ class TableDrawer extends React.Component {
                     {
                         this.props.tableHeaders.map((h) => {
                             return (
-                                <Link activeClass={styles.activeSideButton} key={h} to={`${h}Table`} spy={true} smooth={true} duration={500} offset={-70}>
+                                <Link activeClass={styles.activeSideButton} key={h} to={`${h}Table`} smooth={true} duration={500} offset={-70}>
                                     <DrawerButtonEntry icon={headerMap[h].icon}
                                                        text={headerMap[h].text} />
                                 </Link>

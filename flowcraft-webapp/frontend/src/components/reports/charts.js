@@ -6,9 +6,12 @@ import CircularProgress from "@material-ui/core/CircularProgress";
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import Typography from "@material-ui/core/Typography";
-import SwipeableViews from "react-swipeable-views";
+import AppBar from "@material-ui/core/AppBar";
+import Button from "@material-ui/core/Button";
 import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
+
+import classNames from "classnames";
 
 const ReactHighcharts = require("react-highcharts");
 import Boost  from 'highcharts/modules/boost';
@@ -23,12 +26,28 @@ export class FastQcCharts extends React.Component {
     constructor(props) {
         super(props);
 
-        const chartData = this.parsePlotData(props.rawReports);
-
         this.state = {
-            chartData,
+            chartData: props.rawReports,
             tabValue: 0
         }
+    }
+
+    static getDerivedStateFromProps(props, state){
+
+        if (props.rawReports === state.chartData ){
+            return null
+        } else {
+            return {chartData: props.rawReports}
+        }
+    }
+
+    shouldComponentUpdate(nextProps, nextState){
+
+        if (nextState.tabValue !== this.state.tabValue){
+            return true
+        }
+
+        return nextProps.rawReports !== this.state.chartData;
     }
 
     parsePlotData = (reportData) => {
@@ -75,41 +94,52 @@ export class FastQcCharts extends React.Component {
 
     };
 
-    handleChange = (event, value) => {
+    handleChange = (value) => {
         this.setState({tabValue: value})
     };
 
     render () {
 
-        const chartData = this.parsePlotData(this.props.rawReports);
+        const style = {
+            buttonBar: {
+                "overflowX": "auto",
+                "display": "flex",
+                "justifyContent": "center",
+                "marginBottom": "20px"
+            },
+            button: {
+                minWidth: "150px",
+            }
+        };
+
+        console.log("master_render")
+
+        const chartData = this.parsePlotData(this.state.chartData);
 
         return (
-            <ExpansionPanel defaultExpanded >
-                <ExpansionPanelSummary  expandIcon={<ExpandMoreIcon/>}>
-                    <Typography variant={"headline"}>FastQC charts</Typography>
-                </ExpansionPanelSummary>
-                <ExpansionPanelDetails>
-                    <div className={styles.mainPaper} style={{"height": "600px"}}>
-                        <Tabs value={this.state.tabValue}
-                              onChange={this.handleChange}
-                              indicatorColor={"primary"}
-                              textColor={"primary"}
-                              scrollable
-                              scrollButtons={"auto"}>
-                            <Tab label={"Base sequence quality"}/>
-                            <Tab label={"Sequence quality"}/>
-                            <Tab label={"Base GC content"}/>
-                            <Tab label={"Sequence length"}/>
-                            <Tab label={"Missing data"}/>
-                        </Tabs>
+            <div>
+                <ExpansionPanel defaultExpanded >
+                    <ExpansionPanelSummary  expandIcon={<ExpandMoreIcon/>}>
+                        <Typography variant={"headline"}>FastQC charts</Typography>
+                    </ExpansionPanelSummary>
+                    <ExpansionPanelDetails>
+                        <div className={styles.mainPaper} style={{"height": "600px", "width": "100%"}}>
+                            <div style={style.buttonBar}>
+                                <Button style={style.button} className={classNames(this.state.tabValue === 0 && styles.tabButton)}  onClick={() => {this.handleChange(0)}}>Base sequence quality</Button>
+                                <Button style={style.button} className={classNames(this.state.tabValue === 1 && styles.tabButton)} onClick={() => {this.handleChange(1)}}>Sequence quality</Button>
+                                <Button style={style.button} className={classNames(this.state.tabValue === 2 && styles.tabButton)} onClick={() => {this.handleChange(2)}}>Base GC content</Button>
+                                <Button style={style.button} className={classNames(this.state.tabValue === 3 && styles.tabButton)} onClick={() => {this.handleChange(3)}}>Sequence length</Button>
+                                <Button style={style.button} className={classNames(this.state.tabValue === 4 && styles.tabButton)} onClick={() => {this.handleChange(4)}}>Missing data</Button>
+                            </div>
                             {this.state.tabValue === 0  && <FastqcBaseSequenceQuality plotData={chartData["base_sequence_quality"]}/>}
                             {this.state.tabValue === 1  && <FastqcSequenceQuality plotData={chartData["sequence_quality"]}/>}
                             {this.state.tabValue === 2  && <FastqcGcContent plotData={chartData["base_gc_content"]}/>}
                             {this.state.tabValue === 3  && <FastqcSequenceLength plotData={chartData["sequence_length_dist"]}/>}
                             {this.state.tabValue === 4  && <FastqcNContent plotData={chartData["base_n_content"]}/>}
-                    </div>
+                        </div>
                 </ExpansionPanelDetails>
             </ExpansionPanel>
+            </div>
         )
     }
 }
@@ -120,17 +150,10 @@ class FastqcBaseSequenceQuality extends React.Component {
     constructor(props){
         super(props);
 
-        this.state = {
-            plotData: props.plotData
-        }
-    }
-
-    render (){
-
         let config = new Chart({
             title: "Per base sequence quality scores",
             axisLabels: {x: "Position in read (bp)", y: "Quality score"},
-            series: this.state.plotData
+            series: props.plotData
         });
 
         config.extend("yAxis", {
@@ -152,9 +175,37 @@ class FastqcBaseSequenceQuality extends React.Component {
         });
         config.extend("chart", {height: "550px"});
 
+        this.state = {
+            config: config,
+            finished: false
+        }
+    }
+
+    shouldComponentUpdate(nextProps, nextState){
+
+        if (nextState.finished !== this.state.finished){
+            return true
+        }
+
+        if (nextProps.plotData === this.props.plotData){
+            return false
+        } else {
+            return true
+        }
+    }
+
+    componentDidMount(){
+        this.setState({finished: true})
+    }
+
+    render (){
         return (
             <div>
-                <ReactHighcharts config={config.layout} ref="chart"></ReactHighcharts>
+                {
+                    this.state.finished ?
+                        <ReactHighcharts config={this.state.config.layout} ref="chart" ></ReactHighcharts> :
+                        <CircularProgress/>
+                }
             </div>
         )
     }
@@ -418,6 +469,8 @@ export class AssemblySizeDistChart extends React.Component {
             axisLabels: {x: "Sample", y: "Contig size"},
             series: data.chartData
         });
+
+        console.log("assembly")
 
         config.extend("plotOptions", {
             "scatter": {
