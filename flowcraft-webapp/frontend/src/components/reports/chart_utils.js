@@ -18,6 +18,11 @@ export class Chart {
             chart: {
                 zoomType: "x"
             },
+            boost: {
+                enabled: true,
+                seriesThreshold: 1,
+                useGPUTranslations: true
+            },
             title: {
                 text: this.title
             },

@@ -14,6 +14,7 @@ import Tab from "@material-ui/core/Tab";
 import classNames from "classnames";
 
 const ReactHighcharts = require("react-highcharts");
+import Highcharts from "highcharts";
 import Boost  from 'highcharts/modules/boost';
 Boost(ReactHighcharts.Highcharts);
 
@@ -383,7 +384,10 @@ export class AssemblySizeDistChart extends React.Component {
 
     };
 
-    parsePlotData = (reportData) => {
+    parsePlotData = (reportData, limit) => {
+
+        // The limit parameter sets a maximum to the final chartData object
+        // If set to null, there will be no limit
 
         const chartSignature = "size_dist";
         let chartDataByProcess = new Map();
@@ -445,8 +449,14 @@ export class AssemblySizeDistChart extends React.Component {
 
         for (const data of chartDataByProcess.values()){
 
-
             for (const point of data){
+
+                if (chartData.length > limit){
+                    return {
+                        chartData,
+                        categories
+                    }
+                }
 
                 chartData.push({
                     linkedTo: point.linkedTo,
@@ -475,7 +485,7 @@ export class AssemblySizeDistChart extends React.Component {
 
         console.log("render pilon container")
 
-        const data = this.parsePlotData(this.props.rawReports);
+        const data = this.parsePlotData(this.props.rawReports, 200);
 
         return (
             <div>

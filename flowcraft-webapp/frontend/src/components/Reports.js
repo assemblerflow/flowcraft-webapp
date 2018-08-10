@@ -117,11 +117,9 @@ export class DraggableView extends React.Component {
 
         const data = ev.dataTransfer.files[0];
         const reader = new FileReader();
+        this.setState({"loading": true});
 
         reader.onload = function (e) {
-
-            // Set loading state on dragndrop
-            this.setState({"loading": true});
 
             try {
                 const jsonData = JSON.parse(e.target.result).data.results;
@@ -201,6 +199,34 @@ class DragAndDropModal extends React.Component {
 }
 
 
+class LoadingScreen extends React.Component {
+
+    render() {
+
+        const style = {
+            loadingScreen: {
+                "width": "100%",
+                "height": "100%",
+                "zIndex": "1000000000000000000000000000000"
+            },
+            loadingSpinner: {
+                "top": "0",
+                "bottom": "0",
+                "left": "0",
+                "right": "0",
+                "margin": "auto",
+                "position": "absolute"
+            }
+        };
+
+        return (
+            <div style={style.loadingSpinner}>
+                <CircularProgress style={style.loadingSpinner}/>
+            </div>
+        )
+    }
+}
+
 /**
  * Entry point for /reports URL
  *
@@ -234,28 +260,21 @@ export class ReportsHome extends DraggableView {
 
     render() {
 
+        console.log(this.state.loading);
+        console.log(this.state.reportData);
+
         return (
             <div>
                 {
-                    this.state.loading &&
-                    <div>
-                        <LoadingScreen/>
-                    </div>
-                }
-                {
                     this.state.reportData &&
-                    <DragAndDropModal openModal={this.state.openModal}
-                                      setModalState={this.setModalState}
-                                      dropData={this.state.dropData}
-                                      mergeReports={this.mergeReports}
-                                      loadReports={this.loadReports}/>
-                }
-                {
-                    this.state.reportData ?
                         <Redirect to={{
                             pathname: "/reports/app",
                             state: {"data": this.state.reportData}
-                        }}/> :
+                        }}/>
+                }
+                {
+                    this.state.loading ?
+                        <LoadingScreen/> :
                         <div>
                             {
                                 service === "innuendo" ?
@@ -276,33 +295,7 @@ export class ReportsHome extends DraggableView {
     }
 }
 
-class LoadingScreen extends React.Component {
 
-    render() {
-
-        const style = {
-            loadingScreen: {
-                "width": "100%",
-                "height": "100%",
-                "zIndex": "1000"
-            },
-            loadingSpinner: {
-                "top": "0",
-                "bottom": "0",
-                "left": "0",
-                "right": "0",
-                "margin": "auto",
-                "position": "absolute"
-            }
-        };
-
-        return (
-            <div style={style.loadingSpinner}>
-                <CircularProgress style={style.loadingSpinner}/>
-            </div>
-        )
-    }
-}
 
 /**
  * This is the main component interface with the reports app. The reports
@@ -318,10 +311,13 @@ export class ReportsRedirect extends DraggableView {
     constructor(props) {
         super(props);
 
+        console.log("redirect start")
+
         this.state = {
             "reportData": this.props.location.state.data,
             "openModal": false,
-            "dropData": []
+            "dropData": [],
+            "loading": true
         };
     }
 
@@ -335,15 +331,25 @@ export class ReportsRedirect extends DraggableView {
         });
     }
 
+    _clearUrlState() {
+        this.props.history.replace("/reports/app", {data: []});
+        this.props.history.state = {data: []};
+    }
+
+    _cancelLoading() {
+        this.setState({loading: false})
+    }
+
     /*
     Overwrites the method from the DraggableView component
      */
     componentDidMount() {
         window.addEventListener("drop", this._drop.bind(this));
         window.addEventListener("dragover", this._dragOver);
-        this.props.history.replace("/reports/app", {data: []});
-        this.props.history.state = {data: []};
+        setTimeout(this._clearUrlState.bind(this), 100);
         window.addEventListener("beforeunload", this._restoreUrlState.bind(this))
+        console.log("redirect did mount")
+        setTimeout(this._cancelLoading.bind(this), 100)
     }
 
     /*
@@ -355,14 +361,21 @@ export class ReportsRedirect extends DraggableView {
     }
 
     render() {
+
         return (
             <div>
-                <DragAndDropModal openModal={this.state.openModal}
-                                  setModalState={this.setModalState}
-                                  dropData={this.state.dropData}
-                                  mergeReports={this.mergeReports}
-                                  loadReports={this.loadReports}/>
-                <ReportsApp reportData={this.state.reportData}/>
+                {
+                    this.state.loading ?
+                        <LoadingScreen/> :
+                        <div>
+                            <DragAndDropModal openModal={this.state.openModal}
+                                              setModalState={this.setModalState}
+                                              dropData={this.state.dropData}
+                                              mergeReports={this.mergeReports}
+                                              loadReports={this.loadReports}/>
+                            <ReportsApp reportData={this.state.reportData}/>
+                        </div>
+                }
             </div>
         )
     }
@@ -390,6 +403,10 @@ class ReportsApp extends React.Component {
             charts,
             qcInfo,
         };
+    }
+
+    componentDidMount(){
+        console.log("reports app finished mounting")
     }
 
     static getDerivedStateFromProps(props, state) {
