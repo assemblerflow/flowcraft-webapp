@@ -21,7 +21,11 @@ export class Chart {
             title: {
                 text: this.title
             },
-            plotOptions: {},
+            plotOptions: {
+                series: {
+                    animation: false
+                }
+            },
             legend: {
                 enabled: false
             },

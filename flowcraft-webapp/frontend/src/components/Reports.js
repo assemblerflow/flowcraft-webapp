@@ -424,6 +424,7 @@ class ReportsApp extends React.Component {
         // data in the this.state.reportData array, and each component should
         // be responsible for handling the data in any way they see fit.
         //
+        console.log(this.state)
         return (
             <div>
                 <TaskButtons tableData={this.state.tableData}

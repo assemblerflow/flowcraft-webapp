@@ -114,7 +114,7 @@ export class FastQcCharts extends React.Component {
             }
         };
 
-        console.log("master_render")
+        console.log("render fastqc tabs")
 
         const chartData = this.parsePlotData(this.state.chartData);
 
@@ -149,13 +149,22 @@ export class FastQcCharts extends React.Component {
 
 class FastqcBaseSequenceQuality extends React.Component {
 
-    constructor(props){
-        super(props);
+    shouldComponentUpdate(nextProps, nextState){
+
+        if (nextProps.plotData === this.props.plotData){
+            return false
+        } else {
+            return true
+        }
+    }
+
+    render (){
+        console.log("render base qual")
 
         let config = new Chart({
             title: "Per base sequence quality scores",
             axisLabels: {x: "Position in read (bp)", y: "Quality score"},
-            series: props.plotData
+            series: this.props.plotData
         });
 
         config.extend("yAxis", {
@@ -177,36 +186,10 @@ class FastqcBaseSequenceQuality extends React.Component {
         });
         config.extend("chart", {height: "550px"});
 
-        this.state = {
-            config: config,
-            finished: false
-        }
-    }
-
-    shouldComponentUpdate(nextProps, nextState){
-
-        if (nextState.finished !== this.state.finished){
-            return true
-        }
-
-        if (nextProps.plotData === this.props.plotData){
-            return false
-        } else {
-            return true
-        }
-    }
-
-    componentDidMount(){
-        this.setState({finished: true})
-    }
-
-    render (){
         return (
             <div>
                 {
-                    this.state.finished ?
-                        <ReactHighcharts config={this.state.config.layout} ref="chart" ></ReactHighcharts> :
-                        <CircularProgress/>
+                    <ReactHighcharts config={config.layout} ref="chart" ></ReactHighcharts>
                 }
             </div>
         )
@@ -216,20 +199,21 @@ class FastqcBaseSequenceQuality extends React.Component {
 
 class FastqcSequenceQuality extends React.Component {
 
-   constructor(props){
-       super(props);
+    shouldComponentUpdate(nextProps, nextState){
 
-       this.state = {
-           plotData: props.plotData
-       }
-   }
+        if (nextProps.plotData === this.props.plotData){
+            return false
+        } else {
+            return true
+        }
+    }
 
     render (){
 
         let config = new Chart({
             title: "Per sequence quality scores",
             axisLabels: {x: "Quality score", y: "Position in read (bp)"},
-            series: this.state.plotData
+            series: this.props.plotData
         });
 
         config.extend("xAxis", {
@@ -251,6 +235,7 @@ class FastqcSequenceQuality extends React.Component {
         });
         config.extend("chart", {height: "550px"});
 
+        console.log("render seq qual")
         return (
             <div>
                 <ReactHighcharts config={config.layout} ref="chart"></ReactHighcharts>
@@ -262,11 +247,12 @@ class FastqcSequenceQuality extends React.Component {
 
 class FastqcGcContent extends React.Component {
 
-    constructor(props){
-        super(props);
+    shouldComponentUpdate(nextProps, nextState){
 
-        this.state = {
-            plotData: this.normalizeCounts(props.plotData)
+        if (nextProps.plotData === this.props.plotData){
+            return false
+        } else {
+            return true
         }
     }
 
@@ -286,10 +272,12 @@ class FastqcGcContent extends React.Component {
         let config = new Chart({
             title: "GC percentage",
             axisLabels: {x: "GC percentage", y: "Normalized read count (%)"},
-            series: this.state.plotData
+            series: this.normalizeCounts(this.props.plotData)
         });
 
         config.extend("chart", {height: "550px"});
+
+        console.log("render gc perc")
 
         return (
             <div>
@@ -302,11 +290,12 @@ class FastqcGcContent extends React.Component {
 
 class FastqcSequenceLength extends React.Component {
 
-    constructor(props){
-        super(props);
+    shouldComponentUpdate(nextProps, nextState){
 
-        this.state = {
-            plotData: props.plotData
+        if (nextProps.plotData === this.props.plotData){
+            return false
+        } else {
+            return true
         }
     }
 
@@ -315,10 +304,12 @@ class FastqcSequenceLength extends React.Component {
         let config = new Chart({
             title: "Distribution of sequence length",
             axisLabels: {x: "Base pair", y: "Count"},
-            series: this.state.plotData
+            series: this.props.plotData
         });
 
         config.extend("chart", {height: "550px"});
+
+        console.log("render fastqc len")
 
         return (
             <div>
@@ -344,11 +335,13 @@ class FastqcNContent extends React.Component {
         let config = new Chart({
             title: "Missing data content",
             axisLabels: {x: "Base pair", y: "Count"},
-            series: this.state.plotData
+            series: this.props.plotData
         });
 
         config.extend("yAxis", {min: 0});
         config.extend("chart", {height: "550px"});
+
+        console.log("render n content")
 
         return (
             <div>
@@ -360,6 +353,15 @@ class FastqcNContent extends React.Component {
 
 
 export class AssemblySizeDistChart extends React.Component {
+
+    shouldComponentUpdate(nextProps, nextState){
+
+        if (nextProps.rawReports === this.props.rawReports){
+            return false
+        } else {
+            return true
+        }
+    }
 
     spreadData = (dataArray, index) => {
 
@@ -466,21 +468,54 @@ export class AssemblySizeDistChart extends React.Component {
 
     render () {
 
+        console.log("render pilon container")
+
         const data = this.parsePlotData(this.props.rawReports);
+
+        return (
+            <div>
+            <ExpansionPanel defaultExpanded >
+                <ExpansionPanelSummary  expandIcon={<ExpandMoreIcon/>}>
+                    <Typography variant={"headline"}>Assembled contig size distribution</Typography>
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails>
+                    <div className={styles.mainPaper} style={{"height": "600px"}}>
+                        <PilonSizeDistChart plotData={data}/>
+                    </div>
+                </ExpansionPanelDetails>
+            </ExpansionPanel>
+            </div>
+        )
+    }
+}
+
+
+class PilonSizeDistChart extends React.Component{
+
+    shouldComponentUpdate(nextProps, nextState){
+
+        if (nextProps.plotData === this.props.plotData){
+            return false
+        } else {
+            return true
+        }
+    }
+
+    render(){
+
+        console.log("render pilon chart")
 
         let config = new Chart({
             title: "Contig size distribution",
             axisLabels: {x: "Sample", y: "Contig size"},
-            series: data.chartData
+            series: this.props.plotData.chartData
         });
-
-        console.log("assembly")
 
         config.extend("plotOptions", {
             "scatter": {
                 boostThreshold: 1,
                 events: {
-                    legendItemClick () {
+                    legendItemClick() {
                         // Get the process name
                         const seriesId = this.userOptions.id;
                         // Get series
@@ -489,21 +524,22 @@ export class AssemblySizeDistChart extends React.Component {
 
                         // Do nothing is toggling the last visible series
                         let visible = [];
-                        for (const el of series){
-                            if (!visible.includes(el.userOptions.id) && el.visible){
+                        for (const el of series) {
+                            if (!visible.includes(el.userOptions.id) && el.visible) {
                                 visible.push(el.userOptions.id)
                             }
                         }
-                        if (visible.length === 1 && this.userOptions.id === visible[0]){
+                        if (visible.length === 1 && this.userOptions.id === visible[0]) {
                             return false
                         }
 
                         // Overrides the redraw function to disable time consuming
                         // redrawing each time a point is hidden.
                         const _redraw = this.chart.redraw;
-                        this.chart.redraw = function(){};
+                        this.chart.redraw = function () {
+                        };
 
-                        for (const el of series.reverse()){
+                        for (const el of series.reverse()) {
                             // console.log(el.userOptions.id)
                             if (el.userOptions.id === seriesId) {
                                 el.setVisible(vis, false)
@@ -521,29 +557,23 @@ export class AssemblySizeDistChart extends React.Component {
         config.extend("chart", {type: "scatter"});
         config.extend("chart", {height: "600px"});
         config.extend("xAxis", {
-            categories: data.categories,
+            categories: this.props.plotData.categories,
             labels: {rotation: -45}
         });
         config.extend("legend", {
             enabled: true,
-            labelFormatter () {
+            labelFormatter() {
                 return this.userOptions.id
             }
         });
 
-        return (
+
+        return(
             <div>
-            <ExpansionPanel defaultExpanded >
-                <ExpansionPanelSummary  expandIcon={<ExpandMoreIcon/>}>
-                    <Typography variant={"headline"}>Assembled contig size distribution</Typography>
-                </ExpansionPanelSummary>
-                <ExpansionPanelDetails>
-                    <div className={styles.mainPaper} style={{"height": "600px"}}>
-                        <ReactHighcharts config={config.layout} ref="assemblySizeDist"></ReactHighcharts>
-                    </div>
-                </ExpansionPanelDetails>
-            </ExpansionPanel>
+                <ReactHighcharts config={config.layout} ref="assemblySizeDist"></ReactHighcharts>
             </div>
         )
+
     }
+
 }

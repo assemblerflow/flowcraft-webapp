@@ -166,7 +166,7 @@ export class QualityControlTable extends React.Component {
         };
     }
 
-    shouldComponentUpdate(nextProps, nextState){
+    shouldComponentUpdate(nextProps, nextState, nextContext){
         if (nextProps.tableData !== this.props.tableData){
             return true
         } else if (nextState.selection !== this.state.selection){
@@ -213,9 +213,18 @@ export class AssemblyTable extends React.Component {
         super(props);
 
         this.state = {
-            tableData: genericTableParser(props.tableData),
             selection: []
         };
+    }
+
+    shouldComponentUpdate(nextProps, nextState, nextContext){
+        if (nextProps.tableData !== this.props.tableData){
+            return true
+        } else if (nextState.selection !== this.state.selection){
+            return true
+        }
+
+        return false
     }
 
     setSelection = (selection) => {
@@ -254,8 +263,18 @@ export class AbricateTable extends React.Component {
         super(props);
 
         this.state = {
-            tableData: genericTableParser(props.tableData)
+            selection: []
         };
+    }
+
+    shouldComponentUpdate(nextProps, nextState, nextContext){
+        if (nextProps.tableData !== this.props.tableData){
+            return true
+        } else if (nextState.selection !== this.state.selection){
+            return true
+        }
+
+        return false
     }
 
     setSelection = (selection) => {
@@ -319,8 +338,18 @@ export class ChewbbacaTable extends React.Component {
         super(props);
 
         this.state = {
-            tableData: genericTableParser(props.tableData)
+            selection: []
         };
+    }
+
+    shouldComponentUpdate(nextProps, nextState, nextContext){
+        if (nextProps.tableData !== this.props.tableData){
+            return true
+        } else if (nextState.selection !== this.state.selection){
+            return true
+        }
+
+        return false
     }
 
     setSelection = (selection) => {
