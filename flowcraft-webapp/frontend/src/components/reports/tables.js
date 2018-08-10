@@ -162,9 +162,18 @@ export class QualityControlTable extends React.Component {
         super(props);
 
         this.state = {
-            tableData: genericTableParser(props.tableData),
             selection: []
         };
+    }
+
+    shouldComponentUpdate(nextProps, nextState){
+        if (nextProps.tableData !== this.props.tableData){
+            return true
+        } else if (nextState.selection !== this.state.selection){
+            return true
+        }
+
+        return false
     }
 
     setSelection = (selection) => {
@@ -175,6 +184,8 @@ export class QualityControlTable extends React.Component {
         const tableData = genericTableParser(this.props.tableData);
         qcParseAdditionalData(tableData, this.props.tableData,
             this.props.qcInfo, "qc");
+
+        console.log("render qc table")
 
         return (
             <ExpansionPanel defaultExpanded >
@@ -215,6 +226,7 @@ export class AssemblyTable extends React.Component {
         const tableData = genericTableParser(this.props.tableData);
         qcParseAdditionalData(tableData, this.props.tableData,
             this.props.qcInfo, "assembly");
+        console.log("render assembly table")
 
         return (
             <ExpansionPanel defaultExpanded >
@@ -276,6 +288,7 @@ export class AbricateTable extends React.Component {
 
     render () {
         const tableData = genericTableParser(this.props.tableData);
+        console.log("render abricate table")
 
         return (
             <ExpansionPanel defaultExpanded >
@@ -352,6 +365,7 @@ export class ChewbbacaTable extends React.Component {
     render () {
         const tableData = genericTableParser(this.props.tableData);
         this.chewbbacaParser(tableData, this.props.reportData);
+        console.log("render chewbbaca table")
 
         return (
             <ExpansionPanel defaultExpanded >
