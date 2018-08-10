@@ -185,6 +185,11 @@ class FastqcBaseSequenceQuality extends React.Component {
             }]
         });
         config.extend("chart", {height: "550px"});
+        config.extend("plotOptions", {
+            "series": {
+                boostThreshold: 1
+            }
+        });
 
         return (
             <div>
