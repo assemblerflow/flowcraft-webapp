@@ -17,7 +17,8 @@ import {
     QualityControlTable,
     AssemblyTable,
     AbricateTable,
-    ChewbbacaTable
+    ChewbbacaTable,
+    MetadataTable
 } from "./reports/tables";
 import {BasicModal} from "./reports/modals";
 import {AssemblySizeDistChart, FastQcCharts} from "./reports/charts";
@@ -119,6 +120,7 @@ export class DraggableView extends React.Component {
 
         reader.onload = function (e) {
 
+            // Set loading state on dragndrop
             this.setState({"loading": true});
 
             try {
@@ -231,8 +233,6 @@ export class ReportsHome extends DraggableView {
 
 
     render() {
-
-        console.log(this.state.loading);
 
         return (
             <div>
@@ -431,6 +431,15 @@ class ReportsApp extends React.Component {
                              tableSamples={this.state.tableSamples}/>
                 <ReportsHeader tableHeaders={this.state.tables}
                                chartHeaders={this.state.charts}>
+                    {
+                        this.state.tables.includes("metadata") &&
+                        <Element name={"metadataTable"}
+                                 className={styles.scrollElement}>
+                            <MetadataTable
+                                tableData={this.state.tableData.get("metadata")}
+                                reportData={this.state.reportData} />
+                        </Element>
+                    }
                     {
                         this.state.tables.includes("qc") &&
                         <Element name={"qcTable"}

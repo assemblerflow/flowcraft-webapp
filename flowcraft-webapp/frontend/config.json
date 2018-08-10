@@ -1,4 +1,18 @@
 {
-  "service": "innuendo",
-  "address": "https://192.92.149.157/"
+  "service": "",
+  "address": "",
+  "metadataMapping": {
+    "species_id": "Species ID",
+    "Location": "Location",
+    "SampleReceivedDate": "Sample Received Date",
+    "source_Source": "Source",
+    "AdditionalInformation": "Additional Information",
+    "File_1": "File 1",
+    "Accession": "Accession",
+    "Owner": "Owner",
+    "Food-Bug": "Case ID",
+    "Submitter": "Submitter",
+    "SamplingDate": "Sampling Date",
+    "File_2": "File 2"
+  }
 }

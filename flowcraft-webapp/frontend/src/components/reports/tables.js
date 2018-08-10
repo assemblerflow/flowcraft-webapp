@@ -155,6 +155,58 @@ export class FCTable extends React.Component {
 
 }
 
+export class MetadataTable extends React.Component {
+
+    constructor(props){
+        super(props);
+
+        this.state = {
+            selection: []
+        };
+    }
+
+    shouldComponentUpdate(nextProps, nextState, nextContext){
+        if (nextProps.tableData !== this.props.tableData){
+            return true
+        } else if (nextState.selection !== this.state.selection){
+            return true
+        }
+
+        return false
+    }
+
+    setSelection = (selection) => {
+        this.setState({selection});
+    };
+
+    render () {
+        console.log(this.props.tableData);
+        const tableData = genericTableParser(this.props.tableData);
+
+        console.log(tableData);
+
+        console.log("render qc table")
+
+        return (
+            <ExpansionPanel defaultExpanded >
+                <ExpansionPanelSummary  expandIcon={<ExpandMoreIcon/>}>
+                    <Typography variant={"headline"}>Quality control</Typography>
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails>
+                    <div className={styles.mainPaper}>
+                        <FCTable
+                            data={tableData.tableArray}
+                            columns={tableData.columnsArray}
+                            rawData={tableData.rawTableArray}
+                            setSelection={this.setSelection}
+                        />
+                    </div>
+                </ExpansionPanelDetails>
+            </ExpansionPanel>
+        )
+    }
+}
+
 
 export class QualityControlTable extends React.Component {
 

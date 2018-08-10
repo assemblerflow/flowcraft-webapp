@@ -6,6 +6,7 @@ import {CellBar} from "./tables";
 import {QcPopover} from "./tables";
 
 import styles from "../../styles/reports.css"
+import {metadataMapping} from "../../../config.json"
 
 /**
  * Parses the reportData array and search for all unique table signatures.
@@ -19,7 +20,7 @@ import styles from "../../styles/reports.css"
  * entry belonging to table defined by the `table` key.
  *
  * @param reportArray : Raw reports array of objects
-*/
+ */
 export const findTableSignatures = (reportArray) => {
 
     // Stores the unique table signatures found and sets the value as the
@@ -31,24 +32,24 @@ export const findTableSignatures = (reportArray) => {
 
     const signatures = ["tableRow"];
 
-    for (const r of reportArray){
+    for (const r of reportArray) {
 
         // Only process if entry is a report
         // Pass if metadata
         if (r.hasOwnProperty("reportJson")) {
-            for (const s of signatures){
+            for (const s of signatures) {
 
                 // Skip entries without the tableRow signture
-                if (!r.reportJson.hasOwnProperty(s)){
+                if (!r.reportJson.hasOwnProperty(s)) {
                     continue
                 }
 
-                for (const tr of r.reportJson[s]){
-                    if (!tr.hasOwnProperty("data")){
+                for (const tr of r.reportJson[s]) {
+                    if (!tr.hasOwnProperty("data")) {
                         continue
                     }
 
-                    for (const cell of tr.data){
+                    for (const cell of tr.data) {
 
                         // Add to samples array, if new sample
                         !samples.includes(tr.sample) && samples.push(tr.sample);
@@ -58,7 +59,7 @@ export const findTableSignatures = (reportArray) => {
                         cell.processName = r.processName;
                         cell.processId = r.processId;
 
-                        if (!tables.has(cell.table)){
+                        if (!tables.has(cell.table)) {
                             tables.set(cell.table, [cell])
                         } else {
                             tables.get(cell.table).push(cell)
@@ -68,6 +69,10 @@ export const findTableSignatures = (reportArray) => {
 
             }
         }
+        else {
+            // Case metadata in report
+            parseInnuendoMetadata(r, tables);
+        }
 
     }
 
@@ -76,6 +81,44 @@ export const findTableSignatures = (reportArray) => {
         tableSamples: samples,
     };
 
+};
+
+
+/**
+ * Parses the INNUENDO metadata entries to construct the metadata table.
+ * Uses metadata as processName and processId since they are required to
+ * construct the general table headers.
+ * Header text is defined by the mapping available in the configuration file.
+ * @param metadataEntry
+ */
+const parseInnuendoMetadata = (metadataEntry, tables) => {
+
+    const parsedFields = JSON.parse(metadataEntry.strain_metadata);
+    const headers = Object.keys(parsedFields);
+
+    let row = {};
+
+    for (const header of headers) {
+        let cell = {};
+
+        // Add cell case it exists in innuendo metadataMapping from the
+        // config.json
+        if (metadataMapping.hasOwnProperty(header)) {
+            cell.header = metadataMapping[header];
+            cell.value = parsedFields[header];
+            cell.table = "metadata";
+            cell.columnBar = true;
+            cell.processName = "metadata";
+            cell.processId = "metadata";
+            cell.rowId = metadataEntry.strainID;
+
+            if (!tables.has(cell.table)) {
+                tables.set(cell.table, [cell])
+            } else {
+                tables.get(cell.table).push(cell)
+            }
+        }
+    }
 };
 
 
@@ -140,7 +183,7 @@ export const findQcWarnings = (reportArray) => {
 
     let qcInfo = new Map();
 
-    for (const r of reportArray){
+    for (const r of reportArray) {
 
         if (r.hasOwnProperty("reportJson")) {
             // Parse fails
@@ -226,16 +269,16 @@ export const getTableHeaders = (dataArray) => {
     let headerPidMap = new Map();
 
     // Build the unsorted Map object for each column header
-    for (const el of dataArray){
-        const headerStrip = el.header.split(" ").join("")
+    for (const el of dataArray) {
+        const headerStrip = el.header.split(" ").join("");
         const columnAccessor = `${headerStrip}___${el.processName.replace(el.processId, "").slice(0, -1)}`;
         const processNum = el.processId.split("_").slice(-1);
 
         // Update the headerPidMap object with the processNames associated to each
         // column header
-        if (!headerPidMap.has(headerStrip)){
+        if (!headerPidMap.has(headerStrip)) {
             headerPidMap.set(headerStrip, [el.processName])
-        } else if (!headerPidMap.get(headerStrip).includes(el.processName)){
+        } else if (!headerPidMap.get(headerStrip).includes(el.processName)) {
             headerPidMap.get(headerStrip).push(el.processName)
         }
 
@@ -244,7 +287,7 @@ export const getTableHeaders = (dataArray) => {
         if (!speciesMap.has(el.rowId)) {
             speciesMap.set(el.rowId, [columnAccessor]);
         } else {
-            if (speciesMap.get(el.rowId).includes(columnAccessor) && !duplicateAccessors.includes(columnAccessor)){
+            if (speciesMap.get(el.rowId).includes(columnAccessor) && !duplicateAccessors.includes(columnAccessor)) {
                 duplicateAccessors.push(columnAccessor);
             } else {
                 speciesMap.get(el.rowId).push(columnAccessor);
@@ -272,13 +315,13 @@ export const getTableHeaders = (dataArray) => {
     // process names. This happens when there is a fork in a pipeline and there
     // are multiple identical headers from different process in the pipeline.
     let tableHeaders = [];
-    for (const v of sortedColumns){
+    for (const v of sortedColumns) {
 
         // In case there are duplicate headers
-        if (duplicateAccessors.includes(v[0])){
+        if (duplicateAccessors.includes(v[0])) {
             const headerStrip = v[1].header.split(" ").join("");
             // Add each individual header with the different process names
-            for (const pname of headerPidMap.get(headerStrip)){
+            for (const pname of headerPidMap.get(headerStrip)) {
                 tableHeaders.push({
                     accessor: `${headerStrip}${pname}`,
                     Header: v[1].header,
@@ -286,7 +329,7 @@ export const getTableHeaders = (dataArray) => {
                     processId: v[1].processId
                 })
             }
-        // When there are no header duplications
+            // When there are no header duplications
         } else {
             tableHeaders.push({
                 accessor: v[0].split("___")[0],
@@ -405,12 +448,13 @@ export const genericTableParser = (reportArray) => {
             };
         }
 
-        dataDict[cell.rowId][accessor] = <CellBar value={cell.value} max={columnMaxVals.get(cell.header)}/>;
+        dataDict[cell.rowId][accessor] =
+            <CellBar value={cell.value} max={columnMaxVals.get(cell.header)}/>;
         rawDataDict[cell.rowId][accessor] = cell.value;
     }
 
     // Create array of data by row
-    for (const id in dataDict){
+    for (const id in dataDict) {
         tableArray.push(dataDict[id]);
         rawTableArray.push(rawDataDict[id])
     }
@@ -458,18 +502,20 @@ export const qcParseAdditionalData = (tableData, originalData, qcInfo, signature
 
     // Iterate over each row in table and add the corresponding QC icon and
     // content
-    for (const row of tableData.tableArray){
+    for (const row of tableData.tableArray) {
 
         const sample = row.rowId.props.children;
 
         // The default QC icon if no warnings/fails are found for this sample
         row["qc"] = <QcPopover status={"pass"}
-                               content={<Typography><b>Sample '{sample}' has passed all quality control checks!</b></Typography>}/>;
+                               content={<Typography><b>Sample '{sample}' has
+                                   passed all quality control
+                                   checks!</b></Typography>}/>;
         let status = "pass";
         let content = [];
         let badgeCount = 0;
 
-        if (qcInfo.has(signature)){
+        if (qcInfo.has(signature)) {
             if (qcInfo.get(signature).has(sample)) {
                 // Check for fail messages for sample
                 if (qcInfo.get(signature).get(sample).hasOwnProperty("warnings")) {
@@ -477,13 +523,18 @@ export const qcParseAdditionalData = (tableData, originalData, qcInfo, signature
                     badgeCount += qcInfo.get(signature).get(sample).warnings.length;
                     content.push(
                         <div key={"warnings"}>
-                            <Typography style={style.qcTextHeader}>Sample '{sample}' has quality control warnings:</Typography>
+                            <Typography style={style.qcTextHeader}>Sample
+                                '{sample}' has quality control
+                                warnings:</Typography>
                             {
                                 qcInfo.get(signature).get(sample).warnings.map((el) => {
                                     return (
                                         <div key={el.process}>
-                                            <Typography><b>Process:</b> {el.process}</Typography>
-                                            <Typography style={{"marginBottom": "7px"}}><b>Cause: </b>{el.message}</Typography>
+                                            <Typography><b>Process:</b> {el.process}
+                                            </Typography>
+                                            <Typography
+                                                style={{"marginBottom": "7px"}}><b>Cause: </b>{el.message}
+                                            </Typography>
                                         </div>
                                     )
                                 })
@@ -498,22 +549,27 @@ export const qcParseAdditionalData = (tableData, originalData, qcInfo, signature
                     badgeCount += qcInfo.get(signature).get(sample).fail.length;
                     content.push(
                         <div key={"fail"}>
-                            <Typography style={style.qcTextHeader}>Sample '{sample}' has failed quality control checks:</Typography>
+                            <Typography style={style.qcTextHeader}>Sample
+                                '{sample}' has failed quality control
+                                checks:</Typography>
                             {
                                 qcInfo.get(signature).get(sample).fail.map((el) => {
                                     return (
                                         <div key={el.process}>
-                                            <Typography><b>Process:</b> {el.process}</Typography>
-                                            <Typography style={{"marginBottom": "7px"}}><b>Cause: </b>{el.message}</Typography>
+                                            <Typography><b>Process:</b> {el.process}
+                                            </Typography>
+                                            <Typography
+                                                style={{"marginBottom": "7px"}}><b>Cause: </b>{el.message}
+                                            </Typography>
                                         </div>
-                                        )
+                                    )
                                 })
                             }
                         </div>
                     );
                 }
             }
-            if (status !== "pass"){
+            if (status !== "pass") {
                 row["qc"] = <QcPopover status={status}
                                        content={content}
                                        badgeCount={badgeCount}/>;
