@@ -175,13 +175,6 @@ export class LoadingComponent extends React.Component {
         }
     }
 
-    shouldComponentUpdate(nextProps, nextState){
-
-        if (nextState.show !== this.state.show){
-            return true
-        }
-    }
-
     componentDidMount(){
         setTimeout(() => {this.setState({show: true})}, 500)
     }
