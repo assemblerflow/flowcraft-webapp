@@ -165,6 +165,42 @@ export class DragAndDropModal extends React.Component {
 }
 
 
+export class LoadingComponent extends React.Component {
+
+    constructor(props){
+        super(props);
+
+        this.state = {
+            show: false
+        }
+    }
+
+    shouldComponentUpdate(nextProps, nextState){
+
+        if (nextState.show !== this.state.show){
+            return true
+        }
+    }
+
+    componentDidMount(){
+        setTimeout(() => {this.setState({show: true})}, 500)
+    }
+
+    render(){
+        return(
+            <div>
+                {
+                    this.state.show ?
+                        this.props.children :
+                        <CircularProgress/>
+                }
+            </div>
+        )
+    }
+
+}
+
+
 export class LoadingScreen extends React.Component {
 
     render() {

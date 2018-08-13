@@ -19,6 +19,7 @@ import Boost  from 'highcharts/modules/boost';
 Boost(ReactHighcharts.Highcharts);
 
 import {Chart} from "./chart_utils";
+import {LoadingComponent} from "../ReportsBase";
 
 import styles from "../../styles/charts.css"
 
@@ -193,11 +194,11 @@ class FastqcBaseSequenceQuality extends React.Component {
         });
 
         return (
-            <div>
+            <LoadingComponent>
                 {
                     <ReactHighcharts config={config.layout} ref="chart" ></ReactHighcharts>
                 }
-            </div>
+            </LoadingComponent>
         )
     }
  }
@@ -243,9 +244,9 @@ class FastqcSequenceQuality extends React.Component {
 
         console.log("render seq qual")
         return (
-            <div>
+            <LoadingComponent>
                 <ReactHighcharts config={config.layout} ref="chart"></ReactHighcharts>
-            </div>
+            </LoadingComponent>
         )
     }
 }
@@ -286,9 +287,9 @@ class FastqcGcContent extends React.Component {
         console.log("render gc perc")
 
         return (
-            <div>
+            <LoadingComponent>
                 <ReactHighcharts config={config.layout} ref="chart"></ReactHighcharts>
-            </div>
+            </LoadingComponent>
         )
     }
 }
@@ -318,9 +319,9 @@ class FastqcSequenceLength extends React.Component {
         console.log("render fastqc len")
 
         return (
-            <div>
+            <LoadingComponent>
                 <ReactHighcharts config={config.layout} ref="chart"></ReactHighcharts>
-            </div>
+            </LoadingComponent>
         )
     }
 }
@@ -350,9 +351,9 @@ class FastqcNContent extends React.Component {
         console.log("render n content")
 
         return (
-            <div>
+            <LoadingComponent>
                 <ReactHighcharts config={config.layout} ref="chart"></ReactHighcharts>
-            </div>
+            </LoadingComponent>
         )
     }
 }
@@ -582,11 +583,10 @@ class PilonSizeDistChart extends React.Component{
             }
         });
 
-
         return(
-            <div>
+            <LoadingComponent>
                 <ReactHighcharts config={config.layout} ref="assemblySizeDist"></ReactHighcharts>
-            </div>
+            </LoadingComponent>
         )
 
     }

@@ -30,6 +30,7 @@ const CheckboxTable = checkboxHOC(ReactTable);
 import ApprovalIcon from "mdi-react/ApprovalIcon";
 import AlertOctagonIcon from "mdi-react/AlertOctagonIcon";
 import AlertIcon from "mdi-react/AlertIcon";
+import {LoadingComponent} from "../ReportsBase";
 
 
 const statusColor = {
@@ -137,18 +138,20 @@ export class FCTable extends React.Component {
 
         return (
             <div>
-                <div style={style.toolbar}>
-                    <ExportTooltipButton tableData={this.props.rawData}/>
-                    { this.props.children }
-                </div>
-                <CheckboxTable
-                    ref={r => (this.checkboxTable = r)}
-                    data={this.props.data}
-                    columns={this.props.columns}
-                    defaultPageSize={10}
-                    className={"-striped -highlight"}
-                    {...checkboxProps}
-                />
+                <LoadingComponent>
+                    <div style={style.toolbar}>
+                        <ExportTooltipButton tableData={this.props.rawData}/>
+                        { this.props.children }
+                    </div>
+                    <CheckboxTable
+                        ref={r => (this.checkboxTable = r)}
+                        data={this.props.data}
+                        columns={this.props.columns}
+                        defaultPageSize={10}
+                        className={"-striped -highlight"}
+                        {...checkboxProps}
+                    />
+                </LoadingComponent>
             </div>
         )
     }
