@@ -180,17 +180,16 @@ export class MetadataTable extends React.Component {
     };
 
     render () {
-        console.log(this.props.tableData);
+
+        // Metadata fields are obtained by the absence of reportJson object
+        // inside each report entry. If reportJson doesnt exist, the entry
+        // goes to the Innuendo metadata parser.
         const tableData = genericTableParser(this.props.tableData);
-
-        console.log(tableData);
-
-        console.log("render qc table")
 
         return (
             <ExpansionPanel defaultExpanded >
                 <ExpansionPanelSummary  expandIcon={<ExpandMoreIcon/>}>
-                    <Typography variant={"headline"}>Quality control</Typography>
+                    <Typography variant={"headline"}>Metadata</Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails>
                     <div className={styles.mainPaper}>

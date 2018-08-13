@@ -103,6 +103,8 @@ const parseInnuendoMetadata = (metadataEntry, tables) => {
 
         // Add cell case it exists in innuendo metadataMapping from the
         // config.json
+        // Constructs the cells to fill the requirements of the general
+        // table parser.
         if (metadataMapping.hasOwnProperty(header)) {
             cell.header = metadataMapping[header];
             cell.value = parsedFields[header];
