@@ -1,18 +1,16 @@
 // React imports
 import React from "react"
 
-import {Redirect} from "react-router-dom";
-
-import CircularProgress from "@material-ui/core/CircularProgress";
-import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-
+import {
+    DraggableView,
+    DragAndDropModal,
+    LoadingScreen
+} from "./ReportsBase"
 import {
     findTableSignatures,
     findChartSignatures,
     findQcWarnings
 } from "./reports/parsers";
-
 import {
     QualityControlTable,
     AssemblyTable,
@@ -20,12 +18,9 @@ import {
     ChewbbacaTable,
     MetadataTable
 } from "./reports/tables";
-import {BasicModal} from "./reports/modals";
 import {AssemblySizeDistChart, FastQcCharts} from "./reports/charts";
 import {ReportsHeader} from "./reports/drawer";
-import {HomeInnuendo} from "./reports/innuendo";
-import {HomeInput} from "./Inspect";
-import {Header} from "./Header";
+
 
 import {
     Link,
@@ -38,264 +33,8 @@ import {
 } from 'react-scroll'
 
 import styles from "../styles/reports.css";
-import {service} from "../../config.json"
 
 import {TaskButtons} from "./reports/task_buttons"
-
-
-/**
- * This is a base component that provides drag and drop functionality to the
- * reports home and reports app routes. It should be used as an extension
- * for these components only, not for general use.
- */
-export class DraggableView extends React.Component {
-
-    /*
-    Add event listeners for drag and drop functionality
-     */
-    componentDidMount() {
-        window.addEventListener("drop", this._drop.bind(this));
-        window.addEventListener("dragover", this._dragOver);
-    }
-
-    /*
-    Remove event listeners for drag and drop functionality
-     */
-    componentWillUnmount() {
-        window.removeEventListener("drop", this._drop);
-        window.removeEventListener("dragover", this._dragOver);
-    }
-
-    /*
-     Toggle the open state of the modal
-     */
-    setModalState = (value) => {
-        this.setState({openModal: value});
-    };
-
-    /*
-    Trigger component update only when there is a change on the report data
-    that is stored in the state.
-     */
-    shouldComponentUpdate(nextProps, nextState) {
-        if (this.state.loading !== nextState.loading)
-            return true;
-
-        if (this.state.reportData === nextState.reportData &&
-            this.state.openModal === nextState.openModal) {
-            return false
-        } else {
-            return true
-        }
-    }
-
-    /*
-    Sets the reportData state of the child component. It overwrites the
-    previous one. For merging, see mergeReports method.
-     */
-    loadReports = (reportData) => {
-        // Change state to trigger re-rendering of the app
-        this.setState({"reportData": reportData});
-        // Close modal
-        this.setModalState(false);
-    };
-
-    /*
-    Function to merge uploaded reportData with previous available data and
-    then loads reports
-     */
-    mergeReports = (reportData) => {
-        const mergedData = [...reportData, ...this.state.reportData];
-        this.loadReports(mergedData);
-    };
-
-    /*
-    Function triggered when a file is dropped in view.
-    */
-    _drop(ev) {
-        ev.preventDefault();
-
-        const data = ev.dataTransfer.files[0];
-        const reader = new FileReader();
-        this.setState({"loading": true});
-
-        reader.onload = function (e) {
-
-            try {
-                const jsonData = JSON.parse(e.target.result).data.results;
-
-                // Case no processes on current report, load reports directly
-                // Else, launch modal to ask user if wants to merge reports
-                // or just show the uploaded one
-                if (this.state.reportData === null) {
-                    this.loadReports(jsonData);
-                }
-                else {
-                    this.setState({dropData: jsonData});
-                    this.setModalState(true);
-                }
-            } catch (e) {
-                console.log(e);
-            }
-        }.bind(this);
-
-        reader.readAsText(data);
-    }
-
-    _dragOver(ev) {
-        ev.preventDefault();
-        ev.stopPropagation();
-    }
-
-    render() {
-        return (
-            <div>
-                <span>
-                    {this.props.children}
-                </span>
-            </div>
-        )
-    }
-}
-
-/**
- * Simple modal that is shown when a new reports file is drag and dropped
- * into the reports app.
- */
-class DragAndDropModal extends React.Component {
-    render() {
-        return (
-            <BasicModal openModal={this.props.openModal}
-                        setModalState={this.props.setModalState}
-                        title="">
-
-                <div className={styles.modalBody}>
-
-                    {/* Prototype for modal content */}
-                    <Typography
-                        className={styles.centeredContent}>Uploaded {this.props.dropData.length}
-                        new processes!</Typography>
-                    <Typography className={styles.centeredContent}>What do you
-                        want to do?!</Typography>
-
-                    {/* dropData: is the current data uploaded using
-                             dragNdrop */}
-                    <div className={styles.centeredContent}>
-                        <Button color="primary"
-                                onClick={() => {
-                                    this.props.mergeReports(this.props.dropData)
-                                }}>Merge</Button>
-                        <Button color="secondary"
-                                onClick={() => {
-                                    this.props.loadReports(this.props.dropData)
-                                }}>
-                            Remove Previous
-                        </Button>
-                    </div>
-                </div>
-            </BasicModal>
-        )
-    }
-}
-
-
-class LoadingScreen extends React.Component {
-
-    render() {
-
-        const style = {
-            loadingScreen: {
-                "width": "100%",
-                "height": "100%",
-                "zIndex": "1000000000000000000000000000000"
-            },
-            loadingSpinner: {
-                "top": "0",
-                "bottom": "0",
-                "left": "0",
-                "right": "0",
-                "margin": "auto",
-                "position": "absolute"
-            }
-        };
-
-        return (
-            <div style={style.loadingSpinner}>
-                <CircularProgress style={style.loadingSpinner}/>
-            </div>
-        )
-    }
-}
-
-/**
- * Entry point for /reports URL
- *
- * Full component for Reports home page. It is responsible for handling
- * the Drag and Drop of report files OR the specification of runID for
- * fetching report data to the database. Other Home components can be
- * added depending on the service option stored in
- * flowcraft/frontend/config.json
- *
- * These components are responsible for gathering the report data JSON array
- * and then redirect to the /reports/app URL providing the report data in
- * the state of the URL.
- *
- */
-export class ReportsHome extends DraggableView {
-
-    constructor(props) {
-        super(props);
-
-        this.props.history.push("/reports");
-
-        this.state = {
-            "runId": "",
-            "reportData": null,
-            "openModal": false,
-            "dropData": [],
-            "loading": false
-        };
-    }
-
-
-    render() {
-
-        console.log(this.state.loading);
-        console.log(this.state.reportData);
-
-        return (
-            <div>
-                {
-                    this.state.reportData &&
-                        <Redirect to={{
-                            pathname: "/reports/app",
-                            state: {"data": this.state.reportData}
-                        }}/>
-                }
-                {
-                    this.state.loading ?
-                        <LoadingScreen/> :
-                        <div>
-                            {
-                                service === "innuendo" ?
-                                    <div>
-                                        <Header
-                                            headerTitle={"INNUENDO Reports"}/>
-                                        <HomeInnuendo route={"reports"}/>
-                                    </div> :
-                                    <div>
-                                        <Header headerTitle={"Reports"}/>
-                                        <HomeInput route={"reports"}/>
-                                    </div>
-                            }
-                        </div>
-                }
-            </div>
-        )
-    }
-}
-
-
 
 /**
  * This is the main component interface with the reports app. The reports
@@ -306,7 +45,7 @@ export class ReportsHome extends DraggableView {
  *  URL. In this way, refreshing the reports app will retain the last saved
  *  data set.
  */
-export class ReportsRedirect extends DraggableView {
+export class ReportsRedirect extends React.Component {
 
     constructor(props) {
         super(props);
@@ -315,15 +54,13 @@ export class ReportsRedirect extends DraggableView {
 
         this.state = {
             "reportData": this.props.location.state.data,
-            "openModal": false,
-            "dropData": [],
             "loading": true
         };
     }
 
     /*
     Method that restores the state of the URL to the last saved report data
-    state.
+    state. This is trigger on page unloading/reloading
      */
     _restoreUrlState() {
         this.props.history.replace("/reports/app", {
@@ -331,6 +68,11 @@ export class ReportsRedirect extends DraggableView {
         });
     }
 
+    /*
+    Method that clears the state associated with the URL when the component
+    is mounted. This is done to prevent performance issues when scrolling the
+    app with very big reports.
+     */
     _clearUrlState() {
         this.props.history.replace("/reports/app", {data: []});
         this.props.history.state = {data: []};
@@ -341,39 +83,31 @@ export class ReportsRedirect extends DraggableView {
     }
 
     /*
-    Overwrites the method from the DraggableView component
+    Callback that can be passed to children components to update the reportData
+    state.
      */
-    componentDidMount() {
-        window.addEventListener("drop", this._drop.bind(this));
-        window.addEventListener("dragover", this._dragOver);
-        setTimeout(this._clearUrlState.bind(this), 100);
-        window.addEventListener("beforeunload", this._restoreUrlState.bind(this))
-        console.log("redirect did mount")
-        setTimeout(this._cancelLoading.bind(this), 100)
+    _updateState(reportData){
+        this.setState({reportData: reportData})
     }
 
-    /*
-    Overwrites the method from the DraggableView component
-     */
-    componentWillUnmount() {
-        window.removeEventListener("drop", this._drop);
-        window.removeEventListener("dragover", this._dragOver);
+    componentDidMount() {
+        // Add method that restores URL state on page relog
+        window.addEventListener("beforeunload", this._restoreUrlState.bind(this));
+        // Clear the current URL state with setTimeout to prevent blocking
+        setTimeout(this._clearUrlState.bind(this), 100);
+        // Clear the loading component
+        setTimeout(this._cancelLoading.bind(this), 1000);
     }
 
     render() {
-
         return (
             <div>
                 {
                     this.state.loading ?
                         <LoadingScreen/> :
                         <div>
-                            <DragAndDropModal openModal={this.state.openModal}
-                                              setModalState={this.setModalState}
-                                              dropData={this.state.dropData}
-                                              mergeReports={this.mergeReports}
-                                              loadReports={this.loadReports}/>
-                            <ReportsApp reportData={this.state.reportData}/>
+                            <ReportsApp reportData={this.state.reportData}
+                                        updateState={this._updateState.bind(this)}/>
                         </div>
                 }
             </div>
@@ -386,7 +120,7 @@ export class ReportsRedirect extends DraggableView {
  * JSONs to correctly render. The rendering of the specific components in the
  * reports is conditional on the data provided in the reportData array.
  */
-class ReportsApp extends React.Component {
+class ReportsApp extends DraggableView {
 
     constructor(props) {
         super(props);
@@ -402,11 +136,9 @@ class ReportsApp extends React.Component {
             tableSamples,
             charts,
             qcInfo,
+            openModal: false,
+            dropData: [],
         };
-    }
-
-    componentDidMount(){
-        console.log("reports app finished mounting")
     }
 
     static getDerivedStateFromProps(props, state) {
@@ -415,12 +147,13 @@ class ReportsApp extends React.Component {
             return null
         }
 
-        const {tableData, tableSamples} = findTableSignatures(props.reportData);
-        const charts = findChartSignatures(props.reportData);
-        const qcInfo = findQcWarnings(props.reportData);
+        const {tableData, tableSamples} = findTableSignatures(state.reportData);
+        const charts = findChartSignatures(state.reportData);
+        const qcInfo = findQcWarnings(state.reportData);
 
         return {
-            reportData: props.reportData,
+            reportData: state.reportData,
+            dropData: state.dropData,
             tables: [...tableData.keys()],
             tableData,
             tableSamples,
@@ -429,9 +162,10 @@ class ReportsApp extends React.Component {
         }
     }
 
-    shouldComponentUpdate(nextProps, nextState) {
-
-        return nextProps.reportData !== this.state.reportData;
+    componentDidUpdate(){
+        if (this.props.updateState){
+            this.props.updateState(this.state.reportData)
+        }
     }
 
     render() {
@@ -444,6 +178,11 @@ class ReportsApp extends React.Component {
         console.log(this.state)
         return (
             <div>
+                <DragAndDropModal openModal={this.state.openModal}
+                                  setModalState={this.setModalState}
+                                  dropData={this.state.dropData}
+                                  mergeReports={this.mergeReports}
+                                  loadReports={this.loadReports}/>
                 <TaskButtons tableData={this.state.tableData}
                              tableSamples={this.state.tableSamples}/>
                 <ReportsHeader tableHeaders={this.state.tables}
