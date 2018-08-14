@@ -78,7 +78,7 @@ export class PreviewSnack extends React.Component{
 
         const style = {
             container: {
-                marginTop: "10px",
+                marginTop: "20px",
                 display: "flex",
                 flexGrow: "1",
                 float: "right"

@@ -28,10 +28,15 @@ export class FastQcCharts extends React.Component {
     constructor(props) {
         super(props);
 
+        const limit = 200;
+
         this.state = {
             chartData: props.rawReports,
-            tabValue: 0
-        }
+            tabValue: 0,
+            limit: 200
+        };
+
+        this.updateChartLimit = this.updateChartLimit.bind(this);
     }
 
     static getDerivedStateFromProps(props, state){
@@ -43,16 +48,16 @@ export class FastQcCharts extends React.Component {
         }
     }
 
-    shouldComponentUpdate(nextProps, nextState){
+    updateChartLimit = (newLimit) => {
+        this.setState({limit: newLimit})
+    };
 
-        if (nextState.tabValue !== this.state.tabValue){
-            return true
-        }
+    parsePlotData = (reportData, limit) => {
+        // The limit parameter sets a maximum to the final chartData object
+        // If set to null, there will be no limit
 
-        return nextProps.rawReports !== this.state.chartData;
-    }
-
-    parsePlotData = (reportData) => {
+        // This variable is set to true when the report data has been limited
+        let preview = false;
 
         let qcCharts = {
             "base_n_content": [],
@@ -79,6 +84,13 @@ export class FastQcCharts extends React.Component {
                     for (const [plot, data] of Object.entries(el.data)){
                         if (chartSignatures.includes(plot)){
 
+                            if (limit && limit !== 0 && qcCharts[plot].length > (limit - 1)){
+                                if (!preview){
+                                    preview = true
+                                }
+                                continue
+                            }
+
                             const parsedData = data.data[0].map((v) => {
                                 return parseFloat(v)
                             });
@@ -94,7 +106,10 @@ export class FastQcCharts extends React.Component {
             }
         }
 
-        return qcCharts
+        return {
+            qcCharts,
+            preview
+        }
 
     };
 
@@ -118,7 +133,11 @@ export class FastQcCharts extends React.Component {
 
         console.log("render fastqc tabs")
 
-        const chartData = this.parsePlotData(this.state.chartData);
+        // Sets the number of samples in the chart above which the chart preview
+        // toggle system is introduced.
+        const previewThreshold = 200;
+
+        const chartData = this.parsePlotData(this.state.chartData, 200);
 
         return (
             <div>
@@ -127,19 +146,37 @@ export class FastQcCharts extends React.Component {
                         <Typography variant={"headline"}>FastQC charts</Typography>
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails>
-                        <div className={styles.mainPaper} style={{"height": "600px", "width": "100%"}}>
-                            <div style={style.buttonBar}>
-                                <Button style={style.button} className={classNames(this.state.tabValue === 0 && styles.tabButton)}  onClick={() => {this.handleChange(0)}}>Base sequence quality</Button>
-                                <Button style={style.button} className={classNames(this.state.tabValue === 1 && styles.tabButton)} onClick={() => {this.handleChange(1)}}>Sequence quality</Button>
-                                <Button style={style.button} className={classNames(this.state.tabValue === 2 && styles.tabButton)} onClick={() => {this.handleChange(2)}}>Base GC content</Button>
-                                <Button style={style.button} className={classNames(this.state.tabValue === 3 && styles.tabButton)} onClick={() => {this.handleChange(3)}}>Sequence length</Button>
-                                <Button style={style.button} className={classNames(this.state.tabValue === 4 && styles.tabButton)} onClick={() => {this.handleChange(4)}}>Missing data</Button>
+                        <div style={{"width": "100%", "height": "100%"}}>
+                            <div className={styles.mainPaper} style={{"height": "100%", "width": "100%"}}>
+                                <div style={style.buttonBar}>
+                                    <Button style={style.button} className={classNames(this.state.tabValue === 0 && styles.tabButton)}  onClick={() => {this.handleChange(0)}}>Base sequence quality</Button>
+                                    <Button style={style.button} className={classNames(this.state.tabValue === 1 && styles.tabButton)} onClick={() => {this.handleChange(1)}}>Sequence quality</Button>
+                                    <Button style={style.button} className={classNames(this.state.tabValue === 2 && styles.tabButton)} onClick={() => {this.handleChange(2)}}>Base GC content</Button>
+                                    <Button style={style.button} className={classNames(this.state.tabValue === 3 && styles.tabButton)} onClick={() => {this.handleChange(3)}}>Sequence length</Button>
+                                    <Button style={style.button} className={classNames(this.state.tabValue === 4 && styles.tabButton)} onClick={() => {this.handleChange(4)}}>Missing data</Button>
+                                </div>
+                                {this.state.tabValue === 0  && <FastqcBaseSequenceQuality plotData={chartData.qcCharts["base_sequence_quality"]}/>}
+                                {this.state.tabValue === 1  && <FastqcSequenceQuality plotData={chartData.qcCharts["sequence_quality"]}/>}
+                                {this.state.tabValue === 2  && <FastqcGcContent plotData={chartData.qcCharts["base_gc_content"]}/>}
+                                {this.state.tabValue === 3  && <FastqcSequenceLength plotData={chartData.qcCharts["sequence_length_dist"]}/>}
+                                {this.state.tabValue === 4  && <FastqcNContent plotData={chartData.qcCharts["base_n_content"]}/>}
                             </div>
-                            {this.state.tabValue === 0  && <FastqcBaseSequenceQuality plotData={chartData["base_sequence_quality"]}/>}
-                            {this.state.tabValue === 1  && <FastqcSequenceQuality plotData={chartData["sequence_quality"]}/>}
-                            {this.state.tabValue === 2  && <FastqcGcContent plotData={chartData["base_gc_content"]}/>}
-                            {this.state.tabValue === 3  && <FastqcSequenceLength plotData={chartData["sequence_length_dist"]}/>}
-                            {this.state.tabValue === 4  && <FastqcNContent plotData={chartData["base_n_content"]}/>}
+                            {
+                                chartData.preview &&
+                                <PreviewSnack
+                                    actionClick={() => {
+                                        this.updateChartLimit(0)
+                                    }}
+                                    actionMessage={"Show full Chart"}
+                                    message={`This chart is a preview of the first ${this.state.limit} samples`}/>
+                            }
+                            {
+                                chartData.qcCharts["base_sequence_quality"].length > previewThreshold &&
+                                <PreviewSnack
+                                    actionClick={() => {this.updateChartLimit(previewThreshold)}}
+                                    actionMessage={"Show preview Chart"}
+                                    message={`Chart displaying a large number of samples (${data.categories.length})`}/>
+                            }
                         </div>
                 </ExpansionPanelDetails>
             </ExpansionPanel>
