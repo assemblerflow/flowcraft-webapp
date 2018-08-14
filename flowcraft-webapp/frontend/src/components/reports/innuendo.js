@@ -770,7 +770,7 @@ class InnuendoProjects extends React.Component {
                         pathname: "/reports/innuendo",
                         state: {
                             data: this.state.resultsReports,
-                            additionalInfo: {innuendo: this.props.innuendo}
+                            additionalInfo: `innuendo-${this.props.innuendo.getUserId()}`
                         }
                     }}
                     />

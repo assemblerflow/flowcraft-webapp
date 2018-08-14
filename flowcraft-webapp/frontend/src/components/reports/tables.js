@@ -412,6 +412,8 @@ export class ChewbbacaTable extends React.Component {
 
     chewbbacaParser = (tableData, originalData) => {
 
+        console.log(originalData);
+
         const refDict = {"fail": "label-danger", "warning": "label-warning", "pass": "label-success"};
 
         // Add status header to table columns
@@ -424,7 +426,7 @@ export class ChewbbacaTable extends React.Component {
         for (const row of tableData.tableArray){
 
             for (const process of originalData){
-                if(process.processName.indexOf("chewbbaca") > -1){
+                if(process.processName && process.processName.indexOf("chewbbaca") > -1){
                     const statusDict = process.reportJson.status;
 
                     for (const statusData of statusDict){

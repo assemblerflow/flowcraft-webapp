@@ -20,7 +20,7 @@ import {
     MetadataTable
 } from "./reports/tables";
 
-import {innuendoSteps} from "./reports/innuendo";
+import {Innuendo, innuendoSteps} from "./reports/innuendo";
 import {AssemblySizeDistChart, FastQcCharts} from "./reports/charts";
 import {ReportsHeader} from "./reports/drawer";
 
@@ -55,12 +55,24 @@ export class ReportsRedirect extends React.Component {
 
         console.log("redirect start")
 
+        let additionalInfo = this.props.location.state.additionalInfo;
+        console.log(additionalInfo);
+
+        if (additionalInfo && additionalInfo.indexOf("innuendo") > -1) {
+            const userId = additionalInfo.split("-")[1];
+            const innuendo = new Innuendo();
+            innuendo.setUserId(userId);
+            additionalInfo = {innuendo: innuendo};
+
+        }
+
+
         this.state = {
             "reportData": this.props.location.state.data,
             // Additional info has additional information that can be passed
             // by the reportsRedirect. In this case, it can be user
             // information collected from INNUENDO
-            "additionalInfo": this.props.location.state.additionalInfo,
+            "additionalInfo": additionalInfo,
             "loading": true,
             "openModal": false,
             "dropData": []
@@ -74,9 +86,12 @@ export class ReportsRedirect extends React.Component {
     state. This is trigger on page unloading/reloading
      */
     _restoreUrlState() {
+        const additionalInfo = this.state.additionalInfo.innuendo ?
+            `innuendo-${this.state.additionalInfo.innuendo.getUserId()}` : this.state.additionalInfo;
+
         this.props.history.replace("/reports/app", {
             data: this.state.reportData,
-            additionalInfo: this.state.additionalInfo
+            additionalInfo: additionalInfo
         });
     }
 
@@ -87,7 +102,7 @@ export class ReportsRedirect extends React.Component {
      */
     _clearUrlState() {
         this.props.history.replace("/reports/app", {data: []});
-        this.props.history.state = {data: []};
+        this.props.history.state = {data: [], additionalInfo: {}};
     }
 
     _cancelLoading() {
@@ -196,7 +211,7 @@ class ReportsApp extends React.Component {
         // Updates the reportData state and any additional information
         // passed to the component
         if (this.props.updateState){
-            this.props.updateState(this.props.reportData, this.state.additionalInfo)
+            this.props.updateState(this.props.reportData, this.props.additionalInfo)
         }
     }
 
@@ -235,7 +250,7 @@ class ReportsApp extends React.Component {
                                  className={styles.scrollElement}>
                             <MetadataTable
                                 tableData={tableData.get("metadata")}
-                                reportData={reportData} />
+                                reportData={this.props.reportData} />
                         </Element>
                     }
                     {
