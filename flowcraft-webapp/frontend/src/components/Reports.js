@@ -40,7 +40,7 @@ import styles from "../styles/reports.css";
 import {TaskButtons} from "./reports/task_buttons"
 
 /**
- * This is the main component interface with the reports app. The reports
+ * This is the main wrapper of the reports app. The reports
  * application should be mounted via Redirect to this component for two reasons:
  *
  *  1. It provides drag and drop functionality for more reports
@@ -53,22 +53,28 @@ export class ReportsRedirect extends React.Component {
     constructor(props) {
         super(props);
 
-        console.log("redirect start")
+        console.log("redirect start");
 
         this.state = {
+            // Retrieve the initial state of reportData from the URL state
             "reportData": this.props.location.state.data,
             // Additional info has additional information that can be passed
             // by the reportsRedirect. In this case, it can be user
             // information collected from INNUENDO
             "additionalInfo": this.props.location.state.additionalInfo,
+            // Set to true to display a loading spinner while processing data
             "loading": true,
+            // Property that controls the showing of the File drag and drop modal
             "openModal": false,
+            // Stores the intermediate reportData before merging or removing
+            // reportData.
             "dropData": []
         };
 
         this.handleDrop = this.handleDrop.bind(this)
     }
 
+    // URL STATE HANDLING
     /*
     Method that restores the state of the URL to the last saved report data
     state. This is trigger on page unloading/reloading
@@ -105,6 +111,54 @@ export class ReportsRedirect extends React.Component {
         })
     }
 
+    // DRAG AND DROP METHODS
+    /*
+    Updates the reportData state and closes drag and drop modal
+     */
+    loadReports = (reportData) => {
+        this.setState({"reportData": reportData});
+        this.setModalState(false)
+    };
+
+    /*
+    Merges the report JSON data provided in the dropped files with the existing
+    reportData and triggers the update of the reportData state.
+     */
+    mergeReports = (reportData) => {
+        const mergedData = [...reportData, ...this.state.reportData];
+        this.loadReports(mergedData);
+    };
+
+    /*
+    Set the state of the drag and drop modal. True shows the modal.
+     */
+    setModalState = (value) => {
+        this.setState({openModal: value})
+    };
+
+    /*
+    Function triggered when files are dropped into the reports.
+     */
+    handleDrop(files, event){
+
+        const data = files[0];
+        const reader = new FileReader();
+
+        reader.onload = function (e){
+            const jsonData = JSON.parse(e.target.result).data.results;
+
+            if (this.state.reportData === null){
+                this.setState({reportData: jsonData})
+            } else {
+                this.setState({dropData: jsonData});
+                this.setModalState(true)
+            }
+            console.log(jsonData)
+        }.bind(this);
+
+        reader.readAsText(data)
+    }
+
     componentDidMount() {
         // Add method that restores URL state on page relog
         window.addEventListener("beforeunload", this._restoreUrlState.bind(this));
@@ -124,40 +178,6 @@ export class ReportsRedirect extends React.Component {
         } else {
             return true
         }
-    }
-
-    loadReports = (reportData) => {
-        this.setState({"reportData": reportData});
-        this.setModalState(false)
-    };
-
-    mergeReports = (reportData) => {
-        const mergedData = [...reportData, ...this.state.reportData];
-        this.loadReports(mergedData);
-    };
-
-    setModalState = (value) => {
-        this.setState({openModal: value})
-    };
-
-    handleDrop(files, event){
-
-        const data = files[0];
-        const reader = new FileReader();
-
-        reader.onload = function (e){
-            const jsonData = JSON.parse(e.target.result).data.results;
-
-            if (this.state.reportData === null){
-                this.setState({reportData: jsonData})
-            } else {
-                this.setState({dropData: jsonData});
-                this.setModalState(true)
-            }
-            console.log(jsonData)
-        }.bind(this);
-
-        reader.readAsText(data)
     }
 
     render() {
