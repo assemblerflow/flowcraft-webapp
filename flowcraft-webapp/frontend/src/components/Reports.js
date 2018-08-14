@@ -1,5 +1,6 @@
 // React imports
 import React from "react"
+import FileDrop from 'react-file-drop';
 
 import {
     DraggableView,
@@ -60,8 +61,12 @@ export class ReportsRedirect extends React.Component {
             // by the reportsRedirect. In this case, it can be user
             // information collected from INNUENDO
             "additionalInfo": this.props.location.state.additionalInfo,
-            "loading": true
+            "loading": true,
+            "openModal": false,
+            "dropData": []
         };
+
+        this.handleDrop = this.handleDrop.bind(this)
     }
 
     /*
@@ -82,7 +87,7 @@ export class ReportsRedirect extends React.Component {
      */
     _clearUrlState() {
         this.props.history.replace("/reports/app", {data: []});
-        this.props.history.state = {data: [], additionalInfo: {}};
+        this.props.history.state = {data: []};
     }
 
     _cancelLoading() {
@@ -93,8 +98,11 @@ export class ReportsRedirect extends React.Component {
     Callback that can be passed to children components to update the reportData
     state.
      */
-    _updateState(reportData){
-        this.setState({reportData: reportData})
+    _updateState(reportData, additionalInfo){
+        this.setState({
+            reportData,
+            additionalInfo
+        })
     }
 
     componentDidMount() {
@@ -106,18 +114,72 @@ export class ReportsRedirect extends React.Component {
         setTimeout(this._cancelLoading.bind(this), 1000);
     }
 
+    shouldComponentUpdate(nextProps, nextState) {
+        if (this.state.loading !== nextState.loading)
+            return true;
+
+        if (this.state.reportData === nextState.reportData &&
+            this.state.openModal === nextState.openModal) {
+            return false
+        } else {
+            return true
+        }
+    }
+
+    loadReports = (reportData) => {
+        this.setState({"reportData": reportData});
+        this.setModalState(false)
+    };
+
+    mergeReports = (reportData) => {
+        const mergedData = [...reportData, ...this.state.reportData];
+        this.loadReports(mergedData);
+    };
+
+    setModalState = (value) => {
+        this.setState({openModal: value})
+    };
+
+    handleDrop(files, event){
+
+        const data = files[0];
+        const reader = new FileReader();
+
+        reader.onload = function (e){
+            const jsonData = JSON.parse(e.target.result).data.results;
+
+            if (this.state.reportData === null){
+                this.setState({reportData: jsonData})
+            } else {
+                this.setState({dropData: jsonData});
+                this.setModalState(true)
+            }
+            console.log(jsonData)
+        }.bind(this);
+
+        reader.readAsText(data)
+    }
+
     render() {
         return (
             <div>
-                {
-                    this.state.loading ?
-                        <LoadingScreen/> :
-                        <div>
-                            <ReportsApp reportData={this.state.reportData}
-                                        additionalInfo={this.state.additionalInfo}
-                                        updateState={this._updateState.bind(this)}/>
-                        </div>
-                }
+                <FileDrop onDrop={this.handleDrop}>
+                    <DragAndDropModal openModal={this.state.openModal}
+                                      setModalState={this.setModalState}
+                                      dropData={this.state.dropData}
+                                      mergeReports={this.mergeReports}
+                                      loadReports={this.loadReports}/>
+                    {
+
+                        this.state.loading ?
+                            <LoadingScreen/> :
+                            <div>
+                                <ReportsApp reportData={this.state.reportData}
+                                            additionalInfo={this.state.additionalInfo}
+                                            updateState={this._updateState.bind(this)}/>
+                            </div>
+                    }
+                </FileDrop>
             </div>
         )
     }
@@ -128,145 +190,103 @@ export class ReportsRedirect extends React.Component {
  * JSONs to correctly render. The rendering of the specific components in the
  * reports is conditional on the data provided in the reportData array.
  */
-class ReportsApp extends DraggableView {
-
-    constructor(props) {
-        super(props);
-
-        const {tableData, tableSamples} = findTableSignatures(props.reportData);
-        const charts = findChartSignatures(props.reportData);
-        const qcInfo = findQcWarnings(props.reportData);
-
-        this.state = {
-            reportData: props.reportData,
-            tables: [...tableData.keys()],
-            tableData,
-            tableSamples,
-            charts,
-            qcInfo,
-            openModal: false,
-            dropData: [],
-            additionalInfo: props.additionalInfo
-        };
-
-        // Parse additional info based on their specific requirements
-        if (props.additionalInfo) {
-            if (props.additionalInfo.innuendo){
-                // Launch INNUENDO specific steps
-                props.additionalInfo.innuendo.getInnuendoTrees().then((result) => {
-                    this.setState({reportData: [...props.reportData, ...result.data]})
-                });
-            }
-        }
-    }
-
-    static getDerivedStateFromProps(props, state) {
-
-        if (props.reportData === state.reportData) {
-            return null
-        }
-
-        const {tableData, tableSamples} = findTableSignatures(state.reportData);
-        const charts = findChartSignatures(state.reportData);
-        const qcInfo = findQcWarnings(state.reportData);
-
-        return {
-            reportData: state.reportData,
-            dropData: state.dropData,
-            tables: [...tableData.keys()],
-            tableData,
-            tableSamples,
-            charts: charts,
-            qcInfo,
-            additionalInfo: state.additionalInfo
-        }
-    }
+class ReportsApp extends React.Component {
 
     componentDidUpdate(){
         // Updates the reportData state and any additional information
         // passed to the component
         if (this.props.updateState){
-            this.props.updateState(this.state.reportData, this.state.additionalInfo)
+            this.props.updateState(this.props.reportData, this.state.additionalInfo)
         }
     }
 
+    shouldComponentUpdate(nextProps, nextState){
+
+        if (nextProps.reportData !== this.props.reportData){
+            return true
+        } else {
+            return false
+        }
+
+    }
+
     render() {
+
+        const {tableData, tableSamples} = findTableSignatures(this.props.reportData);
+        const charts = findChartSignatures(this.props.reportData);
+        const qcInfo = findQcWarnings(this.props.reportData);
+        const tables = [...tableData.keys()];
+
         //
         // This is the main element where the Reports components will be added,
         // Their addition should be conditional on the presence of relevant
         // data in the this.state.reportData array, and each component should
         // be responsible for handling the data in any way they see fit.
         //
-        console.log(this.state);
         return (
             <div>
-                <DragAndDropModal openModal={this.state.openModal}
-                                  setModalState={this.setModalState}
-                                  dropData={this.state.dropData}
-                                  mergeReports={this.mergeReports}
-                                  loadReports={this.loadReports}/>
-                <TaskButtons tableData={this.state.tableData}
-                             tableSamples={this.state.tableSamples}/>
-                <ReportsHeader tableHeaders={this.state.tables}
-                               chartHeaders={this.state.charts}>
+                <TaskButtons tableData={tableData}
+                             tableSamples={tableSamples}/>
+                <ReportsHeader tableHeaders={tables}
+                               chartHeaders={charts}>
                     {
-                        this.state.tables.includes("metadata") &&
+                        tables.includes("metadata") &&
                         <Element name={"metadataTable"}
                                  className={styles.scrollElement}>
                             <MetadataTable
-                                tableData={this.state.tableData.get("metadata")}
-                                reportData={this.state.reportData} />
+                                tableData={tableData.get("metadata")}
+                                reportData={reportData} />
                         </Element>
                     }
                     {
-                        this.state.tables.includes("qc") &&
+                        tables.includes("qc") &&
                         <Element name={"qcTable"}
                                  className={styles.scrollElement}>
                             <QualityControlTable
-                                tableData={this.state.tableData.get("qc")}
-                                qcInfo={this.state.qcInfo}/>
+                                tableData={tableData.get("qc")}
+                                qcInfo={qcInfo}/>
                         </Element>
                     }
                     {
-                        this.state.tables.includes("assembly") &&
+                        tables.includes("assembly") &&
                         <Element name={"assemblyTable"}
                                  className={styles.scrollElement}>
                             <AssemblyTable
-                                tableData={this.state.tableData.get("assembly")}
-                                qcInfo={this.state.qcInfo}/>
+                                tableData={tableData.get("assembly")}
+                                qcInfo={qcInfo}/>
                         </Element>
                     }
                     {
-                        this.state.tables.includes("abricate") &&
+                        tables.includes("abricate") &&
                         <Element name={"abricateTable"}
                                  className={styles.scrollElement}>
                             <AbricateTable
-                                tableData={this.state.tableData.get("abricate")}/>
+                                tableData={tableData.get("abricate")}/>
                         </Element>
                     }
                     {
-                        this.state.tables.includes("chewbbaca") &&
+                        tables.includes("chewbbaca") &&
                         <Element name={"chewbbacaTable"}
                                  className={styles.scrollElement}>
                             <ChewbbacaTable
-                                tableData={this.state.tableData.get("chewbbaca")}
-                                reportData={this.state.reportData}
+                                tableData={tableData.get("chewbbaca")}
+                                reportData={this.props.reportData}
                             />
                         </Element>
                     }
                     {
-                        this.state.charts.includes("base_n_content") &&
+                        charts.includes("base_n_content") &&
                         <Element name={"base_n_contentChart"}
                                  className={styles.scrollElement}>
-                            <FastQcCharts rawReports={this.state.reportData}/>
+                            <FastQcCharts rawReports={this.props.reportData}/>
                         </Element>
                     }
                     {
-                        this.state.charts.includes("size_dist") &&
+                        charts.includes("size_dist") &&
                         <Element name={"size_distChart"}
                                  className={styles.scrollElement}>
                             <AssemblySizeDistChart
-                                rawReports={this.state.reportData}/>
+                                rawReports={this.props.reportData}/>
                         </Element>
                     }
                 </ReportsHeader>

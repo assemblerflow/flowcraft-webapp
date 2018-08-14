@@ -98,7 +98,7 @@ export class DraggableView extends React.Component {
                 }
                 else {
                     this.setState({dropData: jsonData});
-                    this.setModalState(true);
+                    // this.setModalState(true);
                 }
             } catch (e) {
                 console.log(e);
