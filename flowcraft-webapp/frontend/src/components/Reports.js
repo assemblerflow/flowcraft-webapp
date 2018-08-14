@@ -18,6 +18,8 @@ import {
     ChewbbacaTable,
     MetadataTable
 } from "./reports/tables";
+
+import {innuendoSteps} from "./reports/innuendo";
 import {AssemblySizeDistChart, FastQcCharts} from "./reports/charts";
 import {ReportsHeader} from "./reports/drawer";
 
@@ -54,6 +56,10 @@ export class ReportsRedirect extends React.Component {
 
         this.state = {
             "reportData": this.props.location.state.data,
+            // Additional info has additional information that can be passed
+            // by the reportsRedirect. In this case, it can be user
+            // information collected from INNUENDO
+            "additionalInfo": this.props.location.state.additionalInfo,
             "loading": true
         };
     }
@@ -64,7 +70,8 @@ export class ReportsRedirect extends React.Component {
      */
     _restoreUrlState() {
         this.props.history.replace("/reports/app", {
-            data: this.state.reportData
+            data: this.state.reportData,
+            additionalInfo: this.state.additionalInfo
         });
     }
 
@@ -75,7 +82,7 @@ export class ReportsRedirect extends React.Component {
      */
     _clearUrlState() {
         this.props.history.replace("/reports/app", {data: []});
-        this.props.history.state = {data: []};
+        this.props.history.state = {data: [], additionalInfo: {}};
     }
 
     _cancelLoading() {
@@ -107,6 +114,7 @@ export class ReportsRedirect extends React.Component {
                         <LoadingScreen/> :
                         <div>
                             <ReportsApp reportData={this.state.reportData}
+                                        additionalInfo={this.state.additionalInfo}
                                         updateState={this._updateState.bind(this)}/>
                         </div>
                 }
@@ -138,7 +146,18 @@ class ReportsApp extends DraggableView {
             qcInfo,
             openModal: false,
             dropData: [],
+            additionalInfo: props.additionalInfo
         };
+
+        // Parse additional info based on their specific requirements
+        if (props.additionalInfo) {
+            if (props.additionalInfo.innuendo){
+                // Launch INNUENDO specific steps
+                props.additionalInfo.innuendo.getInnuendoTrees().then((result) => {
+                    this.setState({reportData: [...props.reportData, ...result.data]})
+                });
+            }
+        }
     }
 
     static getDerivedStateFromProps(props, state) {
@@ -158,13 +177,16 @@ class ReportsApp extends DraggableView {
             tableData,
             tableSamples,
             charts: charts,
-            qcInfo
+            qcInfo,
+            additionalInfo: state.additionalInfo
         }
     }
 
     componentDidUpdate(){
+        // Updates the reportData state and any additional information
+        // passed to the component
         if (this.props.updateState){
-            this.props.updateState(this.state.reportData)
+            this.props.updateState(this.state.reportData, this.state.additionalInfo)
         }
     }
 
@@ -175,7 +197,7 @@ class ReportsApp extends DraggableView {
         // data in the this.state.reportData array, and each component should
         // be responsible for handling the data in any way they see fit.
         //
-        console.log(this.state)
+        console.log(this.state);
         return (
             <div>
                 <DragAndDropModal openModal={this.state.openModal}

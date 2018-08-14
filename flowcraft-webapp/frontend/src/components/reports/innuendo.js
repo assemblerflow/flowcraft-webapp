@@ -1,6 +1,6 @@
 // React imports
 import React from "react";
-import { Redirect } from "react-router-dom";
+import {Redirect} from "react-router-dom";
 
 // React imports
 import Typography from '@material-ui/core/Typography';
@@ -34,25 +34,156 @@ import ImportContactsIcon from '@material-ui/icons/ImportContacts';
 import BugReportIcon from '@material-ui/icons/BugReport';
 import TimelineIcon from '@material-ui/icons/Timeline';
 
-// Innuendo requests
-import {
-    getInnuendoSpecies,
-    getInnuendoProjects,
-    getInnuendoProjectStrains,
-    getInnuendoReportsByFilter,
-    getInnuendoStrainsMetadata,
-    tryLogin,
-    getStatistics,
-    getSavedReports
-} from "./requests"
-
 // utils
 import {parseProjectSearch, getMetadataMapping} from "./utils"
+import axios from "axios";
 
 import {ReportsHome} from "../Reports";
 
 //parsers
 import {InnuendoReportsTableParser} from './parsers';
+
+// Other imports
+import {address} from "../../../config.json"
+
+
+/////////////////////// INNUENDO Class ///////////////////////////////
+
+
+/*
+Class with INNUENDO specific methods. Trees, profiles and other requests
+ that are made directly to the INNUENDO platform associated with the reports.
+ */
+export class Innuendo {
+    constructor() {
+        this.userId = "";
+    }
+
+    setUserId(userId) {
+        this.userId = userId;
+    }
+
+    getUserId() {
+        return this.userId;
+    }
+
+    /*
+    * Login to innuendo platform externally.
+    * Try to login according to the provided username and password
+    */
+    tryLogin(username, password) {
+        return axios({
+            method: "post",
+            url: address + `app/api/v1.0/user/external/login/`,
+            data: {
+                username: username,
+                password: password
+            }
+        })
+    }
+
+    /*
+    Get global Innuendo platform statistics
+     */
+    getStatistics() {
+        return axios({
+            method: "get",
+            url: address + `app/api/v1.0/strains/statistics/`,
+        })
+    }
+
+    /*
+    Get all the available species at the INNUENDO Platform
+    */
+    getInnuendoSpecies() {
+        return axios({
+            method: "get",
+            url: address + "app/api/v1.0/species/",
+
+        })
+    }
+
+    /*
+    Get all the available projects. Those are then mapped to their specific
+    species.
+    */
+    getInnuendoProjects() {
+        return axios({
+            method: "get",
+            url: address + "app/api/v1.0/projects/all/",
+
+        })
+    }
+
+    getInnuendoTrees() {
+        return axios({
+            method: "get",
+            url: address + "app/api/v1.0/phyloviz/trees/user/",
+            params: {
+                user_id: this.userId
+            }
+        })
+    }
+
+    /*
+    Get all strains associated with a given project. The response is then
+    parsed to get min and max date for filtering.
+    */
+    getInnuendoProjectStrains(projectIds) {
+        return axios({
+            method: "get",
+            url: address + "app/api/v1.0/reports/project/info/",
+            params: {
+                project_id: projectIds.join(",")
+            }
+
+        })
+    }
+
+    /*
+    Request to get all reports for a set of strains in a given time interval.
+     */
+    async getInnuendoReportsByFilter(filter) {
+        return await
+            axios({
+                method: "post",
+                url: address + "app/api/v1.0/reports/project/filter/",
+                data: filter
+
+            });
+    }
+
+    /*
+    Get all metadata associated with a set of strains.
+     */
+    async getInnuendoStrainsMetadata(filter) {
+        return await
+            axios({
+                method: "post",
+                url: address + "app/api/v1.0/strains/name/",
+                data: filter
+
+            });
+    }
+
+    /*
+    Get innuendo saved reports
+     */
+    async getSavedReports() {
+        return await
+            axios({
+                method: 'get',
+                url: address + 'app/api/v1.0/reports/saved/',
+                params: {
+                    user_id: this.userId
+                }
+            })
+    }
+
+}
+
+
+/////////////////// React Components ///////////////////////////////////
 
 
 /**
@@ -63,16 +194,17 @@ export class HomeInnuendo extends React.Component {
 
     state = {
         showProjects: false,
-        userId: ''
+        innuendo: new Innuendo()
     };
 
     showProjects = () => {
         this.setState({showProjects: true});
     };
 
-    setCredentials = (credentials) => {
+    setCredentials = (innuendoClass) => {
+        console.log(innuendoClass.getUserId());
         this.setState({
-            userId: credentials.user_id
+            innuendo: innuendoClass
         })
     };
 
@@ -82,11 +214,12 @@ export class HomeInnuendo extends React.Component {
                 {
                     this.state.showProjects ?
                         <InnuendoHomePage
-                            userId={this.state.userId}
+                            innuendo={this.state.innuendo}
                         /> :
                         <InnuendoLogin
                             showProjects={this.showProjects}
-                            setCredentials={this.setCredentials}/>
+                            setCredentials={this.setCredentials}
+                            innuendo={this.state.innuendo}/>
                 }
             </div>
         )
@@ -111,12 +244,14 @@ class InnuendoLogin extends React.Component {
     * Try to login according to the provided username and password
     */
     _tryLogin = () => {
-        tryLogin(this.state.username, this.state.password)
+        this.props.innuendo.tryLogin(this.state.username, this.state.password)
             .then(
                 (response) => {
                     if (response.data !== null && response.data.access === true) {
                         this.props.showProjects();
-                        this.props.setCredentials(response.data);
+                        this.props.innuendo.setUserId(response.data.user_id);
+                        console.log(this.props.innuendo.getUserId());
+                        this.props.setCredentials(this.props.innuendo);
                     }
                     else {
                         this.setState({error: true});
@@ -205,10 +340,12 @@ class InnuendoHomePage extends React.Component {
 
         return (
             <div>
-                <InnuendoGeneralStatistics/>
+                <InnuendoGeneralStatistics
+                    innuendo={this.props.innuendo}
+                />
                 <Paper style={style.paper}>
                     <InnuendoTabs
-                        userId={this.props.userId}/>
+                        innuendo={this.props.innuendo}/>
                 </Paper>
             </div>
         )
@@ -236,7 +373,7 @@ class InnuendoGeneralStatistics extends React.Component {
     }
 
     _getStatistics = () => {
-        getStatistics().then((response) => {
+        this.props.innuendo.getStatistics().then((response) => {
 
             let totalSpecies = 0;
             let totalProjects = 0;
@@ -412,13 +549,13 @@ class InnuendoTabs extends React.Component {
                 {
                     this.state.value === 0 &&
                     <TabContainer>
-                        <InnuendoProjects></InnuendoProjects>
+                        <InnuendoProjects innuendo={this.props.innuendo}></InnuendoProjects>
                     </TabContainer>
                 }
                 {
                     this.state.value === 1 &&
                     <TabContainer>
-                        <InnuendoSavedReports userId={this.props.userId}/>
+                        <InnuendoSavedReports innuendo={this.props.innuendo}/>
                     </TabContainer>
                 }
             </div>
@@ -449,7 +586,7 @@ class InnuendoProjects extends React.Component {
             maxDate: "",
             reportInfo: [],
             resultsReports: [],
-            resultsMetadata: []
+            resultsMetadata: [],
         };
 
         this.loadInnuendoData();
@@ -466,7 +603,7 @@ class InnuendoProjects extends React.Component {
      */
     getSpecies = () => {
 
-        getInnuendoSpecies().then((response) => {
+        this.props.innuendo.getInnuendoSpecies().then((response) => {
             let speciesObject = {};
 
             response.data.map(r => {
@@ -485,7 +622,7 @@ class InnuendoProjects extends React.Component {
      */
     getProjects = () => {
 
-        getInnuendoProjects().then((response) => {
+        this.props.innuendo.getInnuendoProjects().then((response) => {
             const species = this.state.species;
             let projects = [];
             let projectNamesToIds = {};
@@ -509,17 +646,18 @@ class InnuendoProjects extends React.Component {
     getProjectStrains = () => {
 
         if (this.state.selectedProjectIds.length > 0) {
-            getInnuendoProjectStrains(this.state.selectedProjectIds).then((response) => {
-                const responseData = parseProjectSearch(response.data);
+            this.props.innuendo.getInnuendoProjectStrains(this.state.selectedProjectIds)
+                .then((response) => {
+                    const responseData = parseProjectSearch(response.data);
 
-                this.setState({
-                    strains: responseData.totalNames,
-                    minDate: responseData.minDate,
-                    maxDate: responseData.maxDate,
-                    reportInfo: response.data
-                })
+                    this.setState({
+                        strains: responseData.totalNames,
+                        minDate: responseData.minDate,
+                        maxDate: responseData.maxDate,
+                        reportInfo: response.data
+                    })
 
-            });
+                });
         }
         else {
             this.setState({
@@ -534,12 +672,12 @@ class InnuendoProjects extends React.Component {
     /*
     Request to get all reports for a set of strains in a given time interval.
      */
-    getReportsByFilter = getInnuendoReportsByFilter;
+    getReportsByFilter = this.props.innuendo.getInnuendoReportsByFilter;
 
     /*
     Get all metadata associated with a set of strains.
      */
-    getStrainsMetadata = getInnuendoStrainsMetadata;
+    getStrainsMetadata = this.props.innuendo.getInnuendoStrainsMetadata;
 
     /*
     Loads all reports according with the chosen strains.
@@ -579,7 +717,6 @@ class InnuendoProjects extends React.Component {
             resultsReports: finalResults,
             resultsMetadata: resultsMetadata.data
         })
-
 
 
     };
@@ -629,11 +766,14 @@ class InnuendoProjects extends React.Component {
             <div>
                 {
                     this.state.resultsReports.length > 0 &&
-                        <Redirect to={{
-                            pathname:"/reports/innuendo",
-                            state: {data:this.state.resultsReports}
-                        }}
-                        />
+                    <Redirect to={{
+                        pathname: "/reports/innuendo",
+                        state: {
+                            data: this.state.resultsReports,
+                            additionalInfo: {innuendo: this.props.innuendo}
+                        }
+                    }}
+                    />
                 }
                 <Grid container>
                     <Grid item xs={12} sm={12}>
