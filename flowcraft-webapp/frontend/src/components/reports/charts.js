@@ -18,7 +18,7 @@ import Highcharts from "highcharts";
 import Boost  from 'highcharts/modules/boost';
 Boost(ReactHighcharts.Highcharts);
 
-import {Chart} from "./chart_utils";
+import {Chart, PreviewSnack} from "./chart_utils";
 import {LoadingComponent} from "../ReportsBase";
 
 import styles from "../../styles/charts.css"
@@ -361,13 +361,16 @@ class FastqcNContent extends React.Component {
 
 export class AssemblySizeDistChart extends React.Component {
 
-    shouldComponentUpdate(nextProps, nextState){
+    constructor(props){
+        super(props);
 
-        if (nextProps.rawReports === this.props.rawReports){
-            return false
-        } else {
-            return true
-        }
+        const limit = 200;
+
+        this.updateChartLimit = this.updateChartLimit.bind(this);
+
+        this.state = {
+            limit,
+        };
     }
 
     spreadData = (dataArray, index) => {
@@ -389,6 +392,9 @@ export class AssemblySizeDistChart extends React.Component {
 
         // The limit parameter sets a maximum to the final chartData object
         // If set to null, there will be no limit
+
+        // This variable is set to true when the report data has been limited
+        let preview = false;
 
         const chartSignature = "size_dist";
         let chartDataByProcess = new Map();
@@ -440,8 +446,6 @@ export class AssemblySizeDistChart extends React.Component {
                                 data,
 
                             });
-                            // categories.push(el.sample);
-                            // sampleCounter += 1
                         }
                     }
                 }
@@ -452,10 +456,12 @@ export class AssemblySizeDistChart extends React.Component {
 
             for (const point of data){
 
-                if (chartData.length > limit){
+                if (limit && limit !== 0 && chartData.length > (limit - 1)){
+                    preview = true;
                     return {
                         chartData,
-                        categories
+                        categories,
+                        preview
                     }
                 }
 
@@ -478,15 +484,22 @@ export class AssemblySizeDistChart extends React.Component {
 
         return {
             chartData,
-            categories
+            categories,
+            preview,
         }
+    };
+
+    updateChartLimit = (newLimit) => {
+        this.setState({limit: newLimit});
     };
 
     render () {
 
-        console.log("render pilon container")
+        // Sets the number of samples in the chart above which the chart preview
+        // toggle system is introduced.
+        const previewThreshold = 200;
 
-        const data = this.parsePlotData(this.props.rawReports, 200);
+        const data = this.parsePlotData(this.props.rawReports, this.state.limit);
 
         return (
             <div>
@@ -495,8 +508,26 @@ export class AssemblySizeDistChart extends React.Component {
                     <Typography variant={"headline"}>Assembled contig size distribution</Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails>
-                    <div className={styles.mainPaper} style={{"height": "600px"}}>
-                        <PilonSizeDistChart plotData={data}/>
+                    <div style={{"width": "100%"}}>
+                        <div className={styles.mainPaper} style={{"height": "600px", "width":"100%"}}>
+                            <PilonSizeDistChart plotData={data}/>
+                        </div>
+                        {
+                            data.preview &&
+                            <PreviewSnack
+                                actionClick={() => {
+                                    this.updateChartLimit(0)
+                                }}
+                                actionMessage={"Show full Chart"}
+                                message={`This chart is a preview of the first ${this.state.limit} samples`}/>
+                        }
+                        {
+                            data.categories.length > previewThreshold &&
+                                <PreviewSnack
+                                    actionClick={() => {this.updateChartLimit(previewThreshold)}}
+                                    actionMessage={"Show preview Chart"}
+                                    message={`Chart displaying a large number of samples (${data.categories.length})`}/>
+                        }
                     </div>
                 </ExpansionPanelDetails>
             </ExpansionPanel>

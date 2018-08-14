@@ -188,56 +188,56 @@ class ReportsApp extends DraggableView {
                 <ReportsHeader tableHeaders={this.state.tables}
                                chartHeaders={this.state.charts}>
                     {
-                        this.state.tables.includes("metadata") &&
-                        <Element name={"metadataTable"}
-                                 className={styles.scrollElement}>
-                            <MetadataTable
-                                tableData={this.state.tableData.get("metadata")}
-                                reportData={this.state.reportData} />
-                        </Element>
+                        // this.state.tables.includes("metadata") &&
+                        // <Element name={"metadataTable"}
+                        //          className={styles.scrollElement}>
+                        //     <MetadataTable
+                        //         tableData={this.state.tableData.get("metadata")}
+                        //         reportData={this.state.reportData} />
+                        // </Element>
                     }
                     {
-                        this.state.tables.includes("qc") &&
-                        <Element name={"qcTable"}
-                                 className={styles.scrollElement}>
-                            <QualityControlTable
-                                tableData={this.state.tableData.get("qc")}
-                                qcInfo={this.state.qcInfo}/>
-                        </Element>
+                        // this.state.tables.includes("qc") &&
+                        // <Element name={"qcTable"}
+                        //          className={styles.scrollElement}>
+                        //     <QualityControlTable
+                        //         tableData={this.state.tableData.get("qc")}
+                        //         qcInfo={this.state.qcInfo}/>
+                        // </Element>
                     }
                     {
-                        this.state.tables.includes("assembly") &&
-                        <Element name={"assemblyTable"}
-                                 className={styles.scrollElement}>
-                            <AssemblyTable
-                                tableData={this.state.tableData.get("assembly")}
-                                qcInfo={this.state.qcInfo}/>
-                        </Element>
+                        // this.state.tables.includes("assembly") &&
+                        // <Element name={"assemblyTable"}
+                        //          className={styles.scrollElement}>
+                        //     <AssemblyTable
+                        //         tableData={this.state.tableData.get("assembly")}
+                        //         qcInfo={this.state.qcInfo}/>
+                        // </Element>
                     }
                     {
-                        this.state.tables.includes("abricate") &&
-                        <Element name={"abricateTable"}
-                                 className={styles.scrollElement}>
-                            <AbricateTable
-                                tableData={this.state.tableData.get("abricate")}/>
-                        </Element>
+                        // this.state.tables.includes("abricate") &&
+                        // <Element name={"abricateTable"}
+                        //          className={styles.scrollElement}>
+                        //     <AbricateTable
+                        //         tableData={this.state.tableData.get("abricate")}/>
+                        // </Element>
                     }
                     {
-                        this.state.tables.includes("chewbbaca") &&
-                        <Element name={"chewbbacaTable"}
-                                 className={styles.scrollElement}>
-                            <ChewbbacaTable
-                                tableData={this.state.tableData.get("chewbbaca")}
-                                reportData={this.state.reportData}
-                            />
-                        </Element>
+                        // this.state.tables.includes("chewbbaca") &&
+                        // <Element name={"chewbbacaTable"}
+                        //          className={styles.scrollElement}>
+                        //     <ChewbbacaTable
+                        //         tableData={this.state.tableData.get("chewbbaca")}
+                        //         reportData={this.state.reportData}
+                        //     />
+                        // </Element>
                     }
                     {
-                        this.state.charts.includes("base_n_content") &&
-                        <Element name={"base_n_contentChart"}
-                                 className={styles.scrollElement}>
-                            <FastQcCharts rawReports={this.state.reportData}/>
-                        </Element>
+                        // this.state.charts.includes("base_n_content") &&
+                        // <Element name={"base_n_contentChart"}
+                        //          className={styles.scrollElement}>
+                        //     <FastQcCharts rawReports={this.state.reportData}/>
+                        // </Element>
                     }
                     {
                         this.state.charts.includes("size_dist") &&

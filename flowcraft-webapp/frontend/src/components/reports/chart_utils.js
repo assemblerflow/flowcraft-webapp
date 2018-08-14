@@ -2,6 +2,15 @@
 Classes and general utilities for charts
  */
 
+import React from "react";
+
+import Typography from "@material-ui/core/Typography";
+import SnackbarContent from "@material-ui/core/SnackbarContent"
+import Button from "@material-ui/core/Button";
+import Paper from "@material-ui/core/Paper";
+
+import indigo from "@material-ui/core/colors/indigo";
+
 export class Chart {
 
     /**
@@ -59,5 +68,39 @@ export class Chart {
     }
     extend(key, obj) {
         Object.assign(this.layout[key], obj)
+    }
+}
+
+
+export class PreviewSnack extends React.Component{
+
+    render(){
+
+        const style = {
+            container: {
+                marginTop: "10px",
+                display: "flex",
+                flexGrow: "1",
+                float: "right"
+            },
+            text: {
+                lineHeight: "33px",
+                color: "#fff",
+            },
+        };
+
+        const action = (
+            <Button onClick={this.props.actionClick} color={"secondary"} size={"small"}>
+                {this.props.actionMessage}
+            </Button>
+        );
+
+        return(
+            <div style={style.container}>
+                <SnackbarContent
+                    message={this.props.message}
+                    action={action}/>
+            </div>
+        )
     }
 }
