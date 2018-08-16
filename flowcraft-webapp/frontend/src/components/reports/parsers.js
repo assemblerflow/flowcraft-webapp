@@ -138,6 +138,7 @@ const parseInnuendoMetadata = (metadataEntry, tables) => {
 export const findChartSignatures = (reportArray) => {
 
     let charts = [];
+    let samples = [];
 
     for (const r of reportArray) {
         if (r.hasOwnProperty("reportJson")) {
@@ -154,13 +155,17 @@ export const findChartSignatures = (reportArray) => {
 
                 for (const plot of Object.keys(el.data)) {
 
-                    !charts.includes(plot) && charts.push(plot)
+                    !charts.includes(plot) && charts.push(plot);
+                    !samples.includes(el.sample) && samples.push(el.sample);
                 }
             }
         }
     }
 
-    return charts;
+    return {
+        charts,
+        chartSamples: samples
+    };
 };
 
 /**
@@ -194,6 +199,7 @@ export const findQcWarnings = (reportArray) => {
 
                     const failObj = {
                         process: r.processName,
+                        project: r.projectid,
                         message: f.value
                     };
 
@@ -218,23 +224,24 @@ export const findQcWarnings = (reportArray) => {
             if (r.reportJson.hasOwnProperty("warnings")) {
                 for (const f of r.reportJson.warnings) {
 
-                    const failObj = {
+                    const warnObj = {
                         process: r.processName,
+                        project: r.projectid,
                         message: f.value
                     };
 
                     // In case the table does not exist yet
                     if (!qcInfo.has(f.table)) {
-                        qcInfo.set(f.table, new Map([[f.sample, {"warnings": [failObj]}]]))
+                        qcInfo.set(f.table, new Map([[f.sample, {"warnings": [warnObj]}]]))
                         // When the table already exists, but not the current sample
                     } else if (!qcInfo.get(f.table).has(f.sample)) {
-                        qcInfo.get(f.table).set(f.sample, {"warnings": [failObj]})
+                        qcInfo.get(f.table).set(f.sample, {"warnings": [warnObj]})
                     } else {
                         // When the table and sample exist, but not the fail entry
                         if (qcInfo.get(f.table).get(f.sample).hasOwnProperty("warnings")) {
-                            qcInfo.get(f.table).get(f.sample)["warnings"].push(failObj)
+                            qcInfo.get(f.table).get(f.sample)["warnings"].push(warnObj)
                         } else {
-                            qcInfo.get(f.table).get(f.sample)["warnings"] = [failObj]
+                            qcInfo.get(f.table).get(f.sample)["warnings"] = [warnObj]
                         }
                     }
                 }

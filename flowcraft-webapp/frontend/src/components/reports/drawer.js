@@ -1,13 +1,11 @@
 // React imports
 import React from "react"
-import ReactDOM from "react-dom";
 import { Link, DirectLink } from 'react-scroll'
 
 import classNames from "classnames";
 
 import ListItemText from "@material-ui/core/ListItemText";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
-import Typography from "@material-ui/core/Typography";
 import IconButton from "@material-ui/core/IconButton";
 import ListItem from "@material-ui/core/ListItem";
 import Divider from "@material-ui/core/Divider";
@@ -15,23 +13,14 @@ import Drawer from "@material-ui/core/Drawer";
 import Paper from "@material-ui/core/Paper";
 import List from "@material-ui/core/List";
 
-import SkullIcon from "mdi-react/SkullIcon";
 import ChevronLeftIcon from "mdi-react/ChevronLeftIcon";
 import HeartIcon from "mdi-react/HeartIcon";
 import PillIcon from "mdi-react/PillIcon";
 import AlienIcon from "mdi-react/AlienIcon";
 import TableLargeIcon from "mdi-react/TableLargeIcon";
 import ChartLineIcon from "mdi-react/ChartLineIcon";
-import FileDocumentBoxIcon from "mdi-react/FileDocumentBoxIcon"
-import SettingsIcon from "mdi-react/SettingsIcon";
-import PlusCircleIcon from "mdi-react/PlusCircleIcon"
-
-// Bottom Navigation
-import BottomNavigation from '@material-ui/core/BottomNavigation';
-import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
-import RestoreIcon from '@material-ui/icons/Restore';
-import FavoriteIcon from '@material-ui/icons/Favorite';
-import LocationOnIcon from '@material-ui/icons/LocationOn';
+import FileDocumentBoxIcon from "mdi-react/FileDocumentBoxIcon";
+import InformationIcon from "mdi-react/InformationIcon";
 
 
 import {Header} from "../Header";
@@ -90,6 +79,10 @@ export class ReportsHeader extends React.Component {
                         </IconButton>
                     </div>
                     <Divider/>
+                    <Link activeClass={styles.activeSideButton} to={"reportOverview"} smooth={true} duration={500} offset={-70}>
+                        <DrawerButtonEntry icon={<InformationIcon/>}
+                                           text={"Report Overview"} />
+                    </Link>
                     {this.state.tabValue === "0" &&
                         <TableOfContents tableHeaders={this.props.tableHeaders}
                                          chartHeaders={this.props.chartHeaders}

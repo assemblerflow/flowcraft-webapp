@@ -23,6 +23,7 @@ import {
 import {Innuendo, innuendoSteps} from "./reports/innuendo";
 import {AssemblySizeDistChart, FastQcCharts} from "./reports/charts";
 import {ReportsHeader} from "./reports/drawer";
+import {ReportOverview} from "./reports/overview";
 
 
 import {
@@ -104,12 +105,9 @@ export class ReportsRedirect extends React.Component {
 
         // Set new additionalInfo userId for innuendo based on the current class
         // instance
-        const additionalInfoInnuendo = additionalInfo.innuendo ?
-            {userId: additionalInfo.innuendo.getUserId()} :
-            {};
-
-        // Set the values of the innuendo additional info
-        additionalInfo.innuendo = additionalInfoInnuendo;
+        if (additionalInfo.innuendo){
+            additionalInfo.innuendo = {userId: additionalInfo.innuendo.getUserId()}
+        }
 
         // Set new history based on the current reportData and additionalInfo
         this.props.history.replace("/reports/app", {
@@ -265,9 +263,11 @@ class ReportsApp extends React.Component {
     render() {
 
         const {tableData, tableSamples} = findTableSignatures(this.props.reportData);
-        const charts = findChartSignatures(this.props.reportData);
+        const {charts, chartSamples} = findChartSignatures(this.props.reportData);
         const qcInfo = findQcWarnings(this.props.reportData);
         const tables = [...tableData.keys()];
+
+        console.log(qcInfo)
 
         //
         // This is the main element where the Reports components will be added,
@@ -281,6 +281,14 @@ class ReportsApp extends React.Component {
                              tableSamples={tableSamples}/>
                 <ReportsHeader tableHeaders={tables}
                                chartHeaders={charts}>
+                    <Element name={"reportOverview"}
+                             className={styles.scrollElement}>
+                        <ReportOverview
+                            reportData={this.props.reportData}
+                            tableSamples={tableSamples}
+                            chartSamples={chartSamples}
+                            qcInfo={qcInfo}/>
+                    </Element>
                     {
                         tables.includes("metadata") &&
                         <Element name={"metadataTable"}

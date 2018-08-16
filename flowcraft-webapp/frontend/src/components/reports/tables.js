@@ -141,7 +141,10 @@ export class FCTable extends React.Component {
             <div>
                 <LoadingComponent>
                     <div style={style.toolbar}>
-                        <ExportTooltipButton tableData={this.props.rawData}/>
+                        {
+                            this.props.rawData &&
+                                <ExportTooltipButton tableData={this.props.rawData}/>
+                        }
                         { this.props.children }
                     </div>
                     <CheckboxTable
