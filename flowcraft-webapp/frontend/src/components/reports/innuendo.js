@@ -57,6 +57,7 @@ Class with INNUENDO specific methods. Trees, profiles and other requests
 export class Innuendo {
     constructor() {
         this.userId = "";
+        this.species = {};
     }
 
     setUserId(userId) {
@@ -65,6 +66,14 @@ export class Innuendo {
 
     getUserId() {
         return this.userId;
+    }
+
+    setSpecies(species) {
+        this.species = species;
+    }
+
+    getSpecies() {
+        return this.species;
     }
 
     /*
@@ -772,7 +781,8 @@ class InnuendoProjects extends React.Component {
                             data: this.state.resultsReports,
                             additionalInfo: {
                                 innuendo: {
-                                    userId: this.props.innuendo.getUserId()
+                                    userId: this.props.innuendo.getUserId(),
+                                    species: this.state.species
                                 }
                             }
                         }

@@ -84,7 +84,10 @@ export class BasicModal extends React.Component {
     }
 }
 
-
+/*
+Modal that allows to send requests to the PHYLOViZ Online service according
+ to the selected profiles in the report.
+ */
 export class PhylovizModal extends React.Component {
 
     constructor(props) {
@@ -92,42 +95,66 @@ export class PhylovizModal extends React.Component {
 
         this.state = {
             open: false,
-            checkedMissing: true,
+            missings: true,
             speciesValues: [],
             closestStrains: 0,
             phylovizUser: "",
-            phylovizPass: ""
+            phylovizPass: "",
+            makePublic: false,
+
         };
     }
 
+    /*
+    Handle change state for modal Open
+     */
     handleOpen = () => {
         this.setState({open: true});
     };
 
+    /*
+    Handle change state for modal Close
+     */
     handleClose = () => {
         this.setState({open: false});
     };
 
+    /*
+    Handle change on input values state
+     */
     handleChange = name => event => {
         this.setState({
             [name]: event.target.value,
         });
     };
 
+    /*
+    Handle change on checkbox checked state
+     */
     handleChangeCheckbox = name => event => {
         this.setState({
             [name]: event.target.checked
         })
     };
 
+    /*
+    Handle value selection on Select element
+     */
     handleSelectChange(speciesValues) {
         this.setState({speciesValues});
     };
 
+    /*
+    Set the options for the available species
+     */
     setSpeciesOptions = () => {
         return [{"value": "test", "label": "test"}];
     };
 
+    /*
+    Method to send the request to PHYLOViZ Online service according to the
+     modal form.
+     */
     sendToPHYLOViZ = () => {
         console.log(this.state);
     };
@@ -146,8 +173,10 @@ export class PhylovizModal extends React.Component {
                 width: "50%"
             },
             modalContent: {
-                marginLeft: "10%",
-                marginRight: "10%"
+                marginLeft: "5%",
+                marginRight: "5%",
+                height: "85%",
+                overflow: "auto"
             },
             select: {
                 marginBottom: '1%'
@@ -158,6 +187,19 @@ export class PhylovizModal extends React.Component {
             },
             buttonSubmit: {
                 width: "40%"
+            },
+            centralModal: {
+                backgroundColor: "white",
+                opacity: "1",
+                position: "absolute",
+                width: "80%",
+                height: "80%",
+                top: "10%",
+                left: "10%"
+            },
+            modalBody: {
+                height: "100%",
+                margin: "2%"
             }
         };
 
@@ -173,8 +215,8 @@ export class PhylovizModal extends React.Component {
                     open={this.state.open}
                     onClose={this.handleClose}
                 >
-                    <div className={styles.centralModal}>
-                        <div className={styles.modalBody}>
+                    <div style={style.centralModal}>
+                        <div style={style.modalBody}>
                             <div className={styles.modalHeader}>
                                 <Typography style={{"flexGrow": 1}}
                                             variant="title" id="modal-title">
@@ -203,21 +245,23 @@ export class PhylovizModal extends React.Component {
                                         multiline
                                         rows="2"
                                         margin="normal"
+                                        value={this.state.description}
+                                        onChange={this.handleChange("description")}
                                     />
                                 </FormGroup>
                                 <FormGroup row style={style.groupRow}>
                                     <FormControlLabel
                                         control={
                                             <Checkbox
-                                                checked={this.state.checkedMissing}
-                                                onChange={this.handleChangeCheckbox('checkedMissing')}
+                                                checked={this.state.missings}
+                                                onChange={this.handleChangeCheckbox('missings')}
                                                 value="checkedMissing"
                                             />
                                         }
                                         label="Missing Data"
                                     />
                                     {
-                                        this.state.checkedMissing &&
+                                        this.state.missings &&
                                         <TextField
                                             id="missingCharacter"
                                             label="Missing Character"
@@ -231,7 +275,8 @@ export class PhylovizModal extends React.Component {
                                 </FormGroup>
                                 <FormGroup style={style.groupRow}>
                                     <label htmlFor="speciesDatabase">
-                                        <Typography>Species Database</Typography>
+                                        <Typography>Species
+                                            Database</Typography>
                                     </label>
                                     <Select
                                         id="speciesDatabase"

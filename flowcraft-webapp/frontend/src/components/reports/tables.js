@@ -15,7 +15,8 @@ import Badge from "@material-ui/core/Badge";
 import Paper from "@material-ui/core/Paper";
 import Button from "@material-ui/core/Button";
 
-import styles from "../../styles/reports.css"
+import styles from "../../styles/reports.css";
+import classNames from "classnames";
 
 // Import Colors
 import red from "@material-ui/core/colors/red";
@@ -70,18 +71,18 @@ export class FCTable extends React.Component {
         const keyIndex = selection.indexOf(key);
         // check to see if the key exists
         if (keyIndex >= 0) {
-          // it does exist so we will remove it using destructing
-          selection = [
-            ...selection.slice(0, keyIndex),
-            ...selection.slice(keyIndex + 1)
-          ];
+            // it does exist so we will remove it using destructing
+            selection = [
+                ...selection.slice(0, keyIndex),
+                ...selection.slice(keyIndex + 1)
+            ];
         } else {
-          // it does not exist so add it
-          selection.push(key);
+            // it does not exist so add it
+            selection.push(key);
         }
         this.props.setSelection(selection);
         // update the state
-        this.setState({ selection });
+        this.setState({selection});
     };
 
 
@@ -89,17 +90,17 @@ export class FCTable extends React.Component {
         const selectAll = !this.state.selectAll;
         const selection = [];
         if (selectAll) {
-          // we need to get at the internals of ReactTable
-          const wrappedInstance = this.checkboxTable.getWrappedInstance();
-          // the 'sortedData' property contains the currently accessible records based on the filter and sort
-          const currentRecords = wrappedInstance.getResolvedState().sortedData;
-          // we just push all the IDs onto the selection array
-          currentRecords.forEach(item => {
-            selection.push(item._original._id);
-          });
+            // we need to get at the internals of ReactTable
+            const wrappedInstance = this.checkboxTable.getWrappedInstance();
+            // the 'sortedData' property contains the currently accessible records based on the filter and sort
+            const currentRecords = wrappedInstance.getResolvedState().sortedData;
+            // we just push all the IDs onto the selection array
+            currentRecords.forEach(item => {
+                selection.push(item._original._id);
+            });
         }
         this.props.setSelection(selection);
-        this.setState({ selectAll, selection });
+        this.setState({selectAll, selection});
     };
 
     isSelected = key => {
@@ -107,7 +108,7 @@ export class FCTable extends React.Component {
         return this.state.selection.includes(key);
     };
 
-    render () {
+    render() {
 
         const style = {
             toolbar: {
@@ -115,8 +116,8 @@ export class FCTable extends React.Component {
             }
         };
 
-        const { toggleSelection, toggleAll, isSelected } = this;
-        const { selectAll } = this.state;
+        const {toggleSelection, toggleAll, isSelected} = this;
+        const {selectAll} = this.state;
 
         const checkboxProps = {
             selectAll,
@@ -126,7 +127,7 @@ export class FCTable extends React.Component {
             selectType: "checkbox",
             getTrProps: (s, r) => {
 
-                if(!r) return {};
+                if (!r) return {};
 
                 const selected = this.isSelected(r.original._id);
                 return {
@@ -143,9 +144,10 @@ export class FCTable extends React.Component {
                     <div style={style.toolbar}>
                         {
                             this.props.rawData &&
-                                <ExportTooltipButton tableData={this.props.rawData}/>
+                            <ExportTooltipButton
+                                tableData={this.props.rawData}/>
                         }
-                        { this.props.children }
+                        {this.props.children}
                     </div>
                     <CheckboxTable
                         ref={r => (this.checkboxTable = r)}
@@ -164,7 +166,7 @@ export class FCTable extends React.Component {
 
 export class MetadataTable extends React.Component {
 
-    constructor(props){
+    constructor(props) {
         super(props);
 
         this.state = {
@@ -172,10 +174,10 @@ export class MetadataTable extends React.Component {
         };
     }
 
-    shouldComponentUpdate(nextProps, nextState, nextContext){
-        if (nextProps.tableData !== this.props.tableData){
+    shouldComponentUpdate(nextProps, nextState, nextContext) {
+        if (nextProps.tableData !== this.props.tableData) {
             return true
-        } else if (nextState.selection !== this.state.selection){
+        } else if (nextState.selection !== this.state.selection) {
             return true
         }
 
@@ -186,7 +188,7 @@ export class MetadataTable extends React.Component {
         this.setState({selection});
     };
 
-    render () {
+    render() {
 
         // Metadata fields are obtained by the absence of reportJson object
         // inside each report entry. If reportJson doesnt exist, the entry
@@ -194,8 +196,8 @@ export class MetadataTable extends React.Component {
         const tableData = genericTableParser(this.props.tableData);
 
         return (
-            <ExpansionPanel defaultExpanded >
-                <ExpansionPanelSummary  expandIcon={<ExpandMoreIcon/>}>
+            <ExpansionPanel defaultExpanded>
+                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
                     <Typography variant={"headline"}>Metadata</Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails>
@@ -216,7 +218,7 @@ export class MetadataTable extends React.Component {
 
 export class QualityControlTable extends React.Component {
 
-    constructor(props){
+    constructor(props) {
         super(props);
 
         this.state = {
@@ -224,10 +226,10 @@ export class QualityControlTable extends React.Component {
         };
     }
 
-    shouldComponentUpdate(nextProps, nextState, nextContext){
-        if (nextProps.tableData !== this.props.tableData){
+    shouldComponentUpdate(nextProps, nextState, nextContext) {
+        if (nextProps.tableData !== this.props.tableData) {
             return true
-        } else if (nextState.selection !== this.state.selection){
+        } else if (nextState.selection !== this.state.selection) {
             return true
         }
 
@@ -238,7 +240,7 @@ export class QualityControlTable extends React.Component {
         this.setState({selection});
     };
 
-    render () {
+    render() {
         const tableData = genericTableParser(this.props.tableData);
         qcParseAdditionalData(tableData, this.props.tableData,
             this.props.qcInfo, "qc");
@@ -246,9 +248,10 @@ export class QualityControlTable extends React.Component {
         console.log("render qc table")
 
         return (
-            <ExpansionPanel defaultExpanded >
-                <ExpansionPanelSummary  expandIcon={<ExpandMoreIcon/>}>
-                    <Typography variant={"headline"}>Quality control</Typography>
+            <ExpansionPanel defaultExpanded>
+                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
+                    <Typography variant={"headline"}>Quality
+                        control</Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails>
                     <div className={styles.mainPaper}>
@@ -267,7 +270,7 @@ export class QualityControlTable extends React.Component {
 
 
 export class AssemblyTable extends React.Component {
-    constructor(props){
+    constructor(props) {
         super(props);
 
         this.state = {
@@ -275,10 +278,10 @@ export class AssemblyTable extends React.Component {
         };
     }
 
-    shouldComponentUpdate(nextProps, nextState, nextContext){
-        if (nextProps.tableData !== this.props.tableData){
+    shouldComponentUpdate(nextProps, nextState, nextContext) {
+        if (nextProps.tableData !== this.props.tableData) {
             return true
-        } else if (nextState.selection !== this.state.selection){
+        } else if (nextState.selection !== this.state.selection) {
             return true
         }
 
@@ -289,15 +292,15 @@ export class AssemblyTable extends React.Component {
         this.setState({selection});
     };
 
-    render () {
+    render() {
         const tableData = genericTableParser(this.props.tableData);
         qcParseAdditionalData(tableData, this.props.tableData,
             this.props.qcInfo, "assembly");
         console.log("render assembly table")
 
         return (
-            <ExpansionPanel defaultExpanded >
-                <ExpansionPanelSummary  expandIcon={<ExpandMoreIcon/>}>
+            <ExpansionPanel defaultExpanded>
+                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
                     <Typography variant={"headline"}>Assembly</Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails>
@@ -317,7 +320,7 @@ export class AssemblyTable extends React.Component {
 
 
 export class AbricateTable extends React.Component {
-    constructor(props){
+    constructor(props) {
         super(props);
 
         this.state = {
@@ -325,10 +328,10 @@ export class AbricateTable extends React.Component {
         };
     }
 
-    shouldComponentUpdate(nextProps, nextState, nextContext){
-        if (nextProps.tableData !== this.props.tableData){
+    shouldComponentUpdate(nextProps, nextState, nextContext) {
+        if (nextProps.tableData !== this.props.tableData) {
             return true
-        } else if (nextState.selection !== this.state.selection){
+        } else if (nextState.selection !== this.state.selection) {
             return true
         }
 
@@ -344,10 +347,10 @@ export class AbricateTable extends React.Component {
         let dataMap = new Map();
         let finalData = [];
 
-        for (const cell of data){
+        for (const cell of data) {
             let header = cell.header;
             let geneList = cell.geneList;
-            if (!dataMap.has(cell.rowId)){
+            if (!dataMap.has(cell.rowId)) {
                 dataMap.set(cell.rowId, {
                     rowId: cell.rowId
                 })
@@ -356,32 +359,34 @@ export class AbricateTable extends React.Component {
             dataMap.get(cell.rowId)[header] = geneList.join(";")
         }
 
-        for (const [rowId, row] of dataMap.entries()){
+        for (const [rowId, row] of dataMap.entries()) {
             finalData.push(row);
         }
         return finalData;
 
     };
 
-    render () {
+    render() {
         const tableData = genericTableParser(this.props.tableData);
         console.log("render abricate table")
 
         return (
-            <ExpansionPanel defaultExpanded >
-                <ExpansionPanelSummary  expandIcon={<ExpandMoreIcon/>}>
+            <ExpansionPanel defaultExpanded>
+                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
                     <Typography variant={"headline"}>AMR table</Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails>
                     <div className={styles.mainPaper}>
                         <FCTable
-                                data={tableData.tableArray}
-                                columns={tableData.columnsArray}
-                                rawData={tableData.rawTableArray}
-                                setSelection={this.setSelection}>
+                            data={tableData.tableArray}
+                            columns={tableData.columnsArray}
+                            rawData={tableData.rawTableArray}
+                            setSelection={this.setSelection}>
                             {/*CSV export button that exports the table gene names*/}
-                            <CSVLink data={this.exportGeneNames(this.props.tableData)}>
-                                <Button variant={"contained"} color={"primary"}>Export genesS</Button>
+                            <CSVLink
+                                data={this.exportGeneNames(this.props.tableData)}>
+                                <Button variant={"contained"} color={"primary"}>Export
+                                    genesS</Button>
                             </CSVLink>
                         </FCTable>
                     </div>
@@ -392,26 +397,26 @@ export class AbricateTable extends React.Component {
 }
 
 export class ChewbbacaTable extends React.Component {
-    constructor(props){
+    constructor(props) {
         super(props);
 
         this.state = {
-            selection: []
+            selection: [],
+            specie: 0,
+            tabValue: 0
         };
-    }
 
-    shouldComponentUpdate(nextProps, nextState, nextContext){
-        if (nextProps.tableData !== this.props.tableData){
-            return true
-        } else if (nextState.selection !== this.state.selection){
-            return true
-        }
-
-        return false
+        /*this.handleClick = this.handleClick.bind(this);*/
     }
 
     setSelection = (selection) => {
         this.setState({selection});
+    };
+
+    handleClick = (value, tabValue) => {
+        /*console.log(value, tabValue);*/
+        this.setState({tabValue: tabValue});
+
     };
 
     chewbbacaParser = (tableData, originalData) => {
@@ -423,15 +428,15 @@ export class ChewbbacaTable extends React.Component {
             minWidth: 90
         });
 
-        for (const row of tableData.tableArray){
+        for (const row of tableData.tableArray) {
 
-            for (const process of originalData){
-                if(process.processName && process.processName.indexOf("chewbbaca") > -1){
+            for (const process of originalData) {
+                if (process.processName && process.processName.indexOf("chewbbaca") > -1) {
                     const statusDict = process.reportJson.status;
 
-                    for (const statusData of statusDict){
+                    for (const statusData of statusDict) {
 
-                        if(statusData.sample.indexOf(row._id) > -1) {
+                        if (statusData.sample.indexOf(row._id) > -1) {
                             const lnfPercentage = parseFloat(statusData.lnfPercentage) * 100;
 
                             const labelLnf = <TableLabel
@@ -448,35 +453,69 @@ export class ChewbbacaTable extends React.Component {
     };
 
     openModal = () => {
-      this.setState({openModal: true});
+        this.setState({openModal: true});
     };
 
 
-
-    render () {
+    render() {
         const tableData = genericTableParser(this.props.tableData);
         this.chewbbacaParser(tableData, this.props.reportData);
         console.log("render chewbbaca table");
 
+        const style = {
+            buttonBar: {
+                "overflowX": "auto",
+                "display": "flex",
+                "justifyContent": "center",
+                "marginBottom": "20px"
+            },
+            button: {
+                minWidth: "150px",
+            },
+            mainPaper: {
+                flexGrow: "1"
+            }
+        };
+
+        console.log(this.props.additionalInfo);
+
         return (
-                <ExpansionPanel defaultExpanded >
-                    <ExpansionPanelSummary  expandIcon={<ExpandMoreIcon/>}>
-                        <Typography variant={"headline"}>chewBBACA table</Typography>
-                    </ExpansionPanelSummary>
-                    <ExpansionPanelDetails>
-                        <div className={styles.mainPaper}>
-                            <TableButtons>
-                                <PhylovizModal/>
-                            </TableButtons>
-                            <FCTable
-                                data={tableData.tableArray}
-                                columns={tableData.columnsArray}
-                                rawData={tableData.rawTableArray}
-                                setSelection={this.setSelection}
-                            />
+            <ExpansionPanel defaultExpanded>
+                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
+                    <Typography variant={"headline"}>chewBBACA
+                        table</Typography>
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails>
+                    <div style={style.mainPaper}>
+                        <div style={style.buttonBar}>
+                            {
+                                this.props.additionalInfo.innuendo &&
+                                Object.keys(this.props.additionalInfo.innuendo.species).map((item, index) => {
+                                    return <Button key={item}
+                                                   style={style.button}
+                                                   className={classNames(this.state.tabValue === index && styles.tabButton)}
+                                                   onClick={() => {
+                                                       this.handleClick(item, index)
+                                                   }}>
+                                        {
+                                            this.props.additionalInfo.innuendo.species[item]
+                                        }
+                                    </Button>
+                                })
+                            }
                         </div>
-                    </ExpansionPanelDetails>
-                </ExpansionPanel>
+                        <TableButtons>
+                            <PhylovizModal specie={this.state.specie}/>
+                        </TableButtons>
+                        <FCTable
+                            data={tableData.tableArray}
+                            columns={tableData.columnsArray}
+                            rawData={tableData.rawTableArray}
+                            setSelection={this.setSelection}
+                        />
+                    </div>
+                </ExpansionPanelDetails>
+            </ExpansionPanel>
         )
     }
 }
@@ -491,12 +530,14 @@ export class ChewbbacaTable extends React.Component {
  * cell text.
  */
 export class CellBar extends React.Component {
-    render () {
+    render() {
         return (
             <div className={styles.columnCellContainer}>
-                <div className={styles.columnCell} style={{width: `${(this.props.value / this.props.max) * 100}%`}}>
+                <div className={styles.columnCell}
+                     style={{width: `${(this.props.value / this.props.max) * 100}%`}}>
                 </div>
-                <Typography className={styles.tableCell}>{this.props.value}</Typography>
+                <Typography
+                    className={styles.tableCell}>{this.props.value}</Typography>
             </div>
         )
     }
@@ -512,12 +553,15 @@ export class CellBar extends React.Component {
  *             associated with the cell.
  */
 export class TableLabel extends React.Component {
-    render () {
+    render() {
         return (
             <div className={styles.centralCell}>
-                <Tooltip id="tooltip-icon" title={this.props.tooltip} placement="right">
-                    <Paper className={styles.cellLabel} style={{backgroundColor: this.props.color}}>
-                        <Typography className={styles.cellLabelText}>{this.props.content}</Typography>
+                <Tooltip id="tooltip-icon" title={this.props.tooltip}
+                         placement="right">
+                    <Paper className={styles.cellLabel}
+                           style={{backgroundColor: this.props.color}}>
+                        <Typography
+                            className={styles.cellLabelText}>{this.props.content}</Typography>
                     </Paper>
                 </Tooltip>
             </div>
@@ -526,7 +570,7 @@ export class TableLabel extends React.Component {
 }
 
 export class TableButtons extends React.Component {
-    render () {
+    render() {
         return (
             <div className={styles.tableButtonsDiv}>
                 {this.props.children}
@@ -538,10 +582,12 @@ export class TableButtons extends React.Component {
 
 class ExportTooltipButton extends React.Component {
 
-    render () {
+    render() {
         return (
-            <CSVLink data={this.props.tableData} filename="table_data.csv" style={{"textDecoration": "none"}}>
-                <Button onClick={this.handleClickOpen} variant={"contained"} color={"primary"}>Export CSV</Button>
+            <CSVLink data={this.props.tableData} filename="table_data.csv"
+                     style={{"textDecoration": "none"}}>
+                <Button onClick={this.handleClickOpen} variant={"contained"}
+                        color={"primary"}>Export CSV</Button>
             </CSVLink>
         )
     }
@@ -597,7 +643,9 @@ export class QcPopover extends React.Component {
             <div>
                 <div onClick={this.handleClick}>
                     {
-                        badgeCount ? <Badge badgeContent={badgeCount} color={"primary"} classes={{badge: styles.warningBadge}}> {icons[this.props.status]} </Badge> :
+                        badgeCount ?
+                            <Badge badgeContent={badgeCount} color={"primary"}
+                                   classes={{badge: styles.warningBadge}}> {icons[this.props.status]} </Badge> :
                             icons[this.props.status]
                     }
                 </div>
