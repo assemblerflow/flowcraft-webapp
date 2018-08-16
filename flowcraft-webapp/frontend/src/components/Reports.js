@@ -56,16 +56,22 @@ export class ReportsRedirect extends React.Component {
         console.log("redirect start");
 
         let additionalInfo = this.props.location.state.additionalInfo;
-        console.log(additionalInfo);
 
-        if (additionalInfo && additionalInfo.indexOf("innuendo") > -1) {
-            const userId = additionalInfo.split("-")[1];
+        if (additionalInfo && additionalInfo.innuendo) {
+            const userId = additionalInfo.innuendo.userId;
+            // Set instance of class innuendo based on the userId collected
+            // from history
             const innuendo = new Innuendo();
             innuendo.setUserId(userId);
+
             additionalInfo = {innuendo: innuendo};
 
         }
+        else {
+            additionalInfo = {};
+        }
 
+        console.log(additionalInfo);
 
         this.state = {
             // Retrieve the initial state of reportData from the URL state
@@ -92,9 +98,20 @@ export class ReportsRedirect extends React.Component {
     state. This is trigger on page unloading/reloading
      */
     _restoreUrlState() {
-        const additionalInfo = this.state.additionalInfo.innuendo ?
-            `innuendo-${this.state.additionalInfo.innuendo.getUserId()}` : this.state.additionalInfo;
 
+        // Get additional info object
+        const additionalInfo = this.state.additionalInfo;
+
+        // Set new additionalInfo userId for innuendo based on the current class
+        // instance
+        const additionalInfoInnuendo = additionalInfo.innuendo ?
+            {userId: additionalInfo.innuendo.getUserId()} :
+            {};
+
+        // Set the values of the innuendo additional info
+        additionalInfo.innuendo = additionalInfoInnuendo;
+
+        // Set new history based on the current reportData and additionalInfo
         this.props.history.replace("/reports/app", {
             data: this.state.reportData,
             additionalInfo: additionalInfo

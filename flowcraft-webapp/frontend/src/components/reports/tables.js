@@ -31,6 +31,7 @@ import ApprovalIcon from "mdi-react/ApprovalIcon";
 import AlertOctagonIcon from "mdi-react/AlertOctagonIcon";
 import AlertIcon from "mdi-react/AlertIcon";
 import {LoadingComponent} from "../ReportsBase";
+import {BasicModal, PhylovizModal} from "./modals";
 
 
 const statusColor = {
@@ -412,10 +413,6 @@ export class ChewbbacaTable extends React.Component {
 
     chewbbacaParser = (tableData, originalData) => {
 
-        console.log(originalData);
-
-        const refDict = {"fail": "label-danger", "warning": "label-warning", "pass": "label-success"};
-
         // Add status header to table columns
         tableData.columnsArray.splice(1, 0, {
             Header: <Typography>Status</Typography>,
@@ -447,30 +444,37 @@ export class ChewbbacaTable extends React.Component {
         }
     };
 
+    openModal = () => {
+      this.setState({openModal: true});
+    };
+
+
+
     render () {
         const tableData = genericTableParser(this.props.tableData);
         this.chewbbacaParser(tableData, this.props.reportData);
-        console.log("render chewbbaca table")
+        console.log("render chewbbaca table");
 
         return (
-            <ExpansionPanel defaultExpanded >
-                <ExpansionPanelSummary  expandIcon={<ExpandMoreIcon/>}>
-                    <Typography variant={"headline"}>chewBBACA table</Typography>
-                </ExpansionPanelSummary>
-                <ExpansionPanelDetails>
-                    <div className={styles.mainPaper}>
-                        <TableButtons>
-                            <Button>Export</Button>
-                        </TableButtons>
-                        <FCTable
-                            data={tableData.tableArray}
-                            columns={tableData.columnsArray}
-                            rawData={tableData.rawTableArray}
-                            setSelection={this.setSelection}
-                        />
-                    </div>
-                </ExpansionPanelDetails>
-            </ExpansionPanel>
+                <ExpansionPanel defaultExpanded >
+                    <ExpansionPanelSummary  expandIcon={<ExpandMoreIcon/>}>
+                        <Typography variant={"headline"}>chewBBACA table</Typography>
+                    </ExpansionPanelSummary>
+                    <ExpansionPanelDetails>
+                        <div className={styles.mainPaper}>
+                            <TableButtons>
+                                <PhylovizModal/>
+
+                            </TableButtons>
+                            <FCTable
+                                data={tableData.tableArray}
+                                columns={tableData.columnsArray}
+                                rawData={tableData.rawTableArray}
+                                setSelection={this.setSelection}
+                            />
+                        </div>
+                    </ExpansionPanelDetails>
+                </ExpansionPanel>
         )
     }
 }
