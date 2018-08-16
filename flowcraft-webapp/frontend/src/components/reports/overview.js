@@ -33,6 +33,11 @@ export class ReportOverview extends React.Component{
         }
     }
 
+    /*
+    Retrieves an object with two key:value pairs for warnings and fails for all
+    objects in qcInfo Map whose key matches a given value. For instance,
+    the qcInfo objects with 'projectid' === '1'.
+     */
     _getQcInfo = (key, value, qcInfo) => {
 
         let projectQcInfo = {
@@ -63,6 +68,10 @@ export class ReportOverview extends React.Component{
 
     };
 
+    /*
+    Retrieves an object with two key:value pairs with the warnings and fails for
+    a given sample.
+     */
     _getSampleQcInfo = (sample, qcInfo) => {
 
         let sampleQcInfo = {
@@ -89,6 +98,9 @@ export class ReportOverview extends React.Component{
 
     };
 
+    /*
+    Returns the table data (columns and data) for the sample overview.
+     */
     getSamplesOverview = (sampleList, qcInfo) => {
 
         let samples = [];
@@ -126,6 +138,9 @@ export class ReportOverview extends React.Component{
         }
     };
 
+    /*
+    Returns the table data (columns and data) for the projects and components
+     */
     getReportOverview = (reportData, qcInfo) => {
 
         // These variables store the projects and components table data
@@ -202,6 +217,9 @@ export class ReportOverview extends React.Component{
 
     };
 
+    /*
+    Update the state of the filtered selection for the currently active table
+     */
     setSelection = (selection) => {
 
         let filtered = this.state.filtered;
@@ -212,6 +230,9 @@ export class ReportOverview extends React.Component{
         });
     };
 
+    /*
+    Updates the table data in the state, which is used to render the overview table
+     */
     updateData = (data, table) => {
         this.setState({
             tableData: data,
@@ -223,10 +244,12 @@ export class ReportOverview extends React.Component{
         }
     };
 
+    /*
+    Triggers the animation for closing the overview table
+     */
     closeTable = () => {
         this.setState({
             showTable: false,
-            tableData: null,
         })
     };
 
