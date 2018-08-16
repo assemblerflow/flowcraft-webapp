@@ -467,7 +467,6 @@ export class ChewbbacaTable extends React.Component {
                         <div className={styles.mainPaper}>
                             <TableButtons>
                                 <PhylovizModal/>
-
                             </TableButtons>
                             <FCTable
                                 data={tableData.tableArray}

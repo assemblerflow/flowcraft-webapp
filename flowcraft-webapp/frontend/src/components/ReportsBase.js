@@ -167,7 +167,7 @@ export class DragAndDropModal extends React.Component {
 
 export class LoadingComponent extends React.Component {
 
-    constructor(props){
+    constructor(props) {
         super(props);
 
         this.state = {
@@ -175,17 +175,28 @@ export class LoadingComponent extends React.Component {
         }
     }
 
-    componentDidMount(){
-        setTimeout(() => {this.setState({show: true})}, 500)
+    componentDidMount() {
+        setTimeout(() => {
+            this.setState({show: true})
+        }, 500)
     }
 
-    render(){
-        return(
+    render() {
+
+        const style = {
+            loadingDiv: {
+                textAlign: "center"
+            }
+        };
+        return (
             <div>
                 {
                     this.state.show ?
-                        this.props.children :
-                        <CircularProgress/>
+                        this.props.children
+                        :
+                        <div style={style.loadingDiv}>
+                            <CircularProgress/>
+                        </div>
                 }
             </div>
         )
