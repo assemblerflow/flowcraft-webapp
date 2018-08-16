@@ -5,22 +5,15 @@ import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails"
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import ExpandLessIcon from "@material-ui/icons/ExpandLess";
-import ListItemText from "@material-ui/core/ListItemText";
 import Typography from "@material-ui/core/Typography";
-import IconButton from "@material-ui/core/IconButton";
-import ListItem from "@material-ui/core/ListItem";
 import Collapse from '@material-ui/core/Collapse';
-import CheckBox from "@material-ui/core/Checkbox";
 import Divider from "@material-ui/core/Divider"
 import Button from "@material-ui/core/Button";
-import List from "@material-ui/core/List";
 import Grid from "@material-ui/core/Grid";
-
-import styles from "../../styles/reports.css";
 
 import indigo from "@material-ui/core/colors/indigo";
 import {FCTable} from "./tables";
-
+import matchSorter from "match-sorter";
 
 
 export class ReportOverview extends React.Component{
@@ -29,28 +22,37 @@ export class ReportOverview extends React.Component{
         super(props);
 
         this.state = {
-            revealList: false,
-            elements: []
+            showTable: false,
+            tableData: null,
+            activeTable: null,
+            filtered: {
+                samples: [],
+                projects: [],
+                components: [],
+            }
         }
     }
 
-    _getProjectQcInfo = (projectid, qcInfo) => {
+    _getQcInfo = (key, value, qcInfo) => {
 
-        let projectQcInfo = [];
+        let projectQcInfo = {
+            "warnings": [],
+            "fail": []
+        };
 
         for (const [pname, samples] of qcInfo.entries()){
             for (const [sample, vals] of samples.entries()){
                 if (vals.hasOwnProperty("warnings")){
                     for (const el of vals.warnings){
-                        if (el.project === projectid){
-                            projectQcInfo.push(el)
+                        if (el[key] === value){
+                            projectQcInfo.warnings.push(el)
                         }
                     }
                 }
                 if (vals.hasOwnProperty("fail")){
                     for (const el of val.fail){
-                        if (el.project === projectid){
-                            projectQcInfo.push(el)
+                        if (el[key] === value){
+                            projectQcInfo.fail.push(el)
                         }
                     }
                 }
@@ -61,72 +63,177 @@ export class ReportOverview extends React.Component{
 
     };
 
+    _getSampleQcInfo = (sample, qcInfo) => {
+
+        let sampleQcInfo = {
+            "warnings": [],
+            "fail": []
+        };
+
+        for (const [pname, samples] of qcInfo.entries()){
+            for (const [smpl, vals] of samples.entries()){
+                if (sample === smpl){
+
+                    if (vals.hasOwnProperty("warnings")){
+                        sampleQcInfo.warnings = sampleQcInfo.warnings.concat(vals.warnings)
+                    }
+                    if (vals.hasOwnProperty("fail")){
+                        sampleQcInfo.fail = sampleQcInfo.fail.concat(vals.fail)
+                    }
+
+                }
+            }
+        }
+
+        return sampleQcInfo
+
+    };
+
+    getSamplesOverview = (sampleList, qcInfo) => {
+
+        let samples = [];
+        let columns = [{
+            Header: <Typography>Sample</Typography>,
+            accessor: "rowId",
+            filterable: true,
+            filterMethod: (filter, rows) =>
+                matchSorter(rows, filter.value, {keys: ["rowId.props.children"]}),
+            filterAll: true
+        }, {
+            Header: <Typography>Warnings</Typography>,
+            accessor: "warnings"
+        }, {
+            Header: <Typography>Fails</Typography>,
+            accessor: "fail"
+        }];
+        let sampleQcInfo;
+
+        for (const sample of sampleList){
+
+            sampleQcInfo = this._getSampleQcInfo(sample, qcInfo);
+
+            samples.push({
+                "_id": sample,
+                "rowId": <Typography>{sample}</Typography>,
+                "warnings": sampleQcInfo.warnings.length,
+                "fail": sampleQcInfo.fail.length
+            })
+        }
+
+        return {
+            data: samples,
+            columns
+        }
+    };
+
     getReportOverview = (reportData, qcInfo) => {
 
-        let projects = [];
-        let components = [];
-
-        let x;
+        // These variables store the projects and components table data
+        let _projects = new Map();
+        let _components = new Map();
 
         for (const el of reportData){
+
+            let projectQcInfo;
+            let componentQcInfo;
+
             // Update project Id
             if (el.hasOwnProperty("projectid")){
-                if (!projects.includes(el.projectid)){
-                    projects.push(el.projectid);
-                    x = this._getProjectQcInfo(el.projectid, qcInfo);
-                    console.log(x)
+                if (!_projects.has(el.projectid)){
+
+                    projectQcInfo = this._getQcInfo("project", el.projectid, qcInfo);
+
+                    _projects.set(el.projectid, {
+                        "_id": el.projectid,
+                        "project": el.projectid,
+                        "warnings": projectQcInfo.warnings.length,
+                        "fail": projectQcInfo.fail.length
+                    })
                 }
             }
 
             // Update components
             if (el.hasOwnProperty("processName")){
-                !components.includes(el.processName) && components.push(el.processName);
+                if (!_components.has(el.processName)){
+
+                    componentQcInfo = this._getQcInfo("process", el.processName, qcInfo);
+
+                    _components.set(el.processName, {
+                        "_id": el.processName,
+                        "component": el.processName,
+                        "warnings": componentQcInfo.warnings.length,
+                        "fail": componentQcInfo.fail.length
+                    })
+                }
             }
         }
 
+        const projectColumns = [{
+            Header: "Project",
+            accessor: "project"
+        }, {
+            Header: "Warnings",
+            accessor: "warnings"
+        }, {
+            Header: "Fails",
+            accessor: "fail"
+        }];
+        const componentColumns = [{
+            Header: "Component",
+            accessor: "component"
+        }, {
+            Header: "Warnings",
+            accessor: "warnings"
+        }, {
+            Header: "Fails",
+            accessor: "fail"
+        }];
+
         return {
-            projects,
-            components
+            projects: {
+                data: [..._projects.values()],
+                columns: projectColumns
+            },
+            components: {
+                data: [..._components.values()],
+                columns: componentColumns
+            }
         }
 
     };
 
-    getSamplesOverview = (sampleList, qcInfo) => {
-        let samples = [];
+    setSelection = (selection) => {
 
-        console.log(qcInfo);
+        let filtered = this.state.filtered;
+        filtered[this.state.activeTable] = selection;
 
-        for (const sample of sampleList){
-            samples.push({
-                "_id": sample,
-                "rowId": <Typography>{sample}</Typography>
-            })
-        }
-
-        return {
-            samples
-        }
-    };
-
-    updateElements = (elements) => {
-        this.setState({elements});
-
-        if (!this.state.revealList){
-            this.setState({revealList: true})
-        }
-    };
-
-    closeList = () => {
         this.setState({
-            revealList: false,
-            elements: [],
+            filtered
+        });
+    };
+
+    updateData = (data, table) => {
+        this.setState({
+            tableData: data,
+            activeTable: table
+        });
+
+        if (!this.state.showTable){
+            this.setState({showTable: true})
+        }
+    };
+
+    closeTable = () => {
+        this.setState({
+            showTable: false,
+            tableData: null,
         })
     };
 
     render(){
 
         const uniqueSamples = [...new Set([...this.props.tableSamples, ...this.props.chartSamples])];
-        const {samples} = this.getSamplesOverview(uniqueSamples, this.props.qcInfo);
+        const samples = this.getSamplesOverview(uniqueSamples, this.props.qcInfo);
         const {projects, components} = this.getReportOverview(this.props.reportData, this.props.qcInfo);
 
         return(
@@ -137,22 +244,27 @@ export class ReportOverview extends React.Component{
                 <ExpansionPanelDetails>
                     <Grid style={{width: "100%"}} container justify={"center"} spacing={40}>
                         <Grid item xs={3} style={{minWidth: 200}}>
-                            <OverviewCard action={() => {this.updateElements(uniqueSamples)}} header={"Samples"} value={uniqueSamples.length}/>
+                            <OverviewCard action={() => {this.updateData(samples, "samples")}} header={"Samples"} value={samples.data.length}/>
                         </Grid>
                         <Grid item xs={3} style={{minWidth: 200}}>
-                            <OverviewCard action={() => {this.updateElements(projects)}} header={"Projects"} value={projects.length}/>
+                            <OverviewCard action={() => {this.updateData(projects, "projects")}} header={"Projects"} value={projects.data.length}/>
                         </Grid>
                         <Grid item xs={3} style={{minWidth: 200}}>
-                            <OverviewCard action={() => {this.updateElements(components)}} header={"Components"} value={components.length}/>
+                            <OverviewCard action={() => {this.updateData(components, "components")}} header={"Components"} value={components.data.length}/>
                         </Grid>
                     </Grid>
                 </ExpansionPanelDetails>
                 <div>
                     <Divider/>
-                    <Collapse in={this.state.revealList}>
-                        <OverviewTable closeList={this.closeList}
-                                       data={samples}
-                                       rawData={samples.data} />
+                    <Collapse in={this.state.showTable}>
+                        {
+                            this.state.tableData &&
+                            <OverviewTable closeTable={this.closeTable}
+                                           data={this.state.tableData}
+                                           rawData={this.state.data}
+                                           selection={this.state.filtered[this.state.activeTable]}
+                                           setSelection={this.setSelection}/>
+                        }
                     </Collapse>
                 </div>
             </ExpansionPanel>
@@ -195,30 +307,31 @@ class OverviewTable extends React.Component{
     render(){
 
         const style = {
-            iconBtn: {
-                textAlign: "right",
-                paddingRight: "10px"
+            btnContainer: {
+                textAlign: "center",
+            },
+            btn: {
+                width: "100%",
             },
             tableContainer: {
-                padding: "20px"
+                paddingRight: "20px",
+                paddingLeft: "20px",
+                paddingBottom: "20px"
             }
         };
 
-        const columns = [{
-            Header: "Sample",
-            accessor: "rowId"
-        }];
-
         return(
             <div>
-                <div style={style.iconBtn}>
-                    <IconButton  onClick={this.props.closeList}>
+                <div style={style.btnContainer}>
+                    <Button color={"primary"} style={style.btn} onClick={this.props.closeTable}>
                         <ExpandLessIcon />
-                    </IconButton>
+                    </Button>
                 </div>
                 <div style={style.tableContainer}>
-                    <FCTable data={this.props.data}
-                             columns={columns}/>
+                    <FCTable data={this.props.data.data}
+                             columns={this.props.data.columns}
+                             initialSelection={this.props.selection}
+                             setSelection={this.props.setSelection}/>
                 </div>
             </div>
         )

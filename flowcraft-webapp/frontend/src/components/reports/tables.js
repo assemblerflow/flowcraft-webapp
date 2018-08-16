@@ -84,6 +84,13 @@ export class FCTable extends React.Component {
         this.setState({ selection });
     };
 
+    componentDidUpdate = () => {
+
+        if (this.props.initialSelection && this.state.selection !== this.props.initialSelection){
+            this.setState({selection: this.props.initialSelection})
+        }
+
+    };
 
     toggleAll = () => {
         const selectAll = !this.state.selectAll;
