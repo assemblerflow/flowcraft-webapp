@@ -60,10 +60,12 @@ export class ReportsRedirect extends React.Component {
 
         if (additionalInfo && additionalInfo.innuendo) {
             const userId = additionalInfo.innuendo.userId;
+            const species = additionalInfo.innuendo.species;
             // Set instance of class innuendo based on the userId collected
             // from history
             const innuendo = new Innuendo();
             innuendo.setUserId(userId);
+            innuendo.setSpecies(species);
 
             additionalInfo = {innuendo: innuendo};
 
@@ -106,7 +108,10 @@ export class ReportsRedirect extends React.Component {
         // Set new additionalInfo userId for innuendo based on the current class
         // instance
         if (additionalInfo.innuendo){
-            additionalInfo.innuendo = {userId: additionalInfo.innuendo.getUserId()}
+            additionalInfo.innuendo = {
+                userId: additionalInfo.innuendo.getUserId(),
+                species: additionalInfo.innuendo.getSpecies()
+            }
         }
 
         // Set new history based on the current reportData and additionalInfo
@@ -331,6 +336,7 @@ class ReportsApp extends React.Component {
                             <ChewbbacaTable
                                 tableData={tableData.get("chewbbaca")}
                                 reportData={this.props.reportData}
+                                additionalInfo={this.props.additionalInfo}
                             />
                         </Element>
                     }
