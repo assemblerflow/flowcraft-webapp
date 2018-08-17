@@ -74,3 +74,13 @@ export const getMetadataMapping = (reportInfo, selectedSamples) => {
     return [projectStr, sampleStr];
 
 };
+
+
+export const sortByContent = (a, b) => {
+
+    const aValue = a.props.hasOwnProperty("content") ? a.props.content.length : -1;
+    const bValue = b.props.hasOwnProperty("content") ? b.props.content.length : -1;
+
+    return aValue > bValue ? 1 : -1;
+
+};

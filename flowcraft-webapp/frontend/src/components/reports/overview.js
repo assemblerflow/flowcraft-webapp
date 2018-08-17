@@ -6,7 +6,8 @@ import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import ExpandLessIcon from "@material-ui/icons/ExpandLess";
 import Typography from "@material-ui/core/Typography";
-import Collapse from '@material-ui/core/Collapse';
+import Collapse from "@material-ui/core/Collapse";
+import Popover from "@material-ui/core/Popover";
 import Divider from "@material-ui/core/Divider"
 import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
@@ -14,6 +15,8 @@ import Grid from "@material-ui/core/Grid";
 import indigo from "@material-ui/core/colors/indigo";
 import {FCTable} from "./tables";
 import matchSorter from "match-sorter";
+
+import {sortByContent} from "./utils";
 
 
 export class ReportOverview extends React.Component{
@@ -113,10 +116,12 @@ export class ReportOverview extends React.Component{
             filterAll: true
         }, {
             Header: <Typography>Warnings</Typography>,
-            accessor: "warnings"
+            accessor: "warnings",
+            sortMethod: sortByContent
         }, {
             Header: <Typography>Fails</Typography>,
-            accessor: "fail"
+            accessor: "fail",
+            sortMethod: sortByContent
         }];
         let sampleQcInfo;
 
@@ -127,8 +132,8 @@ export class ReportOverview extends React.Component{
             samples.push({
                 "_id": sample,
                 "rowId": <Typography>{sample}</Typography>,
-                "warnings": sampleQcInfo.warnings.length,
-                "fail": sampleQcInfo.fail.length
+                "warnings": <OverviewQcPopover content={sampleQcInfo.warnings}/>,
+                "fail": <OverviewQcPopover content={sampleQcInfo.fail}/>
             })
         }
 
@@ -161,8 +166,8 @@ export class ReportOverview extends React.Component{
                     _projects.set(el.projectid, {
                         "_id": el.projectid,
                         "project": el.projectid,
-                        "warnings": projectQcInfo.warnings.length,
-                        "fail": projectQcInfo.fail.length
+                        "warnings": <OverviewQcPopover content={projectQcInfo.warnings}/>,
+                        "fail": <OverviewQcPopover content={projectQcInfo.fail}/>
                     })
                 }
             }
@@ -176,8 +181,8 @@ export class ReportOverview extends React.Component{
                     _components.set(el.processName, {
                         "_id": el.processName,
                         "component": el.processName,
-                        "warnings": componentQcInfo.warnings.length,
-                        "fail": componentQcInfo.fail.length
+                        "warnings": <OverviewQcPopover content={componentQcInfo.warnings}/>,
+                        "fail": <OverviewQcPopover content={componentQcInfo.fail}/>
                     })
                 }
             }
@@ -188,20 +193,24 @@ export class ReportOverview extends React.Component{
             accessor: "project"
         }, {
             Header: "Warnings",
-            accessor: "warnings"
+            accessor: "warnings",
+            sortMethod: sortByContent
         }, {
             Header: "Fails",
-            accessor: "fail"
+            accessor: "fail",
+            sortMethod: sortByContent
         }];
         const componentColumns = [{
             Header: "Component",
             accessor: "component"
         }, {
             Header: "Warnings",
-            accessor: "warnings"
+            accessor: "warnings",
+            sortMethod: sortByContent
         }, {
             Header: "Fails",
-            accessor: "fail"
+            accessor: "fail",
+            sortMethod: sortByContent
         }];
 
         return {
@@ -356,6 +365,69 @@ class OverviewTable extends React.Component{
                              initialSelection={this.props.selection}
                              setSelection={this.props.setSelection}/>
                 </div>
+            </div>
+        )
+    }
+}
+
+
+class OverviewQcPopover extends React.Component{
+
+    state = {
+        anchorEl: null
+    };
+
+    handleClick = event => {
+        this.setState({
+            anchorEl: event.currentTarget,
+        });
+    };
+
+    handleClose = () => {
+        this.setState({
+            anchorEl: null,
+        });
+    };
+
+    render(){
+        const {anchorEl} = this.state;
+
+        const style = {
+            container: {
+                padding: "15px"
+            }
+        };
+
+        console.log(this.props.content)
+
+        return(
+            <div>
+                <Button onClick={this.handleClick}>{this.props.content.length}</Button>
+                <Popover open={Boolean(anchorEl)}
+                         anchorEl={anchorEl}
+                         onClose={this.handleClose}
+                         anchorOrigin={{
+                             vertical: "center",
+                             horizontal: "right"
+                         }}
+                         transformOrigin={{
+                             vertical: "center",
+                             horizontal: "left"
+                         }}>
+                    <div style={style.container}>
+                        <Typography>Total: {this.props.content.length}</Typography>
+                        <Divider/>
+                        <div>
+                            {
+                                this.props.content.map((v, i) => {
+                                    return(
+                                        <Typography key={i}>{v.message}</Typography>
+                                    )
+                                })
+                            }
+                        </div>
+                    </div>
+                </Popover>
             </div>
         )
     }
