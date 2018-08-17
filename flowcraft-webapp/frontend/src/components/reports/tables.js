@@ -410,19 +410,60 @@ export class ChewbbacaTable extends React.Component {
         this.state = {
             selection: [],
             specie: 0,
-            tabValue: 0
+            tabValue: 0,
+            visibleData: null
         };
 
+
         /*this.handleClick = this.handleClick.bind(this);*/
+    }
+
+    componentDidMount() {
+        if (this.props.additionalInfo.innuendo) {
+            this.handleClickSpecies(
+                this.props.additionalInfo.innuendo.species["1"],
+                0
+            )
+        }
     }
 
     setSelection = (selection) => {
         this.setState({selection});
     };
 
-    handleClick = (value, tabValue) => {
-        /*console.log(value, tabValue);*/
-        this.setState({tabValue: tabValue});
+    handleClickSpecies = (specie, tabValue) => {
+
+        // Declare properties to be modified
+        const reportData = this.props.reportData;
+        let tableData = this.props.tableData;
+        let newTableData = [];
+
+        // Search on the reportData for the chewbbac and species signature
+        // to visualize only those with the selected specie
+        for(const data of reportData) {
+            if (data.hasOwnProperty("species") && data.species === specie &&
+                data.processName.indexOf("chewbbaca") > -1) {
+
+                // Retrieve id from status since chewbbaca results are not
+                // matching with the sample_name property of the reports
+                for (const status of data.reportJson.status) {
+                    for (const row of tableData) {
+                        if (row.rowId === status.sample){
+                            newTableData.push(row);
+                        }
+                    }
+
+                }
+            }
+        }
+
+        // Set new visible table data according to the specie.
+        const visibleData = newTableData;
+
+        this.setState({
+            tabValue,
+            visibleData
+        });
 
     };
 
@@ -465,9 +506,11 @@ export class ChewbbacaTable extends React.Component {
 
 
     render() {
-        const tableData = genericTableParser(this.props.tableData);
+        const dataToUse = this.state.visibleData === null ?
+            this.props.tableData : this.state.visibleData;
+
+        const tableData = genericTableParser(dataToUse);
         this.chewbbacaParser(tableData, this.props.reportData);
-        console.log("render chewbbaca table");
 
         const style = {
             buttonBar: {
@@ -484,8 +527,6 @@ export class ChewbbacaTable extends React.Component {
             }
         };
 
-        console.log(this.props.additionalInfo);
-
         return (
             <ExpansionPanel defaultExpanded>
                 <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
@@ -498,11 +539,12 @@ export class ChewbbacaTable extends React.Component {
                             {
                                 this.props.additionalInfo.innuendo &&
                                 Object.keys(this.props.additionalInfo.innuendo.species).map((item, index) => {
+                                    let species = this.props.additionalInfo.innuendo.species;
                                     return <Button key={item}
                                                    style={style.button}
                                                    className={classNames(this.state.tabValue === index && styles.tabButton)}
                                                    onClick={() => {
-                                                       this.handleClick(item, index)
+                                                       this.handleClickSpecies(species[item], index);
                                                    }}>
                                         {
                                             this.props.additionalInfo.innuendo.species[item]
