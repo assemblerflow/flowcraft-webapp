@@ -227,7 +227,8 @@ export const findQcWarnings = (reportArray) => {
                     const warnObj = {
                         process: r.processName,
                         project: r.projectid,
-                        message: f.value
+                        message: f.value,
+                        sample: f.sample
                     };
 
                     // In case the table does not exist yet

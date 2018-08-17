@@ -389,20 +389,47 @@ class OverviewQcPopover extends React.Component{
         });
     };
 
+    groubByComponent = (content) => {
+
+        let contentMap = new Map();
+
+        for (const el of content){
+            if (!contentMap.has(el.process)){
+                contentMap.set(el.process, [el])
+            } else {
+                contentMap.get(el.process).push(el)
+            }
+        }
+
+        return contentMap
+
+    };
+
     render(){
         const {anchorEl} = this.state;
 
         const style = {
             container: {
                 padding: "15px"
+            },
+            btn: {
+                width: "100%"
+            },
+            componentHeader: {
+                fontWeight: "bold",
+                marginBottom: "5px",
+                marginTop: "15px"
+            },
+            warningMsg: {
+                marginLeft: "10px"
             }
         };
 
-        console.log(this.props.content)
+        const groupedContent = this.groubByComponent(this.props.content);
 
         return(
             <div>
-                <Button onClick={this.handleClick}>{this.props.content.length}</Button>
+                <Button style={style.btn} onClick={this.handleClick}>{this.props.content.length}</Button>
                 <Popover open={Boolean(anchorEl)}
                          anchorEl={anchorEl}
                          onClose={this.handleClose}
@@ -419,9 +446,18 @@ class OverviewQcPopover extends React.Component{
                         <Divider/>
                         <div>
                             {
-                                this.props.content.map((v, i) => {
+                                Array.from(groupedContent, ([key, elList]) => {
                                     return(
-                                        <Typography key={i}>{v.message}</Typography>
+                                        <div key={key}>
+                                            <Typography style={style.componentHeader}>Component: {key}</Typography>
+                                            {
+                                                elList.map((el, i) => {
+                                                    return (
+                                                        <Typography style={style.warningMsg} key={i}>{el.sample}: {el.message}</Typography>
+                                                    )
+                                                })
+                                            }
+                                        </div>
                                     )
                                 })
                             }
