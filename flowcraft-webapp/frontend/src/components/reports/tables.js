@@ -58,28 +58,48 @@ export class FCTable extends React.Component {
         super(props);
 
         this.state = {
-            selection: [],
+            selection: {
+                rows: [],
+                keys: []
+            },
             selectAll: false
         }
     }
 
 
     toggleSelection = (key, shift, row) => {
-
         // start off with the existing state
-        let selection = [...this.state.selection];
-        const keyIndex = selection.indexOf(key);
+        let rows = [...this.state.selection.rows];
+        let keys = [...this.state.selection.keys];
+
+        const keyIndex = rows.map((r) => {
+            if (r._id.indexOf(key) >= 0) {
+                return r._id.indexOf(key)
+            };
+        });
+
         // check to see if the key exists
-        if (keyIndex >= 0) {
+        if (keyIndex.length > 0) {
             // it does exist so we will remove it using destructing
-            selection = [
-                ...selection.slice(0, keyIndex),
-                ...selection.slice(keyIndex + 1)
+            rows = [
+                ...rows.slice(0, keyIndex),
+                ...rows.slice(keyIndex + 1)
             ];
+            keys = [
+                ...keys.slice(0, keyIndex),
+                ...keys.slice(keyIndex + 1)
+            ]
         } else {
             // it does not exist so add it
-            selection.push(key);
+            rows.push(row);
+            keys.push(key);
         }
+
+        const selection = {
+            rows: rows,
+            keys: keys
+        };
+
         this.props.setSelection(selection);
         // update the state
         this.setState({selection});
@@ -95,7 +115,9 @@ export class FCTable extends React.Component {
 
     toggleAll = () => {
         const selectAll = !this.state.selectAll;
-        const selection = [];
+        const rows = [];
+        const keys = [];
+
         if (selectAll) {
             // we need to get at the internals of ReactTable
             const wrappedInstance = this.checkboxTable.getWrappedInstance();
@@ -103,16 +125,32 @@ export class FCTable extends React.Component {
             const currentRecords = wrappedInstance.getResolvedState().sortedData;
             // we just push all the IDs onto the selection array
             currentRecords.forEach(item => {
-                selection.push(item._original._id);
+                rows.push(item._original);
+                keys.push(item._original._id);
             });
         }
+
+        const selection = {
+            rows: rows,
+            keys: keys
+        };
+
         this.props.setSelection(selection);
         this.setState({selectAll, selection});
     };
 
     isSelected = key => {
         // Return if selection array includes the provided key
-        return this.state.selection.includes(key);
+        const keyIndex = this.state.selection.rows.map((r) => {
+            if (r._id.indexOf(key) >= 0) {
+                return r._id.indexOf(key)
+            };
+        });
+
+        if (keyIndex.length > 0)
+            return true;
+        else
+            return false;
     };
 
     render() {
@@ -409,13 +447,11 @@ export class ChewbbacaTable extends React.Component {
 
         this.state = {
             selection: [],
-            specie: 0,
+            specie: {},
             tabValue: 0,
             visibleData: null
         };
 
-
-        /*this.handleClick = this.handleClick.bind(this);*/
     }
 
     componentDidMount() {
@@ -460,10 +496,22 @@ export class ChewbbacaTable extends React.Component {
         // Set new visible table data according to the specie.
         const visibleData = newTableData;
 
+        // Set current innuendo species id and name to pass to phyloviz modal
+        const currentSpecie = {
+            value: tabValue,
+            label: specie
+        }
+
         this.setState({
             tabValue,
-            visibleData
+            visibleData,
+            specie: currentSpecie
         });
+
+    };
+
+    getCurrentSpecie = () => {
+        return this.state.specie
 
     };
 
@@ -523,7 +571,8 @@ export class ChewbbacaTable extends React.Component {
                 minWidth: "150px",
             },
             mainPaper: {
-                flexGrow: "1"
+                flexGrow: "1",
+                width: "100%"
             }
         };
 
@@ -554,7 +603,11 @@ export class ChewbbacaTable extends React.Component {
                             }
                         </div>
                         <TableButtons>
-                            <PhylovizModal specie={this.state.specie}/>
+                            <PhylovizModal
+                                specie={this.getCurrentSpecie}
+                                selection={this.state.selection}
+                                additionalInfo={this.props.additionalInfo}
+                            />
                         </TableButtons>
                         <FCTable
                             data={tableData.tableArray}

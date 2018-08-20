@@ -58,6 +58,7 @@ export const findTableSignatures = (reportArray) => {
                         cell.projectId = r.projectid;
                         cell.processName = r.processName;
                         cell.processId = r.processId;
+                        cell.pipelineId = r.pipelineId;
 
                         if (!tables.has(cell.table)) {
                             tables.set(cell.table, [cell])
@@ -112,6 +113,8 @@ const parseInnuendoMetadata = (metadataEntry, tables) => {
             cell.columnBar = true;
             cell.processName = "metadata";
             cell.processId = "metadata";
+            cell.projectId = "metadata";
+            cell.pipelineId = "metadata";
             cell.rowId = metadataEntry.strainID;
 
             if (!tables.has(cell.table)) {
@@ -451,7 +454,11 @@ export const genericTableParser = (reportArray) => {
             dataDict[cell.rowId] = {
                 "_id": cell.rowId,
                 "rowId": <Typography
-                    className={styles.tableCell}>{cell.rowId}</Typography>
+                    className={styles.tableCell}>{cell.rowId}</Typography>,
+                // Add process identification on table rows
+                "projectId": cell.projectId,
+                "pipelineId": cell.pipelineId,
+                "processId": cell.processId,
             };
             rawDataDict[cell.rowId] = {
                 "rowId": cell.rowId

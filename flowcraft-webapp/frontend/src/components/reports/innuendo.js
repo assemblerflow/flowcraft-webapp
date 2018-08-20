@@ -189,6 +189,14 @@ export class Innuendo {
             })
     }
 
+    sendToPHYLOViZ(requestObject) {
+        return axios({
+            method: "post",
+            url: address + "app/api/v1.0/phyloviz/",
+            data: requestObject
+        });
+    }
+
 }
 
 
@@ -558,7 +566,8 @@ class InnuendoTabs extends React.Component {
                 {
                     this.state.value === 0 &&
                     <TabContainer>
-                        <InnuendoProjects innuendo={this.props.innuendo}></InnuendoProjects>
+                        <InnuendoProjects
+                            innuendo={this.props.innuendo}></InnuendoProjects>
                     </TabContainer>
                 }
                 {
