@@ -7,6 +7,7 @@ import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import ExpandLessIcon from "@material-ui/icons/ExpandLess";
 import Typography from "@material-ui/core/Typography";
 import Collapse from "@material-ui/core/Collapse";
+import Tooltip from "@material-ui/core/Tooltip";
 import Popover from "@material-ui/core/Popover";
 import Divider from "@material-ui/core/Divider"
 import Button from "@material-ui/core/Button";
@@ -15,6 +16,8 @@ import Grid from "@material-ui/core/Grid";
 import indigo from "@material-ui/core/colors/indigo";
 import {FCTable} from "./tables";
 import matchSorter from "match-sorter";
+
+import FilterIcon from "mdi-react/FilterIcon";
 
 import {sortByContent} from "./utils";
 
@@ -28,7 +31,7 @@ export class ReportOverview extends React.Component{
             showTable: false,
             tableData: null,
             activeTable: null,
-            filtered: {
+            selected: {
                 samples: [],
                 projects: [],
                 components: [],
@@ -58,7 +61,7 @@ export class ReportOverview extends React.Component{
                     }
                 }
                 if (vals.hasOwnProperty("fail")){
-                    for (const el of val.fail){
+                    for (const el of vals.fail){
                         if (el[key] === value){
                             projectQcInfo.fail.push(el)
                         }
@@ -231,11 +234,11 @@ export class ReportOverview extends React.Component{
      */
     setSelection = (selection) => {
 
-        let filtered = this.state.filtered;
-        filtered[this.state.activeTable] = selection;
+        let selected = this.state.selected;
+        selected[this.state.activeTable] = selection;
 
         this.setState({
-            filtered
+            selected
         });
     };
 
@@ -277,26 +280,37 @@ export class ReportOverview extends React.Component{
                     <Grid style={{width: "100%"}} container justify={"center"} spacing={40}>
                         <Grid item xs={3} style={{minWidth: 200}}>
                             <OverviewCard action={() => {this.updateData(samples, "samples")}} header={"Samples"} value={samples.data.length}/>
+                            <Collapse in={this.state.showTable}>
+                                <SelectedFootnote value={this.state.selected.samples.length}/>
+                            </Collapse>
                         </Grid>
                         <Grid item xs={3} style={{minWidth: 200}}>
                             <OverviewCard action={() => {this.updateData(projects, "projects")}} header={"Projects"} value={projects.data.length}/>
+                            <Collapse in={this.state.showTable}>
+                                <SelectedFootnote value={this.state.selected.projects.length}/>
+                            </Collapse>
                         </Grid>
                         <Grid item xs={3} style={{minWidth: 200}}>
                             <OverviewCard action={() => {this.updateData(components, "components")}} header={"Components"} value={components.data.length}/>
+                            <Collapse in={this.state.showTable}>
+                                <SelectedFootnote value={this.state.selected.components.length}/>
+                            </Collapse>
                         </Grid>
                     </Grid>
                 </ExpansionPanelDetails>
                 <div>
                     <Divider/>
                     <Collapse in={this.state.showTable}>
-                        {
-                            this.state.tableData &&
-                            <OverviewTable closeTable={this.closeTable}
-                                           data={this.state.tableData}
-                                           rawData={this.state.data}
-                                           selection={this.state.filtered[this.state.activeTable]}
-                                           setSelection={this.setSelection}/>
-                        }
+                        <div>
+                            {
+                                this.state.tableData &&
+                                <OverviewTable closeTable={this.closeTable}
+                                               data={this.state.tableData}
+                                               rawData={this.state.data}
+                                               selection={this.state.selected[this.state.activeTable]}
+                                               setSelection={this.setSelection}/>
+                            }
+                        </div>
                     </Collapse>
                 </div>
             </ExpansionPanel>
@@ -335,6 +349,21 @@ class OverviewCard extends React.Component{
     }
 }
 
+
+class SelectedFootnote extends React.Component{
+    render(){
+        const style = {
+            text: {
+                textAlign: "centers"
+            }
+        };
+
+        return (
+            <Typography style={style.text}>Selected: <b>{this.props.value}</b></Typography>
+        )
+    }
+}
+
 class OverviewTable extends React.Component{
     render(){
 
@@ -344,6 +373,10 @@ class OverviewTable extends React.Component{
             },
             btn: {
                 width: "100%",
+            },
+            toolbar:{
+                textAlign: "right",
+                paddingRight: "20px"
             },
             tableContainer: {
                 paddingRight: "20px",
@@ -358,6 +391,11 @@ class OverviewTable extends React.Component{
                     <Button color={"primary"} style={style.btn} onClick={this.props.closeTable}>
                         <ExpandLessIcon />
                     </Button>
+                </div>
+                <div style={style.toolbar}>
+                    <Tooltip title={"Filter and keep only selection"} placement={"bottom"}>
+                        <Button color={"primary"} variant={"contained"}><FilterIcon color={"#fff"}/></Button>
+                    </Tooltip>
                 </div>
                 <div style={style.tableContainer}>
                     <FCTable data={this.props.data.data}

@@ -247,6 +247,69 @@ export class ReportsRedirect extends React.Component {
  */
 class ReportsApp extends React.Component {
 
+    state = {
+        filters: {
+            samples: [],
+            projects: [],
+            components: []
+        }
+    };
+
+    filterReportArray = (reportArray, filters) => {
+
+        console.log("start filter")
+
+        // Stores the JSON keys inside the reportJSON object that contain sample
+        // names. This method will check for the absence of sample names in the
+        // arrays corresponding to these keys and remove samples that are not
+        // selected
+        const sampleKeys = ["plotData", "tableRow", "warnings", "fails"];
+
+        let filteredReport = [];
+        let save = true;
+
+        for (const el of JSON.parse(JSON.stringify(reportArray))){
+            // Skip entries not present in project selection
+            if (filters.projects.includes(el.projectid)){
+                save = false
+            }
+
+            // Skip entries not present in component selection
+            if (filters.components.includes(el.processName)){
+                save = false
+            }
+
+            if (!save){
+                continue
+            }
+
+            filteredReport.push(el);
+
+            // Filter samples from entries
+            if (el.hasOwnProperty("reportJson")) {
+                for (const key of sampleKeys) {
+                    let filteredSamples = [];
+                    if (el.reportJson.hasOwnProperty(key)) {
+                        for (const sample of el.reportJson[key]) {
+                            if (!filters.samples.includes(sample.sample)) {
+                                filteredSamples.push(sample);
+                            }
+                        }
+                    }
+                    el.reportJson[key] = filteredSamples;
+                }
+            }
+
+
+            save = true
+        }
+
+        console.log("end filter")
+
+        return filteredReport
+
+    };
+
     componentDidUpdate(){
         // Updates the reportData state and any additional information
         // passed to the component
@@ -267,12 +330,15 @@ class ReportsApp extends React.Component {
 
     render() {
 
-        const {tableData, tableSamples} = findTableSignatures(this.props.reportData);
-        const {charts, chartSamples} = findChartSignatures(this.props.reportData);
-        const qcInfo = findQcWarnings(this.props.reportData);
+        const activeReports = this.filterReportArray(this.props.reportData, this.state.filters);
+        // const activeReports = this.props.reportData;
+
+        const {tableData, tableSamples} = findTableSignatures(activeReports);
+        const {charts, chartSamples} = findChartSignatures(activeReports);
+        const qcInfo = findQcWarnings(activeReports);
         const tables = [...tableData.keys()];
 
-        console.log(qcInfo)
+        console.log(this.props)
 
         //
         // This is the main element where the Reports components will be added,
@@ -289,7 +355,7 @@ class ReportsApp extends React.Component {
                     <Element name={"reportOverview"}
                              className={styles.scrollElement}>
                         <ReportOverview
-                            reportData={this.props.reportData}
+                            reportData={activeReports}
                             tableSamples={tableSamples}
                             chartSamples={chartSamples}
                             qcInfo={qcInfo}/>
@@ -300,7 +366,7 @@ class ReportsApp extends React.Component {
                                  className={styles.scrollElement}>
                             <MetadataTable
                                 tableData={tableData.get("metadata")}
-                                reportData={this.props.reportData} />
+                                reportData={activeReports} />
                         </Element>
                     }
                     {
@@ -335,7 +401,7 @@ class ReportsApp extends React.Component {
                                  className={styles.scrollElement}>
                             <ChewbbacaTable
                                 tableData={tableData.get("chewbbaca")}
-                                reportData={this.props.reportData}
+                                reportData={activeReports}
                                 additionalInfo={this.props.additionalInfo}
                             />
                         </Element>
@@ -344,7 +410,7 @@ class ReportsApp extends React.Component {
                         charts.includes("base_n_content") &&
                         <Element name={"base_n_contentChart"}
                                  className={styles.scrollElement}>
-                            <FastQcCharts rawReports={this.props.reportData}/>
+                            <FastQcCharts rawReports={activeReports}/>
                         </Element>
                     }
                     {
@@ -352,7 +418,7 @@ class ReportsApp extends React.Component {
                         <Element name={"size_distChart"}
                                  className={styles.scrollElement}>
                             <AssemblySizeDistChart
-                                rawReports={this.props.reportData}/>
+                                rawReports={activeReports}/>
                         </Element>
                     }
                 </ReportsHeader>
