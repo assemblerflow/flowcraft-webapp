@@ -11,13 +11,13 @@ import Tooltip from "@material-ui/core/Tooltip";
 import Popover from "@material-ui/core/Popover";
 import Divider from "@material-ui/core/Divider"
 import Button from "@material-ui/core/Button";
-import Badge from "@material-ui/core/Badge";
 import Grid from "@material-ui/core/Grid";
 
 import indigo from "@material-ui/core/colors/indigo";
 import {FCTable} from "./tables";
 import matchSorter from "match-sorter";
 
+import MarkerIcon from "mdi-react/MarkerIcon";
 import FilterIcon from "mdi-react/FilterIcon";
 
 import {sortByContent} from "./utils";
@@ -343,6 +343,10 @@ class OverviewCard extends React.Component{
             filterContainer: {
                 display: "flex"
             },
+            filterChild: {
+                display: "flex",
+                width: "100%"
+            },
             filterIcon: {
                 marginRight: "5px",
                 fill: "#636363"
@@ -357,10 +361,18 @@ class OverviewCard extends React.Component{
             <div>
                 <Typography style={style.header}>{this.props.header}</Typography>
                     <div style={style.filterContainer}>
-                        <Tooltip title={"Number of filtered elements"}>
-                            <FilterIcon size={17} style={style.filterIcon}/>
-                        </Tooltip>
-                        <Typography style={style.filterText}>{this.props.filtered}</Typography>
+                        <div style={style.filterChild}>
+                            <Tooltip title={"Filtered elements"}>
+                                <FilterIcon size={17} style={style.filterIcon}/>
+                            </Tooltip>
+                            <Typography style={style.filterText}>{this.props.filtered}</Typography>
+                        </div>
+                        <div style={style.filterChild}>
+                            <Tooltip title={"Highlighted elements"}>
+                                <MarkerIcon size={17} style={style.filterIcon}/>
+                            </Tooltip>
+                            <Typography style={style.filterText}>{this.props.filtered}</Typography>
+                        </div>
                     </div>
                 <Button onClick={this.props.action} style={style.value}>{this.props.value}</Button>
             </div>
@@ -373,11 +385,13 @@ class SelectedFootnote extends React.Component{
     render(){
         const style = {
             text: {
+                marginTop: "5px"
             }
         };
 
         return (
             <div>
+                <Divider/>
                 <Typography style={style.text}>Selected: <b>{this.props.selected}</b></Typography>
             </div>
         )
