@@ -34,9 +34,9 @@ export class ReportOverview extends React.Component{
             tableData: null,
             activeTable: null,
             selected: {
-                samples: [],
-                projects: [],
-                components: [],
+                samples: {rows: [], keys: []},
+                projects: {rows: [], keys: []},
+                components: {rows: [], keys: []},
             }
         }
     }
@@ -291,7 +291,7 @@ export class ReportOverview extends React.Component{
             activeSelection = this.state.selected[key];
 
             for (const el of activeArray){
-                if (activeSelection.length > 0 && !activeSelection.includes(el)){
+                if (activeSelection.keys.length > 0 && !activeSelection.keys.includes(el)){
                     filterArray.push(el)
                 }
             }
@@ -365,7 +365,7 @@ export class ReportOverview extends React.Component{
                                 <SelectedFootnote filtered={this.props.filters.samples.length}
                                                   tableKey={"samples"}
                                                   clearIndividualSelection={this.clearIndividualSelection}
-                                                  selected={this.state.selected.samples.length}/>
+                                                  selected={this.state.selected.samples.keys.length}/>
                             </Collapse>
                         </Grid>
                         <Grid item xs={3} style={{minWidth: 200}}>
@@ -379,7 +379,7 @@ export class ReportOverview extends React.Component{
                                 <SelectedFootnote filtered={this.props.filters.projects.length}
                                                   tableKey={"projects"}
                                                   clearIndividualSelection={this.clearIndividualSelection}
-                                                  selected={this.state.selected.projects.length}/>
+                                                  selected={this.state.selected.projects.keys.length}/>
                             </Collapse>
                         </Grid>
                         <Grid item xs={3} style={{minWidth: 200}}>
@@ -393,7 +393,7 @@ export class ReportOverview extends React.Component{
                                 <SelectedFootnote filtered={this.props.filters.components.length}
                                                   tableKey={"components"}
                                                   clearIndividualSelection={this.clearIndividualSelection}
-                                                  selected={this.state.selected.components.length}/>
+                                                  selected={this.state.selected.components.keys.length}/>
                             </Collapse>
                         </Grid>
                     </Grid>
@@ -421,8 +421,6 @@ export class ReportOverview extends React.Component{
 
 class OverviewCard extends React.Component{
     render(){
-
-        console.log(this.props)
 
         const style = {
             header: {
@@ -558,6 +556,8 @@ class OverviewTable extends React.Component{
                 paddingBottom: "20px"
             }
         };
+
+        console.log(this.props.selection);
 
         return(
             <div>

@@ -58,6 +58,7 @@ export class FCTable extends React.Component {
         super(props);
 
         this.state = {
+            // Selection has table data and only row keys
             selection: {
                 rows: [],
                 keys: []
@@ -72,14 +73,16 @@ export class FCTable extends React.Component {
         let rows = [...this.state.selection.rows];
         let keys = [...this.state.selection.keys];
 
-        const keyIndex = rows.map((r) => {
-            if (r._id.indexOf(key) >= 0) {
-                return r._id.indexOf(key)
+        let keyIndex = null;
+
+        for (const index in rows) {
+            if (rows[index]._id.indexOf(key) >= 0) {
+                keyIndex =  index
             };
-        });
+        }
 
         // check to see if the key exists
-        if (keyIndex.length > 0) {
+        if (keyIndex !== null) {
             // it does exist so we will remove it using destructing
             rows = [
                 ...rows.slice(0, keyIndex),
@@ -141,13 +144,15 @@ export class FCTable extends React.Component {
 
     isSelected = key => {
         // Return if selection array includes the provided key
-        const keyIndex = this.state.selection.rows.map((r) => {
-            if (r._id.indexOf(key) >= 0) {
-                return r._id.indexOf(key)
-            };
-        });
+        let keyIndex = null;
 
-        if (keyIndex.length > 0)
+        for (const index in this.state.selection.rows) {
+            if (this.state.selection.rows[index]._id.indexOf(key) >= 0) {
+                keyIndex =  index
+            };
+        }
+
+        if (keyIndex !== null)
             return true;
         else
             return false;
