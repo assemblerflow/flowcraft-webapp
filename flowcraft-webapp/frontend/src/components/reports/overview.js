@@ -254,6 +254,22 @@ export class ReportOverview extends React.Component{
         });
     };
 
+    clearIndividualSelection = (tableKey) => {
+
+        let newSelection = {};
+
+        for (const key of Object.keys(this.state.selected)){
+            if (key === tableKey){
+                newSelection[key] = [];
+            } else {
+                newSelection[key] = this.state.selected[key]
+            }
+        }
+
+        this.setState({selected: newSelection});
+
+    };
+
     /*
     Updates the report filters with the provided selection
      */
@@ -346,7 +362,10 @@ export class ReportOverview extends React.Component{
                                           value={samples.data.length}
                                           filtered={this.props.filters.samples.length}/>
                             <Collapse in={this.state.showTable}>
-                                <SelectedFootnote filtered={this.props.filters.samples.length} selected={this.state.selected.samples.length}/>
+                                <SelectedFootnote filtered={this.props.filters.samples.length}
+                                                  tableKey={"samples"}
+                                                  clearIndividualSelection={this.clearIndividualSelection}
+                                                  selected={this.state.selected.samples.length}/>
                             </Collapse>
                         </Grid>
                         <Grid item xs={3} style={{minWidth: 200}}>
@@ -357,7 +376,10 @@ export class ReportOverview extends React.Component{
                                           clearIndividualFilter={this.clearIndividualFilter}
                                           filtered={this.props.filters.projects.length}/>
                             <Collapse in={this.state.showTable}>
-                                <SelectedFootnote filtered={this.props.filters.projects.length} selected={this.state.selected.projects.length}/>
+                                <SelectedFootnote filtered={this.props.filters.projects.length}
+                                                  tableKey={"projects"}
+                                                  clearIndividualSelection={this.clearIndividualSelection}
+                                                  selected={this.state.selected.projects.length}/>
                             </Collapse>
                         </Grid>
                         <Grid item xs={3} style={{minWidth: 200}}>
@@ -368,7 +390,10 @@ export class ReportOverview extends React.Component{
                                           clearIndividualFilter={this.clearIndividualFilter}
                                           filtered={this.props.filters.components.length}/>
                             <Collapse in={this.state.showTable}>
-                                <SelectedFootnote filtered={this.props.filters.components.length} selected={this.state.selected.components.length}/>
+                                <SelectedFootnote filtered={this.props.filters.components.length}
+                                                  tableKey={"components"}
+                                                  clearIndividualSelection={this.clearIndividualSelection}
+                                                  selected={this.state.selected.components.length}/>
                             </Collapse>
                         </Grid>
                     </Grid>
@@ -482,16 +507,32 @@ class OverviewCard extends React.Component{
 class SelectedFootnote extends React.Component{
     render(){
         const style = {
+            container: {
+                display: "flex"
+            },
             text: {
                 marginTop: "5px",
                 color: "#636363"
+            },
+            clearIcon: {
+                marginTop: "5px",
+                marginLeft: "5px",
+                fill: "#ff4b69",
+                cursor: "pointer"
             }
         };
 
         return (
-            <div>
+            <div style={style.container}>
                 <Divider/>
                 <Typography style={style.text}>Selected: <b>{this.props.selected}</b></Typography>
+                {
+                    this.props.selected > 0 &&
+                    <Tooltip title={"Clear selection"}>
+                        <CloseIcon onClick={() => {this.props.clearIndividualSelection(this.props.tableKey)}} style={style.clearIcon} size={20}/>
+                    </Tooltip>
+                }
+
             </div>
         )
     }
