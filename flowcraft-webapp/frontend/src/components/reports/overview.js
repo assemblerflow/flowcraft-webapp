@@ -110,6 +110,7 @@ export class ReportOverview extends React.Component{
      */
     getSamplesOverview = (sampleList, qcInfo) => {
 
+        let rawSamples = [];
         let samples = [];
         let columns = [{
             Header: <Typography>Sample</Typography>,
@@ -133,6 +134,7 @@ export class ReportOverview extends React.Component{
 
             sampleQcInfo = this._getSampleQcInfo(sample, qcInfo);
 
+            rawSamples.push(sample);
             samples.push({
                 "_id": sample,
                 "rowId": <Typography>{sample}</Typography>,
@@ -143,7 +145,8 @@ export class ReportOverview extends React.Component{
 
         return {
             data: samples,
-            columns
+            columns,
+            rawSamples
         }
     };
 
@@ -156,6 +159,9 @@ export class ReportOverview extends React.Component{
         let _projects = new Map();
         let _components = new Map();
 
+        let rawProjects = [];
+        let rawComponents = [];
+
         for (const el of reportData){
 
             let projectQcInfo;
@@ -167,6 +173,7 @@ export class ReportOverview extends React.Component{
 
                     projectQcInfo = this._getQcInfo("project", el.projectid, qcInfo);
 
+                    rawProjects.push(el.projectid);
                     _projects.set(el.projectid, {
                         "_id": el.projectid,
                         "project": el.projectid,
@@ -182,6 +189,7 @@ export class ReportOverview extends React.Component{
 
                     componentQcInfo = this._getQcInfo("process", el.processName, qcInfo);
 
+                    rawComponents.push(el.processName);
                     _components.set(el.processName, {
                         "_id": el.processName,
                         "component": el.processName,
@@ -220,11 +228,13 @@ export class ReportOverview extends React.Component{
         return {
             projects: {
                 data: [..._projects.values()],
-                columns: projectColumns
+                columns: projectColumns,
+                rawProjects,
             },
             components: {
                 data: [..._components.values()],
-                columns: componentColumns
+                columns: componentColumns,
+                rawComponents,
             }
         }
 
@@ -241,6 +251,38 @@ export class ReportOverview extends React.Component{
         this.setState({
             selected
         });
+    };
+
+    /*
+    Updates the report filters with the provided selection
+     */
+    filterSelection = (samples, projects, components) => {
+
+        const arrayMap = {
+            "samples": samples,
+            "projects": projects,
+            "components": components,
+        };
+        let activeArray;
+        let activeSelection;
+        let filterArray;
+        let newFilters = {};
+
+        for (const key of Object.keys(arrayMap)){
+            filterArray = [];
+            activeArray = arrayMap[key].concat(this.props.filters[key]);
+            activeSelection = this.state.selected[key];
+
+            for (const el of activeArray){
+                if (activeSelection.length > 0 && !activeSelection.includes(el)){
+                    filterArray.push(el)
+                }
+            }
+
+            newFilters[key] = filterArray;
+        }
+
+        this.props.updateFilters(newFilters);
     };
 
     /*
@@ -320,6 +362,7 @@ export class ReportOverview extends React.Component{
                                 <OverviewTable closeTable={this.closeTable}
                                                data={this.state.tableData}
                                                rawData={this.state.data}
+                                               filterSelection={() => {this.filterSelection(samples.rawSamples, projects.rawProjects, components.rawComponents)}}
                                                selection={this.state.selected[this.state.activeTable]}
                                                setSelection={this.setSelection}/>
                             }
@@ -442,7 +485,7 @@ class OverviewTable extends React.Component{
                 </div>
                 <div style={style.toolbar}>
                     <Tooltip title={"Filter and keep only selection"} placement={"bottom"}>
-                        <Button color={"primary"} variant={"contained"}><FilterIcon color={"#fff"}/></Button>
+                        <Button onClick={this.props.filterSelection} color={"primary"} variant={"contained"}><FilterIcon color={"#fff"}/></Button>
                     </Tooltip>
                 </div>
                 <div style={style.tableContainer}>

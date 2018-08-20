@@ -249,10 +249,14 @@ class ReportsApp extends React.Component {
 
     state = {
         filters: {
-            samples: ["JMG-0032-1_S52_L004"],
+            samples: [],
             projects: [],
             components: []
         }
+    };
+
+    updateFilters = (filters) => {
+        this.setState({filters})
     };
 
     filterReportArray = (reportArray, filters) => {
@@ -278,6 +282,7 @@ class ReportsApp extends React.Component {
             }
 
             if (!save){
+                save = true;
                 continue
             }
 
@@ -318,6 +323,8 @@ class ReportsApp extends React.Component {
 
         if (nextProps.reportData !== this.props.reportData){
             return true
+        } else if (nextState.filters !== this.state.filters) {
+            return true
         } else {
             return false
         }
@@ -333,8 +340,6 @@ class ReportsApp extends React.Component {
         const {charts, chartSamples} = findChartSignatures(activeReports);
         const qcInfo = findQcWarnings(activeReports);
         const tables = [...tableData.keys()];
-
-        console.log(this.props)
 
         //
         // This is the main element where the Reports components will be added,
@@ -355,6 +360,7 @@ class ReportsApp extends React.Component {
                             tableSamples={tableSamples}
                             chartSamples={chartSamples}
                             filters={this.state.filters}
+                            updateFilters={this.updateFilters}
                             qcInfo={qcInfo}/>
                     </Element>
                     {
