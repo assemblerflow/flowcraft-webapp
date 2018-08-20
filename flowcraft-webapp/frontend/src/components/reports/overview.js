@@ -280,19 +280,31 @@ export class ReportOverview extends React.Component{
                 <ExpansionPanelDetails>
                     <Grid style={{width: "100%"}} container justify={"center"} spacing={40}>
                         <Grid item xs={3} style={{minWidth: 200}}>
-                            <OverviewCard action={() => {this.updateData(samples, "samples")}} header={"Samples"} value={samples.data.length} filtered={this.props.filters.samples.length}/>
+                            <OverviewCard action={() => {this.updateData(samples, "samples")}}
+                                          header={"Samples"}
+                                          active={this.state.activeTable === "samples" && this.state.showTable}
+                                          value={samples.data.length}
+                                          filtered={this.props.filters.samples.length}/>
                             <Collapse in={this.state.showTable}>
                                 <SelectedFootnote filtered={this.props.filters.samples.length} selected={this.state.selected.samples.length}/>
                             </Collapse>
                         </Grid>
                         <Grid item xs={3} style={{minWidth: 200}}>
-                            <OverviewCard action={() => {this.updateData(projects, "projects")}} header={"Projects"} value={projects.data.length} filtered={this.props.filters.projects.length}/>
+                            <OverviewCard action={() => {this.updateData(projects, "projects")}}
+                                          header={"Projects"}
+                                          value={projects.data.length}
+                                          active={this.state.activeTable === "projects" && this.state.showTable}
+                                          filtered={this.props.filters.projects.length}/>
                             <Collapse in={this.state.showTable}>
                                 <SelectedFootnote filtered={this.props.filters.projects.length} selected={this.state.selected.projects.length}/>
                             </Collapse>
                         </Grid>
                         <Grid item xs={3} style={{minWidth: 200}}>
-                            <OverviewCard action={() => {this.updateData(components, "components")}} header={"Components"} value={components.data.length} filtered={this.props.filters.components.length}/>
+                            <OverviewCard action={() => {this.updateData(components, "components")}}
+                                          header={"Components"}
+                                          value={components.data.length}
+                                          active={this.state.activeTable === "components" && this.state.showTable}
+                                          filtered={this.props.filters.components.length}/>
                             <Collapse in={this.state.showTable}>
                                 <SelectedFootnote filtered={this.props.filters.components.length} selected={this.state.selected.components.length}/>
                             </Collapse>
@@ -334,7 +346,8 @@ class OverviewCard extends React.Component{
                 fontSize: "50px",
                 textAlign: "center",
                 width: "100%",
-                color: indigo[500]
+                color: indigo[500],
+                borderBottom: this.props.active ? "5px solid #5c6bc0" : "0px solid transparent"
             },
             button: {
                 width: "100%",
@@ -385,7 +398,8 @@ class SelectedFootnote extends React.Component{
     render(){
         const style = {
             text: {
-                marginTop: "5px"
+                marginTop: "5px",
+                color: "#636363"
             }
         };
 
