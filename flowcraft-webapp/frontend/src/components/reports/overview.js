@@ -11,6 +11,7 @@ import Tooltip from "@material-ui/core/Tooltip";
 import Popover from "@material-ui/core/Popover";
 import Divider from "@material-ui/core/Divider"
 import Button from "@material-ui/core/Button";
+import Badge from "@material-ui/core/Badge";
 import Grid from "@material-ui/core/Grid";
 
 import indigo from "@material-ui/core/colors/indigo";
@@ -279,21 +280,21 @@ export class ReportOverview extends React.Component{
                 <ExpansionPanelDetails>
                     <Grid style={{width: "100%"}} container justify={"center"} spacing={40}>
                         <Grid item xs={3} style={{minWidth: 200}}>
-                            <OverviewCard action={() => {this.updateData(samples, "samples")}} header={"Samples"} value={samples.data.length}/>
+                            <OverviewCard action={() => {this.updateData(samples, "samples")}} header={"Samples"} value={samples.data.length} filtered={this.props.filters.samples.length}/>
                             <Collapse in={this.state.showTable}>
-                                <SelectedFootnote value={this.state.selected.samples.length}/>
+                                <SelectedFootnote filtered={this.props.filters.samples.length} selected={this.state.selected.samples.length}/>
                             </Collapse>
                         </Grid>
                         <Grid item xs={3} style={{minWidth: 200}}>
-                            <OverviewCard action={() => {this.updateData(projects, "projects")}} header={"Projects"} value={projects.data.length}/>
+                            <OverviewCard action={() => {this.updateData(projects, "projects")}} header={"Projects"} value={projects.data.length} filtered={this.props.filters.projects.length}/>
                             <Collapse in={this.state.showTable}>
-                                <SelectedFootnote value={this.state.selected.projects.length}/>
+                                <SelectedFootnote filtered={this.props.filters.projects.length} selected={this.state.selected.projects.length}/>
                             </Collapse>
                         </Grid>
                         <Grid item xs={3} style={{minWidth: 200}}>
-                            <OverviewCard action={() => {this.updateData(components, "components")}} header={"Components"} value={components.data.length}/>
+                            <OverviewCard action={() => {this.updateData(components, "components")}} header={"Components"} value={components.data.length} filtered={this.props.filters.components.length}/>
                             <Collapse in={this.state.showTable}>
-                                <SelectedFootnote value={this.state.selected.components.length}/>
+                                <SelectedFootnote filtered={this.props.filters.components.length} selected={this.state.selected.components.length}/>
                             </Collapse>
                         </Grid>
                     </Grid>
@@ -326,7 +327,8 @@ class OverviewCard extends React.Component{
                 fontSize: "20px",
                 textAlign: "left",
                 fontWeight: "bold",
-                color: "#5b5b5b",
+                color: "#636363",
+                marginBottom: "5px"
             },
             value: {
                 fontSize: "50px",
@@ -337,12 +339,29 @@ class OverviewCard extends React.Component{
             button: {
                 width: "100%",
                 color: "#ff4b69"
+            },
+            filterContainer: {
+                display: "flex"
+            },
+            filterIcon: {
+                marginRight: "5px",
+                fill: "#636363"
+            },
+            filterText: {
+                fontWeight: "bold",
+                color: "#636363"
             }
         };
 
         return(
             <div>
                 <Typography style={style.header}>{this.props.header}</Typography>
+                    <div style={style.filterContainer}>
+                        <Tooltip title={"Number of filtered elements"}>
+                            <FilterIcon size={17} style={style.filterIcon}/>
+                        </Tooltip>
+                        <Typography style={style.filterText}>{this.props.filtered}</Typography>
+                    </div>
                 <Button onClick={this.props.action} style={style.value}>{this.props.value}</Button>
             </div>
         )
@@ -354,12 +373,13 @@ class SelectedFootnote extends React.Component{
     render(){
         const style = {
             text: {
-                textAlign: "centers"
             }
         };
 
         return (
-            <Typography style={style.text}>Selected: <b>{this.props.value}</b></Typography>
+            <div>
+                <Typography style={style.text}>Selected: <b>{this.props.selected}</b></Typography>
+            </div>
         )
     }
 }

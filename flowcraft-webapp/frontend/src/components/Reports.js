@@ -249,15 +249,13 @@ class ReportsApp extends React.Component {
 
     state = {
         filters: {
-            samples: [],
+            samples: ["JMG-0032-1_S52_L004"],
             projects: [],
             components: []
         }
     };
 
     filterReportArray = (reportArray, filters) => {
-
-        console.log("start filter")
 
         // Stores the JSON keys inside the reportJSON object that contain sample
         // names. This method will check for the absence of sample names in the
@@ -303,8 +301,6 @@ class ReportsApp extends React.Component {
 
             save = true
         }
-
-        console.log("end filter")
 
         return filteredReport
 
@@ -358,6 +354,7 @@ class ReportsApp extends React.Component {
                             reportData={activeReports}
                             tableSamples={tableSamples}
                             chartSamples={chartSamples}
+                            filters={this.state.filters}
                             qcInfo={qcInfo}/>
                     </Element>
                     {
