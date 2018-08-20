@@ -18,6 +18,7 @@ import {FCTable} from "./tables";
 import matchSorter from "match-sorter";
 
 import MarkerIcon from "mdi-react/MarkerIcon";
+import CloseIcon from "mdi-react/CloseIcon";
 import FilterIcon from "mdi-react/FilterIcon";
 
 import {sortByContent} from "./utils";
@@ -285,6 +286,22 @@ export class ReportOverview extends React.Component{
         this.props.updateFilters(newFilters);
     };
 
+    clearIndividualFilter = (tableKey) => {
+
+        let newFilters = {};
+
+        for (const key of Object.keys(this.props.filters)){
+            if (key === tableKey){
+                newFilters[key] = [];
+            } else {
+                newFilters[key] = this.props.filters[key]
+            }
+        }
+
+        this.props.updateFilters(newFilters);
+
+    };
+
     /*
     Updates the table data in the state, which is used to render the overview table
      */
@@ -325,6 +342,7 @@ export class ReportOverview extends React.Component{
                             <OverviewCard action={() => {this.updateData(samples, "samples")}}
                                           header={"Samples"}
                                           active={this.state.activeTable === "samples" && this.state.showTable}
+                                          clearIndividualFilter={this.clearIndividualFilter}
                                           value={samples.data.length}
                                           filtered={this.props.filters.samples.length}/>
                             <Collapse in={this.state.showTable}>
@@ -336,6 +354,7 @@ export class ReportOverview extends React.Component{
                                           header={"Projects"}
                                           value={projects.data.length}
                                           active={this.state.activeTable === "projects" && this.state.showTable}
+                                          clearIndividualFilter={this.clearIndividualFilter}
                                           filtered={this.props.filters.projects.length}/>
                             <Collapse in={this.state.showTable}>
                                 <SelectedFootnote filtered={this.props.filters.projects.length} selected={this.state.selected.projects.length}/>
@@ -346,6 +365,7 @@ export class ReportOverview extends React.Component{
                                           header={"Components"}
                                           value={components.data.length}
                                           active={this.state.activeTable === "components" && this.state.showTable}
+                                          clearIndividualFilter={this.clearIndividualFilter}
                                           filtered={this.props.filters.components.length}/>
                             <Collapse in={this.state.showTable}>
                                 <SelectedFootnote filtered={this.props.filters.components.length} selected={this.state.selected.components.length}/>
@@ -377,6 +397,8 @@ export class ReportOverview extends React.Component{
 class OverviewCard extends React.Component{
     render(){
 
+        console.log(this.props)
+
         const style = {
             header: {
                 fontSize: "20px",
@@ -407,9 +429,17 @@ class OverviewCard extends React.Component{
                 marginRight: "5px",
                 fill: "#636363"
             },
+            clearIcon: {
+                marginLeft: "10px",
+                fill: "#ff4b69",
+                cursor: "pointer"
+            },
             filterText: {
                 fontWeight: "bold",
                 color: "#636363"
+            },
+            clearButton: {
+                height: "5px"
             }
         };
 
@@ -422,12 +452,24 @@ class OverviewCard extends React.Component{
                                 <FilterIcon size={17} style={style.filterIcon}/>
                             </Tooltip>
                             <Typography style={style.filterText}>{this.props.filtered}</Typography>
+                            {
+                                this.props.filtered > 0 &&
+                                    <Tooltip title={"Clear filter"}>
+                                        <CloseIcon onClick={() => {this.props.clearIndividualFilter(this.props.header.toLowerCase())}} size={19} style={style.clearIcon}/>
+                                    </Tooltip>
+                            }
                         </div>
                         <div style={style.filterChild}>
                             <Tooltip title={"Highlighted elements"}>
                                 <MarkerIcon size={17} style={style.filterIcon}/>
                             </Tooltip>
                             <Typography style={style.filterText}>{this.props.filtered}</Typography>
+                            {
+                                this.props.filtered > 0 &&
+                                <Tooltip title={"Clear highlights"}>
+                                    <CloseIcon size={19} style={style.clearIcon}/>
+                                </Tooltip>
+                            }
                         </div>
                     </div>
                 <Button onClick={this.props.action} style={style.value}>{this.props.value}</Button>
