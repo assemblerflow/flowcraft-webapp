@@ -17,7 +17,8 @@ import {
     AssemblyTable,
     AbricateTable,
     ChewbbacaTable,
-    MetadataTable
+    MetadataTable,
+    PhylovizTable
 } from "./reports/tables";
 
 import {Innuendo, innuendoSteps} from "./reports/innuendo";
@@ -407,6 +408,15 @@ class ReportsApp extends React.Component {
                                 reportData={activeReports}
                                 additionalInfo={this.props.additionalInfo}
                             />
+                        </Element>
+                    }
+                    {
+                        tables.includes("phyloviz") &&
+                        <Element name={"phylovizTable"}
+                                 className={styles.scrollElement}>
+                            <PhylovizTable
+                                tableData={tableData.get("phyloviz")}
+                                reportData={activeReports} />
                         </Element>
                     }
                     {

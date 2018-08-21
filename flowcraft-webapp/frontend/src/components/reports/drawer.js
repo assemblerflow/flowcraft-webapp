@@ -167,7 +167,8 @@ class TableDrawer extends React.Component {
             "abricate": {"icon": <PillIcon/>, "text": "AMR"},
             "chewbbaca": {"icon": <AlienIcon/>, "text": "chewBBACA"},
             "typing": {"icon": <PillIcon/>, "text": "Typing"},
-            "metadata": {"icon": <PillIcon/>, "text": "Metadata"}
+            "metadata": {"icon": <PillIcon/>, "text": "Metadata"},
+            "phyloviz": {"icon": <PillIcon/>, "text": "PHYLOViZ"}
         };
 
         return (

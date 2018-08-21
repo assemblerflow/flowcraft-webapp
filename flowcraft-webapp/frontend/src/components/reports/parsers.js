@@ -6,7 +6,6 @@ import {CellBar} from "./tables";
 import {QcPopover} from "./tables";
 
 import styles from "../../styles/reports.css"
-import {metadataMapping} from "../../../config.json"
 
 /**
  * Parses the reportData array and search for all unique table signatures.
@@ -71,8 +70,13 @@ export const findTableSignatures = (reportArray) => {
             }
         }
         else {
-            // Case metadata in report
-            parseInnuendoMetadata(r, tables);
+            if (r.hasOwnProperty("phyloviz_user")) {
+                parsePhylovizTrees(r, tables);
+            }
+            else {
+                // Case metadata in report
+                parseInnuendoMetadata(r, tables);
+            }
         }
 
     }
@@ -99,6 +103,22 @@ const parseInnuendoMetadata = (metadataEntry, tables) => {
 
     let row = {};
 
+    // Metadata fields from reports and mapping for table headers
+    const metadataMapping = {
+        "species_id": "Species ID",
+        "Location": "Location",
+        "SampleReceivedDate": "Sample Received Date",
+        "source_Source": "Source",
+        "AdditionalInformation": "Additional Information",
+        "File_1": "File 1",
+        "Accession": "Accession",
+        "Owner": "Owner",
+        "Food-Bug": "Case ID",
+        "Submitter": "Submitter",
+        "SamplingDate": "Sampling Date",
+        "File_2": "File 2"
+    };
+
     for (const header of headers) {
         let cell = {};
 
@@ -124,6 +144,47 @@ const parseInnuendoMetadata = (metadataEntry, tables) => {
             }
         }
     }
+};
+
+const parsePhylovizTrees = (treeEntry, tables) => {
+
+    const headers = Object.keys(treeEntry);
+    let row = {};
+
+    // Trees fields from reports and mapping for table headers
+    const treesMapping = {
+        "name": "Name",
+        "phyloviz_user": "PHYLOViZ User",
+        "timestamp": "Timestamp"
+    };
+
+    for (const header of headers) {
+        let cell = {};
+
+        // Add cell case it exists in innuendo metadataMapping from the
+        // config.json
+        // Constructs the cells to fill the requirements of the general
+        // table parser.
+        if (treesMapping.hasOwnProperty(header)) {
+            cell.header = treesMapping[header];
+            cell.value = treeEntry[header];
+            cell.table = "phyloviz";
+            cell.columnBar = true;
+            cell.processName = "phyloviz";
+            cell.processId = "phyloviz";
+            cell.projectId = "phyloviz";
+            cell.pipelineId = "phyloviz";
+            cell.rowId = treeEntry.name;
+            cell.uri = treeEntry.uri;
+
+            if (!tables.has(cell.table)) {
+                tables.set(cell.table, [cell])
+            } else {
+                tables.get(cell.table).push(cell)
+            }
+        }
+    }
+
 };
 
 
@@ -451,15 +512,25 @@ export const genericTableParser = (reportArray) => {
         if (!dataDict.hasOwnProperty(cell.rowId)) {
             // Add rowId in the _id field to have checkbox on Checkbox
             // React-table
-            dataDict[cell.rowId] = {
-                "_id": cell.rowId,
-                "rowId": <Typography
-                    className={styles.tableCell}>{cell.rowId}</Typography>,
-                // Add process identification on table rows
-                "projectId": cell.projectId,
-                "pipelineId": cell.pipelineId,
-                "processId": cell.processId,
+
+            let initialDataObject = {
+                "_id": cell.rowId
             };
+
+            // Add all cell values to row data object. They will then be
+            // modified according with the accessor. All data defined as
+            // part of a cell in findTableSignatures will be available as
+            // part of the data available in the row selection
+            for (const key of Object.keys(cell)){
+                if (key === "rowId"){
+                    initialDataObject[key] = <Typography className={styles.tableCell}>{cell[key]}</Typography>
+                } else {
+                    initialDataObject[key] = cell[key];
+                }
+            }
+
+            dataDict[cell.rowId] = initialDataObject;
+
             rawDataDict[cell.rowId] = {
                 "rowId": cell.rowId
             };

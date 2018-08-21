@@ -165,14 +165,25 @@ export class Innuendo {
     /*
     Get all metadata associated with a set of strains.
      */
-    async getInnuendoStrainsMetadata(filter) {
-        return await
-            axios({
-                method: "post",
-                url: address + "app/api/v1.0/strains/name/",
-                data: filter
+    getInnuendoStrainsMetadata(filter) {
+        return axios({
+            method: "post",
+            url: address + "app/api/v1.0/strains/name/",
+            data: filter
 
-            });
+        });
+    }
+
+    /*
+    Get all trees for a given user.
+     */
+    getPhylovizTrees(data) {
+        return axios({
+            method: "get",
+            url: address + "app/api/v1.0/phyloviz/trees/user/",
+            params: data
+
+        });
     }
 
     /*
@@ -196,6 +207,29 @@ export class Innuendo {
             data: requestObject
         });
     }
+
+    //Request to get PHYLOViZ Online Platform job status
+    fetchJob(redisJobId) {
+        return axios({
+            method: "get",
+            url: address + "app/api/v1.0/phyloviz/",
+            params: {
+                job_id: redisJobId
+            }
+        });
+
+    };
+
+    fetchPhyloviz(phylovizJob) {
+        return axios({
+            method: "get",
+            url: address + "app/api/v1.0/phyloviz/job/",
+            params: {
+                jobid: phylovizJob
+            }
+        });
+
+    };
 
 }
 
@@ -698,6 +732,11 @@ class InnuendoProjects extends React.Component {
     getStrainsMetadata = this.props.innuendo.getInnuendoStrainsMetadata;
 
     /*
+
+     */
+    getPhylovizTrees = this.props.innuendo.getPhylovizTrees;
+
+    /*
     Loads all reports according with the chosen strains.
      */
     submitStrains = async () => {
@@ -728,8 +767,12 @@ class InnuendoProjects extends React.Component {
             selectedStrains: metadataMap[1]
         });
 
+        const resultsPhyloviz = await this.getPhylovizTrees({
+            user_id: this.props.innuendo.getUserId()
+        });
+
         // Merge reports and metadata results
-        const finalResults = [...resultsReports.data, ...resultsMetadata.data];
+        const finalResults = [...resultsReports.data, ...resultsMetadata.data, ...resultsPhyloviz.data];
 
         this.setState({
             resultsReports: finalResults,

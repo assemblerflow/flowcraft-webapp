@@ -43,11 +43,13 @@ export class PositionedSnackbar extends React.Component {
     render() {
         const style = {
             message: {
-                width: "80%",
+                width: "100%",
                 color: "white"
             }
-        }
+        };
+
         const {open} = this.state;
+
         return (
             <div>
                 <Snackbar
@@ -136,9 +138,9 @@ export class BasicModal extends React.Component {
     }
 }
 
-/*
-Modal that allows to send requests to the PHYLOViZ Online service according
- to the selected profiles in the report.
+/**
+ * Modal that allows to send requests to the PHYLOViZ Online service according
+   to the selected profiles in the report.
  */
 export class PhylovizModal extends React.Component {
 
@@ -156,13 +158,17 @@ export class PhylovizModal extends React.Component {
             makePublic: false,
             selection: [],
             openSnack: false,
-            snackMessage: ""
+            snackMessage: "",
+            // Intervals used to retrieve status of phyloviz trees processing
+            intervalCheckTree: {},
+            intervalCheckPhylovizTrees: {}
 
         };
     }
 
     static getDerivedStateFromProps(props, state) {
         return {
+            // Pass table selection data to modal
             selection: props.selection
         }
     }
@@ -193,6 +199,9 @@ export class PhylovizModal extends React.Component {
         });
     };
 
+    /*
+    Handle close of Snackbar
+     */
     handleSnackClose = () => {
         this.setState({
             openSnack: false
@@ -257,12 +266,29 @@ export class PhylovizModal extends React.Component {
             // Trigger request and give message to the user. Set interval to
             // get phyloviz job status
             this.props.additionalInfo.innuendo.sendToPHYLOViZ(data).then((response) => {
+
+                let message = "Your request was sent to PHYLOViZ Online server. " +
+                    "You will be notified when the tree is ready to be visualized. " +
+                    "All available trees can be found on the PHYLOViZ Table" +
+                    " at the Reports menu.";
+
+                // Open Snackbar with the message
                 this.setState({
                     openSnack: true,
-                    snackMessage: "Your request was sent to PHYLOViZ Online server. " +
-                    "You will be notified when the tree is ready to be visualized. " +
-                    "All available trees can be found on the PHYLOViZ Table at the Reports menu."
-                })
+                    snackMessage: message
+                });
+
+                const intervalCheck = this.state.intervalCheckTree;
+
+                // Set interval to know when the data processing is
+                // completed when sending profiles to phyloviz online
+                intervalCheck[response.data] = setInterval(() => {
+                    this.fetchTreeJob(response.data);
+                }, 5000);
+
+                this.setState({
+                    intervalCheckTree: intervalCheck
+                });
 
             }).catch((response) => {
                 console.log(response);
@@ -274,6 +300,103 @@ export class PhylovizModal extends React.Component {
 
     };
 
+    /*
+    Method to retrieve information on when the redis job for profile data
+     processing to send to phyloviz is completed. After completion, a new
+      interval is set to know when the tree is ready to be visualized by
+       asking to phyloviz online
+     */
+    fetchTreeJob = async (redisJobId) => {
+        // Fetch redis job information
+        const response = await this.props.additionalInfo.innuendo.fetchJob(redisJobId);
+
+        let message = "";
+
+        // If completed, set the new interval to ask for the tree on
+        // phyloviz online
+        if (response.data.status === true && response.data.result.message === undefined) {
+
+            clearInterval(this.state.intervalCheckTree[redisJobId]);
+
+            // Case missmatch between user and password on phyloviz
+            if (response.data.result === 404) {
+                message = "PHYLOViZ Online: Bad credentials.";
+
+                this.setState({
+                    openSnack: true,
+                    snackMessage: message
+                });
+
+            }
+            else {
+                // Retrieve phyloviz online job id
+                const phylovizJob = response.data.result[0].jobid.replace(/\s/g, '');
+
+                const intervalCheck = this.state.intervalCheckPhylovizTrees;
+
+                // Set interval to retrieve job id
+                intervalCheck[phylovizJob] = setInterval(() => {
+                    this.fetchPhylovizJob(phylovizJob);
+                }, 5000);
+
+                this.setState({
+                    intervalCheckPhylovizTrees: intervalCheck
+                });
+            }
+        }
+        // Case some error occurried when data is being processed by
+        // phyloviz online
+        else if (response.data.status === true && response.data.result.message !== undefined) {
+
+            clearInterval(this.state.intervalCheckTree[redisJobId]);
+
+            this.setState({
+                openSnack: true,
+                snackMessage: response.data.result.message
+            });
+        }
+        // Case other unexpected error
+        else if (response.data.status === false) {
+
+            clearInterval(this.state.intervalCheckTree[redisJobId]);
+
+            message = "There was an error when sending the request to" +
+                " PHYLOViZ Online.";
+
+            this.setState({
+                openSnack: true,
+                snackMessage: message
+            });
+        }
+
+    };
+
+    /*
+    Method to fetch tree information from phyloviz online
+     */
+    fetchPhylovizJob = async (phylovizJob) => {
+
+        const response = await this.props.additionalInfo.innuendo.fetchPhyloviz(phylovizJob);
+
+        console.log(response);
+
+        // Case the tree is ready to be visualized
+        if (response.data.status === "complete") {
+            let message = "Your tree is ready to be visualized! Go to the PHYLOViZ Table at the Reports menu.";
+
+            clearInterval(this.state.intervalCheckPhylovizTrees[phylovizJob]);
+
+            this.setState({
+                openSnack: true,
+                snackMessage: message
+            });
+
+            // Need to update trees table information
+
+        }
+    };
+
+
     render() {
 
         const style = {
@@ -283,9 +406,6 @@ export class PhylovizModal extends React.Component {
             rowComponent: {
                 marginBottom: "2%"
 
-            },
-            buttonSubmit: {
-                width: "50%"
             },
             modalContent: {
                 marginLeft: "5%",

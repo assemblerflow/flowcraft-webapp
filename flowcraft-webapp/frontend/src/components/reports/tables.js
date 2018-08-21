@@ -77,8 +77,9 @@ export class FCTable extends React.Component {
 
         for (const index in rows) {
             if (rows[index]._id.indexOf(key) >= 0) {
-                keyIndex =  index
-            };
+                keyIndex = index
+            }
+            ;
         }
 
         // check to see if the key exists
@@ -110,7 +111,7 @@ export class FCTable extends React.Component {
 
     componentDidUpdate = () => {
 
-        if (this.props.initialSelection && this.state.selection !== this.props.initialSelection){
+        if (this.props.initialSelection && this.state.selection !== this.props.initialSelection) {
             this.setState({selection: this.props.initialSelection})
         }
 
@@ -148,8 +149,9 @@ export class FCTable extends React.Component {
 
         for (const index in this.state.selection.rows) {
             if (this.state.selection.rows[index]._id.indexOf(key) >= 0) {
-                keyIndex =  index
-            };
+                keyIndex = index
+            }
+            ;
         }
 
         if (keyIndex !== null)
@@ -252,6 +254,71 @@ export class MetadataTable extends React.Component {
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails>
                     <div className={styles.mainPaper}>
+                        <FCTable
+                            data={tableData.tableArray}
+                            columns={tableData.columnsArray}
+                            rawData={tableData.rawTableArray}
+                            setSelection={this.setSelection}
+                        />
+                    </div>
+                </ExpansionPanelDetails>
+            </ExpansionPanel>
+        )
+    }
+}
+
+export class PhylovizTable extends React.Component {
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            selection: []
+        };
+    }
+
+    shouldComponentUpdate(nextProps, nextState, nextContext) {
+        if (nextProps.tableData !== this.props.tableData) {
+            return true
+        } else if (nextState.selection !== this.state.selection) {
+            return true
+        }
+
+        return false
+    }
+
+    setSelection = (selection) => {
+        console.log(selection);
+        this.setState({selection});
+    };
+
+    showTree = () => {
+        if (this.state.selection.rows.length > 0) {
+            window.open(this.state.selection.rows[0].uri, "_blank");
+        }
+    };
+
+    render() {
+
+        // Metadata fields are obtained by the absence of reportJson object
+        // inside each report entry. If reportJson doesnt exist, the entry
+        // goes to the Innuendo metadata parser.
+        const tableData = genericTableParser(this.props.tableData);
+
+        return (
+            <ExpansionPanel defaultExpanded>
+                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
+                    <Typography variant={"headline"}>PHYLOViZ
+                        Online</Typography>
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails>
+                    <div className={styles.mainPaper}>
+                        <TableButtons>
+                            <Button onClick={this.showTree}
+                                    variant={"contained"}
+                                    color={"primary"}
+                            >Show Tree</Button>
+                        </TableButtons>
                         <FCTable
                             data={tableData.tableArray}
                             columns={tableData.columnsArray}
@@ -481,7 +548,7 @@ export class ChewbbacaTable extends React.Component {
 
         // Search on the reportData for the chewbbac and species signature
         // to visualize only those with the selected specie
-        for(const data of reportData) {
+        for (const data of reportData) {
             if (data.hasOwnProperty("species") && data.species === specie &&
                 data.processName.indexOf("chewbbaca") > -1) {
 
@@ -489,7 +556,7 @@ export class ChewbbacaTable extends React.Component {
                 // matching with the sample_name property of the reports
                 for (const status of data.reportJson.status) {
                     for (const row of tableData) {
-                        if (row.rowId === status.sample){
+                        if (row.rowId === status.sample) {
                             newTableData.push(row);
                         }
                     }
