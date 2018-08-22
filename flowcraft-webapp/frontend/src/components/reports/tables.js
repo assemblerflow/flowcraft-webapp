@@ -33,6 +33,7 @@ import AlertOctagonIcon from "mdi-react/AlertOctagonIcon";
 import AlertIcon from "mdi-react/AlertIcon";
 import {LoadingComponent} from "../ReportsBase";
 import {PhylovizModal, PositionedSnackbar} from "./modals";
+import {ReportDataUpdateConsumer} from './contexts';
 
 
 const statusColor = {
@@ -335,6 +336,8 @@ export class PhylovizTable extends React.Component {
         // inside each report entry. If reportJson doesnt exist, the entry
         // goes to the Innuendo metadata parser.
         const tableData = genericTableParser(this.props.tableData);
+        console.log(tableData);
+        console.log("render phyloviz table");
 
         return (
             <ExpansionPanel defaultExpanded>
@@ -716,12 +719,22 @@ export class ChewbbacaTable extends React.Component {
                             rawData={tableData.rawTableArray}
                             setSelection={this.setSelection}
                         >
-                            <PhylovizModal
-                                specie={this.getCurrentSpecie}
-                                selection={this.state.selection}
-                                additionalInfo={this.props.additionalInfo}
+                            {/*Pass the context value (_updateState
+                             function) from the ReportDataContext to
+                              PhylovizModal as a prop to
+                              allow reportData state update*/}
+                            <ReportDataUpdateConsumer>
+                                {
+                                    context => <PhylovizModal
+                                        specie={this.getCurrentSpecie}
+                                        selection={this.state.selection}
+                                        additionalInfo={this.props.additionalInfo}
+                                        reportData={this.props.reportData}
+                                        updateState={context}
+                                    />
 
-                            />
+                                }
+                            </ReportDataUpdateConsumer>
                         </FCTable>
                     </div>
                 </ExpansionPanelDetails>

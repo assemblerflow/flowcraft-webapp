@@ -447,8 +447,30 @@ export class PhylovizModal extends React.Component {
 
             this.snackBar.handleOpen(message, "success");
 
-            // Need to update phyloviz table
-            /*this.props.getPhylovizTrees();*/
+            // Get total number of trees for the innuendo user
+            const resultsPhyloviz = await this.props.additionalInfo.innuendo.getPhylovizTrees({
+                user_id: this.props.additionalInfo.innuendo.getUserId()
+            });
+
+            // Update report data. Add new tree to reportData object
+            const newReportsData = [...this.props.reportData];
+
+            for (const result of resultsPhyloviz.data) {
+                let exists = false;
+                for (const report of this.props.reportData) {
+                    if(report.hasOwnProperty("phyloviz_user") && report.name === result.name){
+                        exists = true;
+                        break;
+                    }
+                }
+                if (!exists){
+                    newReportsData.push(result);
+                }
+            }
+
+            // Update reportData state on ReportsRedirect through prop made
+            // available by React Context
+            this.props.updateState(newReportsData, this.props.additionalInfo);
         }
     };
 

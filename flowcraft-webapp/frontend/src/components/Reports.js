@@ -26,6 +26,7 @@ import {ReportsHeader} from "./reports/drawer";
 import {ReportOverview} from "./reports/overview";
 import {AssemblySizeDistChart, FastQcCharts} from "./reports/charts";
 import PositionedSnackbar from './reports/modals';
+import {ReportDataUpdateProvider} from './reports/contexts';
 
 
 import {
@@ -109,7 +110,7 @@ export class ReportsRedirect extends React.Component {
 
         // Set new additionalInfo userId for innuendo based on the current class
         // instance
-        if (additionalInfo.innuendo){
+        if (additionalInfo.innuendo) {
             additionalInfo.innuendo = {
                 userId: additionalInfo.innuendo.getUserId(),
                 species: additionalInfo.innuendo.getSpecies()
@@ -141,7 +142,7 @@ export class ReportsRedirect extends React.Component {
     Callback that can be passed to children components to update the reportData
     state.
      */
-    _updateState(reportData, additionalInfo){
+    _updateState(reportData, additionalInfo) {
         this.setState({
             reportData,
             additionalInfo
@@ -176,15 +177,15 @@ export class ReportsRedirect extends React.Component {
     /*
     Function triggered when files are dropped into the reports.
      */
-    handleDrop(files, event){
+    handleDrop(files, event) {
 
         const data = files[0];
         const reader = new FileReader();
 
-        reader.onload = function (e){
+        reader.onload = function (e) {
             const jsonData = JSON.parse(e.target.result).data.results;
 
-            if (this.state.reportData === null){
+            if (this.state.reportData === null) {
                 this.setState({reportData: jsonData})
             } else {
                 this.setState({dropData: jsonData});
@@ -218,6 +219,7 @@ export class ReportsRedirect extends React.Component {
     }
 
     render() {
+
         return (
             <div>
                 <FileDrop onDrop={this.handleDrop}>
@@ -231,9 +233,15 @@ export class ReportsRedirect extends React.Component {
                         this.state.loading ?
                             <LoadingScreen/> :
                             <div>
-                                <ReportsApp reportData={this.state.reportData}
-                                            additionalInfo={this.state.additionalInfo}
-                                            updateState={this._updateState.bind(this)}/>
+                                {/*Add updateState to Context, allowing its
+                                 use on child components without the need of
+                                  passing it as prop*/}
+                                <ReportDataUpdateProvider value={this._updateState.bind(this)}>
+                                    <ReportsApp
+                                        reportData={this.state.reportData}
+                                        additionalInfo={this.state.additionalInfo}
+                                        updateState={this._updateState.bind(this)}/>
+                                </ReportDataUpdateProvider>
                             </div>
                     }
                 </FileDrop>
@@ -272,18 +280,18 @@ class ReportsApp extends React.Component {
         let filteredReport = [];
         let save = true;
 
-        for (const el of JSON.parse(JSON.stringify(reportArray))){
+        for (const el of JSON.parse(JSON.stringify(reportArray))) {
             // Skip entries not present in project selection
-            if (filters.projects.includes(el.projectid)){
+            if (filters.projects.includes(el.projectid)) {
                 save = false
             }
 
             // Skip entries not present in component selection
-            if (filters.components.includes(el.processName)){
+            if (filters.components.includes(el.processName)) {
                 save = false
             }
 
-            if (!save){
+            if (!save) {
                 save = true;
                 continue
             }
@@ -313,17 +321,17 @@ class ReportsApp extends React.Component {
 
     };
 
-    componentDidUpdate(){
+    componentDidUpdate() {
         // Updates the reportData state and any additional information
         // passed to the component
-        if (this.props.updateState){
+        if (this.props.updateState) {
             this.props.updateState(this.props.reportData, this.props.additionalInfo)
         }
     }
 
-    shouldComponentUpdate(nextProps, nextState){
+    shouldComponentUpdate(nextProps, nextState) {
 
-        if (nextProps.reportData !== this.props.reportData){
+        if (nextProps.reportData !== this.props.reportData) {
             return true
         } else if (nextState.filters !== this.state.filters) {
             return true
@@ -369,7 +377,7 @@ class ReportsApp extends React.Component {
                                  className={styles.scrollElement}>
                             <MetadataTable
                                 tableData={tableData.get("metadata")}
-                                reportData={activeReports} />
+                                reportData={activeReports}/>
                         </Element>
                     }
                     {
@@ -415,7 +423,7 @@ class ReportsApp extends React.Component {
                                  className={styles.scrollElement}>
                             <PhylovizTable
                                 tableData={tableData.get("phyloviz")}
-                                reportData={activeReports} />
+                                reportData={activeReports}/>
                         </Element>
                     }
                     {
