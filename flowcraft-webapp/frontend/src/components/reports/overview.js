@@ -20,6 +20,8 @@ import matchSorter from "match-sorter";
 import MarkerIcon from "mdi-react/MarkerIcon";
 import CloseIcon from "mdi-react/CloseIcon";
 import FilterIcon from "mdi-react/FilterIcon";
+import EyeIcon from "mdi-react/EyeIcon";
+import EyeOffIcon from "mdi-react/EyeOffIcon";
 
 import {sortByContent} from "./utils";
 
@@ -31,7 +33,6 @@ export class ReportOverview extends React.Component{
 
         this.state = {
             showTable: false,
-            tableData: null,
             activeTable: null,
             selected: {
                 samples: {rows: [], keys: []},
@@ -114,6 +115,16 @@ export class ReportOverview extends React.Component{
         let rawSamples = [];
         let samples = [];
         let columns = [{
+            Header: "",
+            accessor: "visibility",
+            sortMethod: sortByContent,
+            minWidth: 40,
+            width: 40,
+            style: {
+                margin: "auto",
+                textAlign: "center"
+            }
+        }, {
             Header: <Typography>Sample</Typography>,
             accessor: "rowId",
             filterable: true,
@@ -137,6 +148,7 @@ export class ReportOverview extends React.Component{
 
             rawSamples.push(sample);
             samples.push({
+                "visibility": this.props.filters.samples.includes(sample) ? <EyeOffIcon/> : <EyeIcon/>,
                 "_id": sample,
                 "rowId": <Typography>{sample}</Typography>,
                 "warnings": <OverviewQcPopover content={sampleQcInfo.warnings}/>,
@@ -176,6 +188,7 @@ export class ReportOverview extends React.Component{
 
                     rawProjects.push(el.projectid);
                     _projects.set(el.projectid, {
+                        "visibility": this.props.filters.projects.includes(el.projectid) ? <EyeOffIcon/> : <EyeIcon/>,
                         "_id": el.projectid,
                         "project": el.projectid,
                         "warnings": <OverviewQcPopover content={projectQcInfo.warnings}/>,
@@ -192,6 +205,7 @@ export class ReportOverview extends React.Component{
 
                     rawComponents.push(el.processName);
                     _components.set(el.processName, {
+                        "visibility": this.props.filters.components.includes(el.processName) ? <EyeOffIcon/> : <EyeIcon/>,
                         "_id": el.processName,
                         "component": el.processName,
                         "warnings": <OverviewQcPopover content={componentQcInfo.warnings}/>,
@@ -202,6 +216,16 @@ export class ReportOverview extends React.Component{
         }
 
         const projectColumns = [{
+            Header: "",
+            accessor: "visibility",
+            sortMethod: sortByContent,
+            minWidth: 40,
+            width: 40,
+            style: {
+                margin: "auto",
+                textAlign: "center"
+            }
+        }, {
             Header: "Project",
             accessor: "project"
         }, {
@@ -214,6 +238,16 @@ export class ReportOverview extends React.Component{
             sortMethod: sortByContent
         }];
         const componentColumns = [{
+            Header: "",
+            accessor: "visibility",
+            sortMethod: sortByContent,
+            minWidth: 40,
+            width: 40,
+            style: {
+                margin: "auto",
+                textAlign: "center"
+            }
+        }, {
             Header: "Component",
             accessor: "component"
         }, {
@@ -260,7 +294,7 @@ export class ReportOverview extends React.Component{
 
         for (const key of Object.keys(this.state.selected)){
             if (key === tableKey){
-                newSelection[key] = [];
+                newSelection[key] = {rows: [], keys: []};
             } else {
                 newSelection[key] = this.state.selected[key]
             }
@@ -323,7 +357,6 @@ export class ReportOverview extends React.Component{
      */
     updateData = (data, table) => {
         this.setState({
-            tableData: data,
             activeTable: table
         });
 
@@ -344,8 +377,15 @@ export class ReportOverview extends React.Component{
     render(){
 
         const uniqueSamples = [...new Set([...this.props.tableSamples, ...this.props.chartSamples])];
-        const samples = this.getSamplesOverview(uniqueSamples, this.props.qcInfo);
+        const samples = this.getSamplesOverview(uniqueSamples.concat(this.props.filters.samples), this.props.qcInfo);
         const {projects, components} = this.getReportOverview(this.props.reportData, this.props.qcInfo);
+
+        let tableData;
+        if (this.state.activeTable){
+            tableData = this.state.activeTable === "samples" ?
+                samples : this.state.activeTable === "projects" ?
+                    projects : components
+        }
 
         return(
             <ExpansionPanel defaultExpanded >
@@ -403,10 +443,9 @@ export class ReportOverview extends React.Component{
                     <Collapse in={this.state.showTable}>
                         <div>
                             {
-                                this.state.tableData &&
+                                this.state.activeTable &&
                                 <OverviewTable closeTable={this.closeTable}
-                                               data={this.state.tableData}
-                                               rawData={this.state.data}
+                                               data={tableData}
                                                filterSelection={() => {this.filterSelection(samples.rawSamples, projects.rawProjects, components.rawComponents)}}
                                                selection={this.state.selected[this.state.activeTable]}
                                                setSelection={this.setSelection}/>
@@ -539,6 +578,7 @@ class SelectedFootnote extends React.Component{
 class OverviewTable extends React.Component{
     render(){
 
+        console.log("here")
         const style = {
             btnContainer: {
                 textAlign: "center",

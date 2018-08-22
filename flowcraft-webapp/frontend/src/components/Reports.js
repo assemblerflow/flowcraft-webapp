@@ -350,14 +350,12 @@ class ReportsApp extends React.Component {
         //
         return (
             <div>
-                {/*<TaskButtons tableData={tableData}*/}
-                             {/*tableSamples={tableSamples}/>*/}
                 <ReportsHeader tableHeaders={tables}
                                chartHeaders={charts}>
                     <Element name={"reportOverview"}
                              className={styles.scrollElement}>
                         <ReportOverview
-                            reportData={activeReports}
+                            reportData={this.props.reportData}
                             tableSamples={tableSamples}
                             chartSamples={chartSamples}
                             filters={this.state.filters}
