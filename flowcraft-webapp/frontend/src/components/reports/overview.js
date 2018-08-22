@@ -1,5 +1,7 @@
 import React from "react";
 
+import { Link } from "react-router-dom"
+
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary"
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails"
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
@@ -24,6 +26,7 @@ import EyeIcon from "mdi-react/EyeIcon";
 import EyeOffIcon from "mdi-react/EyeOffIcon";
 
 import {sortByContent} from "./utils";
+import {SampleDialog} from "../ReportsSample";
 
 
 export class ReportOverview extends React.Component{
@@ -139,6 +142,9 @@ export class ReportOverview extends React.Component{
             Header: <Typography>Fails</Typography>,
             accessor: "fail",
             sortMethod: sortByContent
+        }, {
+            Header: <Typography>More options</Typography>,
+            accessor: "moreOptions",
         }];
         let sampleQcInfo;
 
@@ -152,7 +158,10 @@ export class ReportOverview extends React.Component{
                 "_id": sample,
                 "rowId": <Typography>{sample}</Typography>,
                 "warnings": <OverviewQcPopover content={sampleQcInfo.warnings}/>,
-                "fail": <OverviewQcPopover content={sampleQcInfo.fail}/>
+                "fail": <OverviewQcPopover content={sampleQcInfo.fail}/>,
+                "moreOptions": <SampleOptions charts={this.props.charts}
+                                              reportData={this.props.reportData}
+                                              sample={sample}/>
             })
         }
 
@@ -578,7 +587,6 @@ class SelectedFootnote extends React.Component{
 class OverviewTable extends React.Component{
     render(){
 
-        console.log("here")
         const style = {
             btnContainer: {
                 textAlign: "center",
@@ -596,8 +604,6 @@ class OverviewTable extends React.Component{
                 paddingBottom: "20px"
             }
         };
-
-        console.log(this.props.selection);
 
         return(
             <div>
@@ -716,6 +722,19 @@ class OverviewQcPopover extends React.Component{
                         </div>
                     </div>
                 </Popover>
+            </div>
+        )
+    }
+}
+
+
+class SampleOptions extends React.Component {
+    render(){
+        return(
+            <div>
+                <SampleDialog sample={this.props.sample}
+                              charts={this.props.charts}
+                              reportData={this.props.reportData}/>
             </div>
         )
     }

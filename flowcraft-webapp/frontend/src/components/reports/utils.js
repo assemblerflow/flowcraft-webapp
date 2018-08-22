@@ -84,3 +84,7 @@ export const sortByContent = (a, b) => {
     return aValue > bValue ? 1 : -1;
 
 };
+
+export const sortNumber = (a, b) => {
+    return a - b
+};
