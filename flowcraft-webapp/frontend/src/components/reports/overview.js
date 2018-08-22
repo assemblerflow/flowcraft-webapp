@@ -35,9 +35,9 @@ export class ReportOverview extends React.Component{
             showTable: false,
             activeTable: null,
             selected: {
-                samples: {rows: [], keys: []},
-                projects: {rows: [], keys: []},
-                components: {rows: [], keys: []},
+                samples: {keys: []},
+                projects: {keys: []},
+                components: {keys: []},
             }
         }
     }

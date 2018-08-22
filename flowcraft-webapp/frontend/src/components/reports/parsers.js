@@ -514,7 +514,7 @@ export const genericTableParser = (reportArray) => {
             // React-table
 
             let initialDataObject = {
-                "_id": cell.rowId
+                "_id": String(cell.rowId)
             };
 
             // Add all cell values to row data object. They will then be

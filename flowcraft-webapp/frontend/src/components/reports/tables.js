@@ -76,7 +76,7 @@ export class FCTable extends React.Component {
         let keyIndex = null;
 
         for (const index in rows) {
-            if (rows[index]._id.indexOf(key) >= 0) {
+            if (String(rows[index]._id).indexOf(key) >= 0) {
                 keyIndex = index
             }
             ;
@@ -111,8 +111,37 @@ export class FCTable extends React.Component {
 
     componentDidUpdate = () => {
 
-        if (this.props.initialSelection && this.state.selection !== this.props.initialSelection) {
-            this.setState({selection: this.props.initialSelection})
+        if (this.props.initialSelection && JSON.stringify(this.state.selection.keys) !== JSON.stringify(this.props.initialSelection.keys)) {
+            let selection = this.props.initialSelection;
+
+            if (Object.keys(this.props.initialSelection).length === 0 || this.props.initialSelection.keys !== undefined && this.props.initialSelection.keys.length === 0) {
+                selection = {rows: [], keys: []};
+            }
+            else if (Object.keys(this.props.initialSelection).length === 0 || this.props.initialSelection.keys !== undefined) {
+
+                selection = {rows: [], keys: this.props.initialSelection.keys};
+
+                // get data from checkbox table
+                const wrappedInstance = this.checkboxTable.getWrappedInstance();
+                // get the records from the table
+                const currentRecords = wrappedInstance.getResolvedState().sortedData;
+
+                // Pass the table records wto the selection rows if their
+                // keys are present in the initialSelection object
+                for (const key of this.props.initialSelection.keys) {
+                    currentRecords.forEach(item => {
+                        if (item._original._id === key) {
+                            selection.rows.push(item._original)
+                        }
+                    });
+                }
+
+            }
+            console.log(selection);
+            if (selection.rows !== undefined) {
+                this.setState({selection: selection});
+            }
+
         }
 
     };
@@ -148,10 +177,9 @@ export class FCTable extends React.Component {
         let keyIndex = null;
 
         for (const index in this.state.selection.rows) {
-            if (this.state.selection.rows[index]._id.indexOf(key) >= 0) {
+            if (String(this.state.selection.rows[index]._id).indexOf(key) >= 0) {
                 keyIndex = index
-            }
-            ;
+            };
         }
 
         if (keyIndex !== null)
