@@ -117,7 +117,7 @@ export class FCTable extends React.Component {
             if (Object.keys(this.props.initialSelection).length === 0 || this.props.initialSelection.keys !== undefined && this.props.initialSelection.keys.length === 0) {
                 selection = {rows: [], keys: []};
             }
-            else if (Object.keys(this.props.initialSelection).length === 0 || this.props.initialSelection.keys !== undefined) {
+            else if (this.props.initialSelection.keys !== undefined) {
 
                 selection = {rows: [], keys: this.props.initialSelection.keys};
 
@@ -137,7 +137,6 @@ export class FCTable extends React.Component {
                 }
 
             }
-            console.log(selection);
             if (selection.rows !== undefined) {
                 this.setState({selection: selection});
             }

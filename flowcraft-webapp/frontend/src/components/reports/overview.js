@@ -294,7 +294,7 @@ export class ReportOverview extends React.Component{
 
         for (const key of Object.keys(this.state.selected)){
             if (key === tableKey){
-                newSelection[key] = {rows: [], keys: []};
+                newSelection[key] = {keys: []};
             } else {
                 newSelection[key] = this.state.selected[key]
             }
