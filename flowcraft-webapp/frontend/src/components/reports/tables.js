@@ -32,7 +32,7 @@ import ApprovalIcon from "mdi-react/ApprovalIcon";
 import AlertOctagonIcon from "mdi-react/AlertOctagonIcon";
 import AlertIcon from "mdi-react/AlertIcon";
 import {LoadingComponent} from "../ReportsBase";
-import {BasicModal, PhylovizModal} from "./modals";
+import {PhylovizModal, PositionedSnackbar} from "./modals";
 
 
 const statusColor = {
@@ -178,7 +178,8 @@ export class FCTable extends React.Component {
         for (const index in this.state.selection.rows) {
             if (String(this.state.selection.rows[index]._id).indexOf(key) >= 0) {
                 keyIndex = index
-            };
+            }
+            ;
         }
 
         if (keyIndex !== null)
@@ -249,7 +250,7 @@ export class MetadataTable extends React.Component {
         super(props);
 
         this.state = {
-            selection: []
+            selection: {keys: []}
         };
     }
 
@@ -300,7 +301,7 @@ export class PhylovizTable extends React.Component {
         super(props);
 
         this.state = {
-            selection: []
+            selection: {keys: []}
         };
     }
 
@@ -315,13 +316,16 @@ export class PhylovizTable extends React.Component {
     }
 
     setSelection = (selection) => {
-        console.log(selection);
         this.setState({selection});
     };
 
     showTree = () => {
-        if (this.state.selection.rows.length > 0) {
+        if (this.state.selection.keys.length > 0) {
             window.open(this.state.selection.rows[0].uri, "_blank");
+        }
+        else {
+            const message = "Please select an entry from the table first!";
+            this.snackBar.handleOpen(message, "info");
         }
     };
 
@@ -340,18 +344,23 @@ export class PhylovizTable extends React.Component {
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails>
                     <div className={styles.mainPaper}>
-                        <TableButtons>
-                            <Button onClick={this.showTree}
-                                    variant={"contained"}
-                                    color={"primary"}
-                            >Show Tree</Button>
-                        </TableButtons>
+                        <PositionedSnackbar
+                            vertical="top"
+                            horizontal="right"
+                            handleClose={this.handleSnackClose}
+                            onRef={ref => (this.snackBar = ref)}
+                        />
                         <FCTable
                             data={tableData.tableArray}
                             columns={tableData.columnsArray}
                             rawData={tableData.rawTableArray}
                             setSelection={this.setSelection}
-                        />
+                        >
+                            <Button onClick={this.showTree}
+                                    variant={"contained"}
+                                    color={"primary"}
+                            >Show Tree</Button>
+                        </FCTable>
                     </div>
                 </ExpansionPanelDetails>
             </ExpansionPanel>
@@ -366,7 +375,7 @@ export class QualityControlTable extends React.Component {
         super(props);
 
         this.state = {
-            selection: []
+            selection: {keys: []}
         };
     }
 
@@ -418,7 +427,7 @@ export class AssemblyTable extends React.Component {
         super(props);
 
         this.state = {
-            selection: []
+            selection: {keys: []}
         };
     }
 
@@ -468,7 +477,7 @@ export class AbricateTable extends React.Component {
         super(props);
 
         this.state = {
-            selection: []
+            selection: {keys: []}
         };
     }
 
@@ -530,7 +539,7 @@ export class AbricateTable extends React.Component {
                             <CSVLink
                                 data={this.exportGeneNames(this.props.tableData)}>
                                 <Button variant={"contained"} color={"primary"}>Export
-                                    genesS</Button>
+                                    genes</Button>
                             </CSVLink>
                         </FCTable>
                     </div>
@@ -545,7 +554,7 @@ export class ChewbbacaTable extends React.Component {
         super(props);
 
         this.state = {
-            selection: [],
+            selection: {keys: []},
             specie: {},
             tabValue: 0,
             visibleData: null
@@ -701,19 +710,19 @@ export class ChewbbacaTable extends React.Component {
                                 })
                             }
                         </div>
-                        <TableButtons>
-                            <PhylovizModal
-                                specie={this.getCurrentSpecie}
-                                selection={this.state.selection}
-                                additionalInfo={this.props.additionalInfo}
-                            />
-                        </TableButtons>
                         <FCTable
                             data={tableData.tableArray}
                             columns={tableData.columnsArray}
                             rawData={tableData.rawTableArray}
                             setSelection={this.setSelection}
-                        />
+                        >
+                            <PhylovizModal
+                                specie={this.getCurrentSpecie}
+                                selection={this.state.selection}
+                                additionalInfo={this.props.additionalInfo}
+
+                            />
+                        </FCTable>
                     </div>
                 </ExpansionPanelDetails>
             </ExpansionPanel>

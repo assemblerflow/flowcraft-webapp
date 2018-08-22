@@ -5,10 +5,16 @@ import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
 import TextField from '@material-ui/core/TextField';
 import Snackbar from '@material-ui/core/Snackbar';
+import SnackbarContent from '@material-ui/core/SnackbarContent';
 
 import CloseCircleIcon from "mdi-react/CloseCircleIcon";
 import IconButton from "@material-ui/core/IconButton";
 import Button from "@material-ui/core/Button";
+import CheckCircleIcon from '@material-ui/icons/CheckCircle';
+import ErrorIcon from '@material-ui/icons/Error';
+import InfoIcon from '@material-ui/icons/Info';
+import CloseIcon from '@material-ui/icons/Close';
+import WarningIcon from '@material-ui/icons/Warning';
 
 import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
@@ -20,35 +26,82 @@ import styles from "../../styles/reports.css";
 
 // Import Colors
 import red from "@material-ui/core/colors/red";
+import green from '@material-ui/core/colors/green';
+import orange from '@material-ui/core/colors/orange';
+import grey from '@material-ui/core/colors/grey';
+
+import classNames from 'classnames';
 
 
 export class PositionedSnackbar extends React.Component {
+
     state = {
-        open: false
+        open: false,
+        message: "",
+        type: "info"
     };
 
-    static getDerivedStateFromProps(props, state) {
-        if (props.open !== state.open) {
-            return {
-                open: props.open
-            }
-        }
-        return null
+    // Required to set reference on parent component to allow state change
+    componentDidMount() {
+        this.props.onRef(this);
+    }
+
+    componentWillUnmount() {
+        this.props.onRef(undefined);
     }
 
     handleClose = () => {
-        this.props.handleClose();
+        this.setState({open: false});
+    };
+
+    // USed on parent component to set the snackbar state
+    handleOpen = (message, type) => {
+        this.setState({open: true, message, type});
     };
 
     render() {
+
+        // Different icons and colours are used depending on the selected
+        // snackbar message type
+        const variantIcon = {
+            success: CheckCircleIcon,
+            warning: WarningIcon,
+            error: ErrorIcon,
+            info: InfoIcon,
+        };
+
         const style = {
-            message: {
-                width: "100%",
+            success: {
+                backgroundColor: green[600],
+            },
+            error: {
+                backgroundColor: red[600],
+            },
+            info: {
+                backgroundColor: grey[600],
+            },
+            warning: {
+                backgroundColor: orange[300],
+            },
+            icon: {
+                fontSize: 20,
                 color: "white"
+            },
+            iconVariant: {
+                opacity: 0.9,
+                marginRight: "50px"
+            },
+            message: {
+                color: "white",
+                display: "flex",
+                alignItems: "center",
+                marginLeft: "10px",
+                fontSize: "12px"
             }
         };
 
-        const {open} = this.state;
+        const {open, message, type} = this.state;
+        const Icon = variantIcon[type];
 
         return (
             <div>
@@ -58,17 +111,29 @@ export class PositionedSnackbar extends React.Component {
                         horizontal: this.props.horizontal
                     }}
                     open={open}
+                    autoHideDuration={6000}
                     onClose={this.handleClose}
-                    action={[
-                        <Button color="secondary" size="small"
+                >
+                    <SnackbarContent
+                        style={style[type]}
+                        action={[
+                            <IconButton
+                                onClick={this.handleClose}
                                 key="close"
-                                onClick={this.handleClose}>
-                            CLOSE
-                        </Button>
-                    ]}
-                    message={<Typography
-                        style={style.message}>{this.props.message}</Typography>}
-                />
+                                style={style.icon}
+                            >
+                                <CloseIcon/>
+                            </IconButton>
+                        ]}
+                        message={
+                            <span id="message-snackbar" style={style.message}>
+                                <Icon
+                                    className={classNames(style.icon, style.iconVariant)}/>
+                                <Typography
+                                    style={style.message}>{message}</Typography>
+                            </span>}
+                    />
+                </Snackbar>
             </div>
         );
     }
@@ -140,7 +205,7 @@ export class BasicModal extends React.Component {
 
 /**
  * Modal that allows to send requests to the PHYLOViZ Online service according
-   to the selected profiles in the report.
+ to the selected profiles in the report.
  */
 export class PhylovizModal extends React.Component {
 
@@ -156,9 +221,8 @@ export class PhylovizModal extends React.Component {
             phylovizUser: "",
             phylovizPass: "",
             makePublic: false,
-            selection: [],
-            openSnack: false,
-            snackMessage: "",
+            description: "",
+            selection: {keys: []},
             // Intervals used to retrieve status of phyloviz trees processing
             intervalCheckTree: {},
             intervalCheckPhylovizTrees: {}
@@ -177,10 +241,17 @@ export class PhylovizModal extends React.Component {
     Handle change state for modal Open
      */
     handleOpen = () => {
-        this.setState({
-            open: true,
-            speciesValues: []
-        });
+
+        if (this.state.selection.keys.length === 0) {
+            const message = "Please select some profiles first!";
+            this.snackBar.handleOpen(message, "info");
+
+        } else {
+            this.setState({
+                open: true,
+                speciesValues: []
+            });
+        }
     };
 
     /*
@@ -206,7 +277,7 @@ export class PhylovizModal extends React.Component {
         this.setState({
             openSnack: false
         })
-    }
+    };
 
     /*
     Handle change on checkbox checked state
@@ -273,10 +344,7 @@ export class PhylovizModal extends React.Component {
                     " at the Reports menu.";
 
                 // Open Snackbar with the message
-                this.setState({
-                    openSnack: true,
-                    snackMessage: message
-                });
+                this.snackBar.handleOpen(message, "info");
 
                 const intervalCheck = this.state.intervalCheckTree;
 
@@ -322,10 +390,7 @@ export class PhylovizModal extends React.Component {
             if (response.data.result === 404) {
                 message = "PHYLOViZ Online: Bad credentials.";
 
-                this.setState({
-                    openSnack: true,
-                    snackMessage: message
-                });
+                this.snackBar.handleOpen(message, "warning");
 
             }
             else {
@@ -350,10 +415,8 @@ export class PhylovizModal extends React.Component {
 
             clearInterval(this.state.intervalCheckTree[redisJobId]);
 
-            this.setState({
-                openSnack: true,
-                snackMessage: response.data.result.message
-            });
+            this.snackBar.handleOpen(response.data.result.message, "error");
+
         }
         // Case other unexpected error
         else if (response.data.status === false) {
@@ -363,10 +426,7 @@ export class PhylovizModal extends React.Component {
             message = "There was an error when sending the request to" +
                 " PHYLOViZ Online.";
 
-            this.setState({
-                openSnack: true,
-                snackMessage: message
-            });
+            this.snackBar.handleOpen(message, "error");
         }
 
     };
@@ -378,24 +438,19 @@ export class PhylovizModal extends React.Component {
 
         const response = await this.props.additionalInfo.innuendo.fetchPhyloviz(phylovizJob);
 
-        console.log(response);
-
         // Case the tree is ready to be visualized
         if (response.data.status === "complete") {
+
             let message = "Your tree is ready to be visualized! Go to the PHYLOViZ Table at the Reports menu.";
 
             clearInterval(this.state.intervalCheckPhylovizTrees[phylovizJob]);
 
-            this.setState({
-                openSnack: true,
-                snackMessage: message
-            });
+            this.snackBar.handleOpen(message, "success");
 
-            // Need to update trees table information
-
+            // Need to update phyloviz table
+            /*this.props.getPhylovizTrees();*/
         }
     };
-
 
     render() {
 
@@ -434,17 +489,19 @@ export class PhylovizModal extends React.Component {
             },
             modalBody: {
                 margin: "2%"
+            },
+            buttonSendDiv: {
+                display: "inline-block"
             }
         };
 
         return (
-            <div>
+            <div style={style.buttonSendDiv}>
                 <PositionedSnackbar
                     vertical="top"
                     horizontal="right"
-                    open={this.state.openSnack}
                     handleClose={this.handleSnackClose}
-                    message={this.state.snackMessage}
+                    onRef={ref => (this.snackBar = ref)}
                 />
                 <Button onClick={this.handleOpen} variant={"contained"}
                         color={"primary"}>

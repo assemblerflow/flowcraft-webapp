@@ -158,7 +158,9 @@ const parsePhylovizTrees = (treeEntry, tables) => {
         "timestamp": "Timestamp"
     };
 
-    for (const header of headers) {
+    const columnOrder = ["phyloviz_user", "timestamp"];
+
+    for (const header of columnOrder) {
         let cell = {};
 
         // Add cell case it exists in innuendo metadataMapping from the

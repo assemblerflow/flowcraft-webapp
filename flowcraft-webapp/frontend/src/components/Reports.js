@@ -25,6 +25,7 @@ import {Innuendo, innuendoSteps} from "./reports/innuendo";
 import {AssemblySizeDistChart, FastQcCharts} from "./reports/charts";
 import {ReportsHeader} from "./reports/drawer";
 import {ReportOverview} from "./reports/overview";
+import PositionedSnackbar from './reports/modals';
 
 
 import {
@@ -39,7 +40,6 @@ import {
 
 import styles from "../styles/reports.css";
 
-import {TaskButtons} from "./reports/task_buttons"
 
 /**
  * This is the main wrapper of the reports app. The reports
@@ -74,8 +74,6 @@ export class ReportsRedirect extends React.Component {
         else {
             additionalInfo = {};
         }
-
-        console.log(additionalInfo);
 
         this.state = {
             // Retrieve the initial state of reportData from the URL state

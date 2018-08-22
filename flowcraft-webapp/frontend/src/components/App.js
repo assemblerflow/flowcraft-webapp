@@ -1,8 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import { BrowserRouter, Link, Route, Switch } from "react-router-dom";
+import {BrowserRouter, Link, Route, Switch} from "react-router-dom";
 import {Header} from "./Header";
-import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
+import {MuiThemeProvider, createMuiTheme} from '@material-ui/core/styles';
 import {Main} from "./Main";
 
 // Color imports
@@ -40,10 +40,10 @@ const theme = createMuiTheme({
 
 
 class App extends React.Component {
-    render () {
-        return(
+    render() {
+        return (
             <div>
-                <Main />
+                <Main/>
             </div>
         )
     };
@@ -52,7 +52,7 @@ class App extends React.Component {
 ReactDOM.render((
     <BrowserRouter>
         <MuiThemeProvider theme={theme}>
-            <App />
+            <App/>
         </MuiThemeProvider>
     </BrowserRouter>
 ), document.getElementById("app"));
