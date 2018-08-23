@@ -519,25 +519,25 @@ class OverviewCard extends React.Component{
                 <Typography style={style.header}>{this.props.header}</Typography>
                     <div style={style.filterContainer}>
                         <div style={style.filterChild}>
-                            <Tooltip title={"Filtered elements"}>
+                            <Tooltip title={"Filtered elements"} placement={"top"}>
                                 <FilterIcon size={17} style={style.filterIcon}/>
                             </Tooltip>
                             <Typography style={style.filterText}>{this.props.filtered}</Typography>
                             {
                                 this.props.filtered > 0 &&
-                                    <Tooltip title={"Clear filter"}>
+                                    <Tooltip title={"Clear filter"} placement={"bottom"}>
                                         <CloseIcon onClick={() => {this.props.clearIndividualFilter(this.props.header.toLowerCase())}} size={19} style={style.clearIcon}/>
                                     </Tooltip>
                             }
                         </div>
                         <div style={style.filterChild}>
-                            <Tooltip title={"Highlighted elements"}>
+                            <Tooltip title={"Highlighted elements"} placement={"top"}>
                                 <MarkerIcon size={17} style={style.filterIcon}/>
                             </Tooltip>
                             <Typography style={style.filterText}>{this.props.filtered}</Typography>
                             {
                                 this.props.filtered > 0 &&
-                                <Tooltip title={"Clear highlights"}>
+                                <Tooltip title={"Clear highlights"} placement={"bottom"}>
                                     <CloseIcon size={19} style={style.clearIcon}/>
                                 </Tooltip>
                             }
