@@ -63,7 +63,9 @@ export class Chart {
                     }
                 }
             },
-            series: this.series
+            series: this.series,
+            credits: {},
+            tooltip: {},
         };
     }
     extend(key, obj) {
