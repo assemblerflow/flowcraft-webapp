@@ -21,6 +21,8 @@ Boost(ReactHighcharts.Highcharts);
 import {Chart, PreviewSnack} from "./chart_utils";
 import {LoadingComponent} from "../ReportsBase";
 
+import {ReportHighlightsConsumer} from "./contexts";
+
 import styles from "../../styles/charts.css"
 
 export class FastQcCharts extends React.Component {
@@ -147,20 +149,24 @@ export class FastQcCharts extends React.Component {
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails>
                         <div style={{"width": "100%", "height": "100%"}}>
-                            <div className={styles.mainPaper} style={{"height": "100%", "width": "100%"}}>
-                                <div style={style.buttonBar}>
-                                    <Button style={style.button} className={classNames(this.state.tabValue === 0 && styles.tabButton)}  onClick={() => {this.handleChange(0)}}>Base sequence quality</Button>
-                                    <Button style={style.button} className={classNames(this.state.tabValue === 1 && styles.tabButton)} onClick={() => {this.handleChange(1)}}>Sequence quality</Button>
-                                    <Button style={style.button} className={classNames(this.state.tabValue === 2 && styles.tabButton)} onClick={() => {this.handleChange(2)}}>Base GC content</Button>
-                                    <Button style={style.button} className={classNames(this.state.tabValue === 3 && styles.tabButton)} onClick={() => {this.handleChange(3)}}>Sequence length</Button>
-                                    <Button style={style.button} className={classNames(this.state.tabValue === 4 && styles.tabButton)} onClick={() => {this.handleChange(4)}}>Missing data</Button>
-                                </div>
-                                {this.state.tabValue === 0  && <FastqcBaseSequenceQuality plotData={chartData.qcCharts["base_sequence_quality"]}/>}
-                                {this.state.tabValue === 1  && <FastqcSequenceQuality plotData={chartData.qcCharts["sequence_quality"]}/>}
-                                {this.state.tabValue === 2  && <FastqcGcContent plotData={chartData.qcCharts["base_gc_content"]}/>}
-                                {this.state.tabValue === 3  && <FastqcSequenceLength plotData={chartData.qcCharts["sequence_length_dist"]}/>}
-                                {this.state.tabValue === 4  && <FastqcNContent plotData={chartData.qcCharts["base_n_content"]}/>}
-                            </div>
+                            <ReportHighlightsConsumer>
+                                {({highlights}) => (
+                                    <div className={styles.mainPaper} style={{"height": "100%", "width": "100%"}}>
+                                        <div style={style.buttonBar}>
+                                            <Button style={style.button} className={classNames(this.state.tabValue === 0 && styles.tabButton)}  onClick={() => {this.handleChange(0)}}>Base sequence quality</Button>
+                                            <Button style={style.button} className={classNames(this.state.tabValue === 1 && styles.tabButton)} onClick={() => {this.handleChange(1)}}>Sequence quality</Button>
+                                            <Button style={style.button} className={classNames(this.state.tabValue === 2 && styles.tabButton)} onClick={() => {this.handleChange(2)}}>Base GC content</Button>
+                                            <Button style={style.button} className={classNames(this.state.tabValue === 3 && styles.tabButton)} onClick={() => {this.handleChange(3)}}>Sequence length</Button>
+                                            <Button style={style.button} className={classNames(this.state.tabValue === 4 && styles.tabButton)} onClick={() => {this.handleChange(4)}}>Missing data</Button>
+                                        </div>
+                                        {this.state.tabValue === 0  && <FastqcBaseSequenceQuality highlights={highlights} plotData={chartData.qcCharts["base_sequence_quality"]}/>}
+                                        {this.state.tabValue === 1  && <FastqcSequenceQuality plotData={chartData.qcCharts["sequence_quality"]}/>}
+                                        {this.state.tabValue === 2  && <FastqcGcContent plotData={chartData.qcCharts["base_gc_content"]}/>}
+                                        {this.state.tabValue === 3  && <FastqcSequenceLength plotData={chartData.qcCharts["sequence_length_dist"]}/>}
+                                        {this.state.tabValue === 4  && <FastqcNContent plotData={chartData.qcCharts["base_n_content"]}/>}
+                                    </div>
+                                )}
+                            </ReportHighlightsConsumer>
                             {
                                 chartData.preview &&
                                 <PreviewSnack

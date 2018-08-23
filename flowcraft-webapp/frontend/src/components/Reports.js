@@ -26,7 +26,7 @@ import {ReportsHeader} from "./reports/drawer";
 import {ReportOverview} from "./reports/overview";
 import {AssemblySizeDistChart, FastQcCharts} from "./reports/charts";
 import PositionedSnackbar from './reports/modals';
-import {ReportDataUpdateProvider} from './reports/contexts';
+import {ReportDataUpdateProvider, ReportHighlightsProvider} from './reports/contexts';
 
 
 import {
@@ -262,11 +262,19 @@ class ReportsApp extends React.Component {
             samples: [],
             projects: [],
             components: []
+        },
+        highlights: {
+            samples: ["BOMBA"],
+            projects: []
         }
     };
 
     updateFilters = (filters) => {
         this.setState({filters})
+    };
+
+    updateHighlights = (highlights) => {
+        this.setState({highlights})
     };
 
     filterReportArray = (reportArray, filters) => {
@@ -359,89 +367,94 @@ class ReportsApp extends React.Component {
         //
         return (
             <div>
-                <ReportsHeader tableHeaders={tables}
-                               chartHeaders={charts}>
-                    <Element name={"reportOverview"}
-                             className={styles.scrollElement}>
-                        <ReportOverview
-                            reportData={this.props.reportData}
-                            tableSamples={tableSamples}
-                            chartSamples={chartSamples}
-                            filters={this.state.filters}
-                            updateFilters={this.updateFilters}
-                            qcInfo={qcInfo}/>
-                    </Element>
-                    {
-                        tables.includes("metadata") &&
-                        <Element name={"metadataTable"}
+                <ReportHighlightsProvider value={{
+                    highlights: this.state.highlights,
+                    updateHighlights: this.updateHighlights.bind(this)}}>
+                    <ReportsHeader tableHeaders={tables}
+                                   chartHeaders={charts}>
+                        <Element name={"reportOverview"}
                                  className={styles.scrollElement}>
-                            <MetadataTable
-                                tableData={tableData.get("metadata")}
-                                reportData={activeReports}/>
-                        </Element>
-                    }
-                    {
-                        tables.includes("qc") &&
-                        <Element name={"qcTable"}
-                                 className={styles.scrollElement}>
-                            <QualityControlTable
-                                tableData={tableData.get("qc")}
+                            <ReportOverview
+                                reportData={this.props.reportData}
+                                tableSamples={tableSamples}
+                                chartSamples={chartSamples}
+                                charts={charts}
+                                filters={this.state.filters}
+                                updateFilters={this.updateFilters}
                                 qcInfo={qcInfo}/>
                         </Element>
-                    }
-                    {
-                        tables.includes("assembly") &&
-                        <Element name={"assemblyTable"}
-                                 className={styles.scrollElement}>
-                            <AssemblyTable
-                                tableData={tableData.get("assembly")}
-                                qcInfo={qcInfo}/>
-                        </Element>
-                    }
-                    {
-                        tables.includes("abricate") &&
-                        <Element name={"abricateTable"}
-                                 className={styles.scrollElement}>
-                            <AbricateTable
-                                tableData={tableData.get("abricate")}/>
-                        </Element>
-                    }
-                    {
-                        tables.includes("chewbbaca") &&
-                        <Element name={"chewbbacaTable"}
-                                 className={styles.scrollElement}>
-                            <ChewbbacaTable
-                                tableData={tableData.get("chewbbaca")}
-                                reportData={activeReports}
-                                additionalInfo={this.props.additionalInfo}
-                            />
-                        </Element>
-                    }
-                    {
-                        tables.includes("phyloviz") &&
-                        <Element name={"phylovizTable"}
-                                 className={styles.scrollElement}>
-                            <PhylovizTable
-                                tableData={tableData.get("phyloviz")}
-                                reportData={activeReports}/>
-                        </Element>
-                    }
-                    {
-                        charts.includes("base_n_content") &&
-                        <Element name={"base_n_contentChart"}
-                                 className={styles.scrollElement}>
-                            <FastQcCharts rawReports={activeReports}/>
-                        </Element>
-                    }
-                    {
-                        charts.includes("size_dist") &&
-                        <Element name={"size_distChart"}
-                                 className={styles.scrollElement}>
-                            <AssemblySizeDistChart
-                                rawReports={activeReports}/>
-                        </Element>
-                    }
-                </ReportsHeader>
+                        {
+                            tables.includes("metadata") &&
+                            <Element name={"metadataTable"}
+                                     className={styles.scrollElement}>
+                                <MetadataTable
+                                    tableData={tableData.get("metadata")}
+                                    reportData={activeReports}/>
+                            </Element>
+                        }
+                        {
+                            tables.includes("qc") &&
+                            <Element name={"qcTable"}
+                                     className={styles.scrollElement}>
+                                <QualityControlTable
+                                    tableData={tableData.get("qc")}
+                                    qcInfo={qcInfo}/>
+                            </Element>
+                        }
+                        {
+                            tables.includes("assembly") &&
+                            <Element name={"assemblyTable"}
+                                     className={styles.scrollElement}>
+                                <AssemblyTable
+                                    tableData={tableData.get("assembly")}
+                                    qcInfo={qcInfo}/>
+                            </Element>
+                        }
+                        {
+                            tables.includes("abricate") &&
+                            <Element name={"abricateTable"}
+                                     className={styles.scrollElement}>
+                                <AbricateTable
+                                    tableData={tableData.get("abricate")}/>
+                            </Element>
+                        }
+                        {
+                            tables.includes("chewbbaca") &&
+                            <Element name={"chewbbacaTable"}
+                                     className={styles.scrollElement}>
+                                <ChewbbacaTable
+                                    tableData={tableData.get("chewbbaca")}
+                                    reportData={activeReports}
+                                    additionalInfo={this.props.additionalInfo}
+                                />
+                            </Element>
+                        }
+                        {
+                            tables.includes("phyloviz") &&
+                            <Element name={"phylovizTable"}
+                                     className={styles.scrollElement}>
+                                <PhylovizTable
+                                    tableData={tableData.get("phyloviz")}
+                                    reportData={activeReports}/>
+                            </Element>
+                        }
+                        {
+                            charts.includes("base_n_content") &&
+                            <Element name={"base_n_contentChart"}
+                                     className={styles.scrollElement}>
+                                <FastQcCharts rawReports={activeReports}/>
+                            </Element>
+                        }
+                        {
+                            charts.includes("size_dist") &&
+                            <Element name={"size_distChart"}
+                                     className={styles.scrollElement}>
+                                <AssemblySizeDistChart
+                                    rawReports={activeReports}/>
+                            </Element>
+                        }
+                    </ReportsHeader>
+                </ReportHighlightsProvider>
             </div>
         )
     }
