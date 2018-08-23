@@ -96,8 +96,6 @@ class SampleSpecificReport extends React.Component{
 
     render(){
 
-        console.log(this.props)
-
         return(
             <div>
                 {
@@ -118,9 +116,31 @@ class SampleSpecificReport extends React.Component{
 
 class ContigSizeDistribution extends React.Component{
 
+    constructor(props){
+        super(props);
+
+        const {processes, data} = this.getChartData(props.reportData, props.sample);
+
+        this.state = {
+            processes: processes,
+            selectedProcess: processes[0],
+            plotData: data
+        }
+    };
+
+    handleProcessChange = (value) => {
+        if (value){
+            this.setState({
+                selectedProcess: value.value
+            })
+        }
+    };
+
     getChartData = (reportData, sample) => {
 
-        const plotData = [];
+        let data = new Map();
+        let processes = [];
+        let plotData = [];
 
         for (const el of reportData){
 
@@ -133,51 +153,53 @@ class ContigSizeDistribution extends React.Component{
                     }
 
                     if (plot.data.hasOwnProperty("size_dist")){
-                        plotData.push({
-                            process: el.processName,
-                            series: [{
-                                name: "Data",
-                                type: "scatter",
-                                data: plot.data["size_dist"].sort(sortNumber),
-                                id: "d",
-                                color: "black",
-                                marker: {
-                                    radius: 3
-                                },
-                                events: {
-                                    mouseOver() {updateLabels(this, "bold", 1);},
-                                    mouseOut() {updateLabels(this, "normal", 1);},
-                                }
-                            }, {
-                                name: "Histogram",
-                                type: "histogram",
-                                xAxis: 1,
-                                yAxis: 1,
-                                baseSeries: "d",
-                                zIndex: -1,
-                                color: "grey",
-                                events: {
-                                    mouseOver() {updateLabels(this, "bold", 0)},
-                                    mouseOut() {updateLabels(this, "normal", 0);},
-                                },
-                            }]
-                        })
+                        plotData = [{
+                            name: "Data",
+                            type: "scatter",
+                            data: plot.data["size_dist"].sort(sortNumber),
+                            id: "d",
+                            color: "black",
+                            marker: {
+                                radius: 3
+                            },
+                            events: {
+                                mouseOver() {updateLabels(this, "bold", 1);},
+                                mouseOut() {updateLabels(this, "normal", 1);},
+                            }
+                        }, {
+                            name: "Histogram",
+                            type: "histogram",
+                            xAxis: 1,
+                            yAxis: 1,
+                            baseSeries: "d",
+                            zIndex: -1,
+                            color: "grey",
+                            events: {
+                                mouseOver() {updateLabels(this, "bold", 0)},
+                                mouseOut() {updateLabels(this, "normal", 0);},
+                            },
+                        }];
+                        data.set(el.processName, plotData);
+                        processes.push(el.processName);
                     }
                 }
             }
         }
 
-        return plotData;
+        return {
+            processes,
+            data
+        };
     };
 
     render(){
 
-        const plotData = this.getChartData(this.props.reportData, this.props.sample);
+        const currentPlotData = this.state.plotData.get(this.state.selectedProcess);
 
         let config = new Chart({
             title: "",
             axisLabels: {x: "Contig", y: "Size"},
-            series: plotData[0].series
+            series: currentPlotData
         });
 
         config.layout.xAxis = [{
@@ -199,8 +221,17 @@ class ContigSizeDistribution extends React.Component{
                     <Typography variant={"headline"}>Contig size distribution</Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails>
-                    <div style={{"height": "400px", "width":"100%"}}>
-                        <ReactHighcharts config={config.layout} ref={"ssSizeDist"}></ReactHighcharts>
+                    <div style={{flexGrow: 1}}>
+                        {
+                            this.state.processes.length > 1 &&
+                            <ProcessMenu
+                                selectedProcess={this.state.selectedProcess}
+                                handleProcessChange={this.handleProcessChange}
+                                processes={this.state.processes}/>
+                        }
+                        <div style={{"height": "400px", "width":"100%"}}>
+                            <ReactHighcharts config={config.layout} ref={"ssSizeDist"}></ReactHighcharts>
+                        </div>
                     </div>
                 </ExpansionPanelDetails>
             </ExpansionPanel>
