@@ -488,7 +488,9 @@ class ProcessMenu extends React.Component{
         return(
             <div style={style.container}>
                 <Typography>Select process: </Typography>
-                <Select value={this.props.selectedProcess}
+                <Select defaultValue={this.props.selectedProcess}
+                        value={this.props.selectedProcess}
+                        clearable={false}
                         onChange={this.props.handleProcessChange}
                         options={options}/>
             </div>
