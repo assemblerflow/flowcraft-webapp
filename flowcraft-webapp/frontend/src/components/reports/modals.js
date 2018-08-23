@@ -470,7 +470,7 @@ export class PhylovizModal extends React.Component {
 
             // Update reportData state on ReportsRedirect through prop made
             // available by React Context
-            this.props.updateState(newReportsData, this.props.additionalInfo);
+            this.props.updateState(newReportsData, this.props.additionalInfo, this.props.filters, this.props.highlights);
         }
     };
 

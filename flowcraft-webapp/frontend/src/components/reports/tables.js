@@ -33,7 +33,7 @@ import AlertOctagonIcon from "mdi-react/AlertOctagonIcon";
 import AlertIcon from "mdi-react/AlertIcon";
 import {LoadingComponent} from "../ReportsBase";
 import {PhylovizModal, PositionedSnackbar} from "./modals";
-import {ReportDataUpdateConsumer} from './contexts';
+import {ReportDataConsumer} from './contexts';
 
 
 const statusColor = {
@@ -723,18 +723,20 @@ export class ChewbbacaTable extends React.Component {
                              function) from the ReportDataContext to
                               PhylovizModal as a prop to
                               allow reportData state update*/}
-                            <ReportDataUpdateConsumer>
+                            <ReportDataConsumer>
                                 {
-                                    context => <PhylovizModal
+                                    ({updateState, filters, highlights}) => (<PhylovizModal
                                         specie={this.getCurrentSpecie}
                                         selection={this.state.selection}
                                         additionalInfo={this.props.additionalInfo}
                                         reportData={this.props.reportData}
-                                        updateState={context}
-                                    />
+                                        filters={filters}
+                                        highlights={highlights}
+                                        updateState={updateState}
+                                    />)
 
                                 }
-                            </ReportDataUpdateConsumer>
+                            </ReportDataConsumer>
                         </FCTable>
                     </div>
                 </ExpansionPanelDetails>

@@ -38,22 +38,27 @@ export class ReportsHome extends DraggableView {
         this.state = {
             "runId": "",
             "reportData": null,
+            "filters": null,
+            "highlights": null,
             "openModal": false,
-            "dropData": [],
+            "dropData": null,
             "loading": false
         };
     }
 
 
     render() {
-
         return (
             <div>
                 {
                     this.state.reportData &&
                         <Redirect to={{
                             pathname: "/reports/app",
-                            state: {"data": this.state.reportData}
+                            state: {
+                                "data": this.state.reportData,
+                                "filters": this.state.filters,
+                                "highlights": this.state.highlights
+                            }
                         }}/>
                 }
                 {

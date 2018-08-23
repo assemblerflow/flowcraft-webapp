@@ -26,7 +26,11 @@ import {ReportsHeader} from "./reports/drawer";
 import {ReportOverview} from "./reports/overview";
 import {AssemblySizeDistChart, FastQcCharts} from "./reports/charts";
 import PositionedSnackbar from './reports/modals';
-import {ReportDataUpdateProvider, ReportHighlightsProvider} from './reports/contexts';
+import {
+    ReportDataProvider,
+    ReportHighlightsProvider,
+    ReportFilterProvider
+} from './reports/contexts';
 
 
 import {
@@ -77,15 +81,22 @@ export class ReportsRedirect extends React.Component {
             additionalInfo = {};
         }
 
-        console.log(additionalInfo);
+        // Variables with history state
+        const rData = this.props.location.state.data;
+        const filters = this.props.location.state.filters;
+        const highlights = this.props.location.state.highlights;
 
         this.state = {
             // Retrieve the initial state of reportData from the URL state
-            "reportData": this.props.location.state.data,
+            "reportData": rData === undefined ? [] : rData,
             // Additional info has additional information that can be passed
             // by the reportsRedirect. In this case, it can be user
             // information collected from INNUENDO
             "additionalInfo": additionalInfo,
+            // Filters to be applied to the reports
+            "filters": filters === undefined ? null : filters,
+            // Highlights to be applied to the reports
+            "highlights": highlights === undefined ? null : highlights,
             // Set to true to display a loading spinner while processing data
             "loading": true,
             // Property that controls the showing of the File drag and drop modal
@@ -120,7 +131,9 @@ export class ReportsRedirect extends React.Component {
         // Set new history based on the current reportData and additionalInfo
         this.props.history.replace("/reports/app", {
             data: this.state.reportData,
-            additionalInfo: additionalInfo
+            additionalInfo: additionalInfo,
+            filters: this.state.filters,
+            highlights: this.state.highlights
         });
     }
 
@@ -142,10 +155,12 @@ export class ReportsRedirect extends React.Component {
     Callback that can be passed to children components to update the reportData
     state.
      */
-    _updateState(reportData, additionalInfo) {
+    _updateState(reportData, additionalInfo, filters, highlights) {
         this.setState({
             reportData,
-            additionalInfo
+            additionalInfo,
+            filters,
+            highlights
         })
     }
 
@@ -153,8 +168,8 @@ export class ReportsRedirect extends React.Component {
     /*
     Updates the reportData state and closes drag and drop modal
      */
-    loadReports = (reportData) => {
-        this.setState({"reportData": reportData});
+    loadReports = ({reportData, filters, highlights}) => {
+        this.setState({reportData, filters, highlights});
         this.setModalState(false)
     };
 
@@ -162,9 +177,13 @@ export class ReportsRedirect extends React.Component {
     Merges the report JSON data provided in the dropped files with the existing
     reportData and triggers the update of the reportData state.
      */
-    mergeReports = (reportData) => {
+    mergeReports = ({reportData, filters, highlights}) => {
         const mergedData = [...reportData, ...this.state.reportData];
-        this.loadReports(mergedData);
+        this.loadReports({
+            reportData: mergedData,
+            filters,
+            highlights
+        });
     };
 
     /*
@@ -183,15 +202,72 @@ export class ReportsRedirect extends React.Component {
         const reader = new FileReader();
 
         reader.onload = function (e) {
-            const jsonData = JSON.parse(e.target.result).data.results;
 
-            if (this.state.reportData === null) {
-                this.setState({reportData: jsonData})
-            } else {
-                this.setState({dropData: jsonData});
-                this.setModalState(true)
+            try {
+                const parsedString = JSON.parse(e.target.result);
+                const reportData = parsedString.data.results;
+
+                let filters = {};
+                let highlights = {};
+
+                // Check if report file has the filters object. If not, add
+                // empty
+                if (parsedString.data.filters !== undefined) {
+                    filters = parsedString.data.filters;
+                }
+                filters.samples = filters.samples === undefined ? [] : filters.samples;
+                filters.projects = filters.projects === undefined ? [] : filters.projects;
+                filters.components = filters.components === undefined ? [] : filters.components;
+
+                // Check if report file has the highlights object. If not, add
+                // empty
+                if (parsedString.data.highlights !== undefined) {
+                    highlights = parsedString.data.highlights;
+                }
+                highlights.samples = highlights.samples === undefined ? [] : highlights.samples;
+                highlights.projects = highlights.projects === undefined ? [] : highlights.projects;
+
+                // Update state filters by updating filters by concatenating
+                // unique state and drop filters
+                if (this.state.filters !== undefined) {
+                    filters.samples = [...new Set([
+                        ...(this.state.filters === null ? [] : this.state.filters.samples),
+                        ...filters.samples])];
+                    filters.projects = [...new Set([
+                        ...(this.state.filters === null ? [] : this.state.filters.projects),
+                        ...filters.projects])];
+                    filters.components = [...new Set([
+                        ...(this.state.filters === null ? [] : this.state.filters.components),
+                        ...filters.components])];
+                }
+
+                // Update state highlights by concatenating
+                // unique state and drop highlights
+                if (this.state.highlights !== undefined) {
+                    highlights.samples = [...new Set([
+                        ...(this.state.highlights === null ? [] : this.state.highlights.samples),
+                        ...highlights.samples])];
+                    highlights.projects = [...new Set([
+                        ...(this.state.highlights === null ? [] : this.state.highlights.projects),
+                        ...highlights.projects])];
+                }
+
+                // Build dropData object to pass to state
+                const jsonData = {
+                    reportData,
+                    filters,
+                    highlights
+                };
+
+                if (this.state.reportData === null) {
+                    this.loadReports(jsonData);
+                } else {
+                    this.setState({dropData: jsonData});
+                    this.setModalState(true)
+                }
+            } catch (e) {
+                console.log(e);
             }
-            console.log(jsonData)
         }.bind(this);
 
         reader.readAsText(data)
@@ -209,7 +285,6 @@ export class ReportsRedirect extends React.Component {
     shouldComponentUpdate(nextProps, nextState) {
         if (this.state.loading !== nextState.loading)
             return true;
-
         if (this.state.reportData === nextState.reportData &&
             this.state.openModal === nextState.openModal) {
             return false
@@ -219,7 +294,7 @@ export class ReportsRedirect extends React.Component {
     }
 
     render() {
-
+        /*console.log("RENDER", this.state.reportData, this.state.filters, this.state.highlights);*/
         return (
             <div>
                 <FileDrop onDrop={this.handleDrop}>
@@ -236,12 +311,19 @@ export class ReportsRedirect extends React.Component {
                                 {/*Add updateState to Context, allowing its
                                  use on child components without the need of
                                   passing it as prop*/}
-                                <ReportDataUpdateProvider value={this._updateState.bind(this)}>
+                                <ReportDataProvider value={{
+                                    updateState: this._updateState.bind(this),
+                                    reportData: this.state.reportData,
+                                    additionalInfo: this.state.additionalInfo
+                                }}>
                                     <ReportsApp
                                         reportData={this.state.reportData}
+                                        filters={this.state.filters}
+                                        highlights={this.state.highlights}
                                         additionalInfo={this.state.additionalInfo}
-                                        updateState={this._updateState.bind(this)}/>
-                                </ReportDataUpdateProvider>
+                                        updateState={this._updateState.bind(this)}
+                                    />
+                                </ReportDataProvider>
                             </div>
                     }
                 </FileDrop>
@@ -257,24 +339,49 @@ export class ReportsRedirect extends React.Component {
  */
 class ReportsApp extends React.Component {
 
-    state = {
-        filters: {
+    constructor(props) {
+        super(props);
+
+        let filters = {
             samples: [],
             projects: [],
             components: []
-        },
-        highlights: {
-            samples: ["BOMBA"],
+        };
+        let highlights = {
+            samples: [],
             projects: []
+        };
+
+        if (props.filters) {
+            filters = props.filters;
         }
-    };
+
+        if (props.highlights) {
+            highlights = props.highlights;
+        }
+
+        this.state = {
+            filters,
+            highlights,
+            // Variable used to know if is currently on filtering or updating
+            filterAndHighlighting: false
+        }
+    }
 
     updateFilters = (filters) => {
-        this.setState({filters})
+        // Set filterAndHighlighting to true prevents updating filters and
+        // highlights from props in the getDerivedStateFromProps function
+        this.setState({
+            filters,
+            filterAndHighlighting: true
+        })
     };
 
     updateHighlights = (highlights) => {
-        this.setState({highlights})
+        this.setState({
+            highlights,
+            filterAndHighlighting: true
+        })
     };
 
     filterReportArray = (reportArray, filters) => {
@@ -329,25 +436,62 @@ class ReportsApp extends React.Component {
 
     };
 
+    static getDerivedStateFromProps(props, state) {
+
+        let update = false;
+
+        // Check if filters or highlights props are different from the
+        // current state. Also prevent the update if performing a filter
+        // or highlight
+        if (!state.filterAndHighlighting && (JSON.stringify(state.filters) !== JSON.stringify(props.filters) && props.filters ||
+            JSON.stringify(state.highlights) !== JSON.stringify(props.highlights) && props.highlights)) {
+            update = true;
+        }
+        // Update filters and highlights if from dragNdrop
+        if (update) {
+            let filters = props.filters;
+            let highlights = props.highlights;
+
+            return {
+                filters,
+                highlights
+            };
+
+        } else if (state.filterAndHighlighting) {
+            return {
+                filterAndHighlighting: false
+            }
+        }
+        return null;
+
+    }
+
     componentDidUpdate() {
         // Updates the reportData state and any additional information
         // passed to the component
         if (this.props.updateState) {
-            this.props.updateState(this.props.reportData, this.props.additionalInfo)
+            this.props.updateState(
+                this.props.reportData,
+                this.props.additionalInfo,
+                this.state.filters,
+                this.state.highlights
+            )
         }
+
     }
 
-    shouldComponentUpdate(nextProps, nextState) {
+    /*shouldComponentUpdate(nextProps, nextState) {
 
+        console.log(nextProps.filters, nextState.filters, this.state.filters);
         if (nextProps.reportData !== this.props.reportData) {
             return true
-        } else if (nextState.filters !== this.state.filters) {
+        } else if (nextState.filters === this.state.filters) {
             return true
         } else {
             return false
         }
 
-    }
+    }*/
 
     render() {
 
@@ -369,91 +513,98 @@ class ReportsApp extends React.Component {
             <div>
                 <ReportHighlightsProvider value={{
                     highlights: this.state.highlights,
-                    updateHighlights: this.updateHighlights.bind(this)}}>
-                    <ReportsHeader tableHeaders={tables}
-                                   chartHeaders={charts}>
-                        <Element name={"reportOverview"}
-                                 className={styles.scrollElement}>
-                            <ReportOverview
-                                reportData={this.props.reportData}
-                                tableSamples={tableSamples}
-                                chartSamples={chartSamples}
-                                charts={charts}
-                                filters={this.state.filters}
-                                updateFilters={this.updateFilters}
-                                qcInfo={qcInfo}/>
-                        </Element>
-                        {
-                            tables.includes("metadata") &&
-                            <Element name={"metadataTable"}
+                    updateHighlights: this.updateHighlights.bind(this),
+                }}>
+                    <ReportFilterProvider value={{
+                        filters: this.state.filters,
+                        updateFilters: this.updateFilters.bind(this)
+                    }}>
+                        <ReportsHeader tableHeaders={tables}
+                                       chartHeaders={charts}>
+                            <TaskButtons/>
+                            <Element name={"reportOverview"}
                                      className={styles.scrollElement}>
-                                <MetadataTable
-                                    tableData={tableData.get("metadata")}
-                                    reportData={activeReports}/>
-                            </Element>
-                        }
-                        {
-                            tables.includes("qc") &&
-                            <Element name={"qcTable"}
-                                     className={styles.scrollElement}>
-                                <QualityControlTable
-                                    tableData={tableData.get("qc")}
+                                <ReportOverview
+                                    reportData={this.props.reportData}
+                                    tableSamples={tableSamples}
+                                    chartSamples={chartSamples}
+                                    charts={charts}
+                                    filters={this.state.filters}
+                                    updateFilters={this.updateFilters}
                                     qcInfo={qcInfo}/>
                             </Element>
-                        }
-                        {
-                            tables.includes("assembly") &&
-                            <Element name={"assemblyTable"}
-                                     className={styles.scrollElement}>
-                                <AssemblyTable
-                                    tableData={tableData.get("assembly")}
-                                    qcInfo={qcInfo}/>
-                            </Element>
-                        }
-                        {
-                            tables.includes("abricate") &&
-                            <Element name={"abricateTable"}
-                                     className={styles.scrollElement}>
-                                <AbricateTable
-                                    tableData={tableData.get("abricate")}/>
-                            </Element>
-                        }
-                        {
-                            tables.includes("chewbbaca") &&
-                            <Element name={"chewbbacaTable"}
-                                     className={styles.scrollElement}>
-                                <ChewbbacaTable
-                                    tableData={tableData.get("chewbbaca")}
-                                    reportData={activeReports}
-                                    additionalInfo={this.props.additionalInfo}
-                                />
-                            </Element>
-                        }
-                        {
-                            tables.includes("phyloviz") &&
-                            <Element name={"phylovizTable"}
-                                     className={styles.scrollElement}>
-                                <PhylovizTable
-                                    tableData={tableData.get("phyloviz")}
-                                    reportData={activeReports}/>
-                            </Element>
-                        }
-                        {
-                            charts.includes("base_n_content") &&
-                            <Element name={"base_n_contentChart"}
-                                     className={styles.scrollElement}>
-                                <FastQcCharts rawReports={activeReports}/>
-                            </Element>
-                        }
-                        {
-                            charts.includes("size_dist") &&
-                            <Element name={"size_distChart"}
-                                     className={styles.scrollElement}>
-                                <AssemblySizeDistChart
-                                    rawReports={activeReports}/>
-                            </Element>
-                        }
-                    </ReportsHeader>
+                            {
+                                tables.includes("metadata") &&
+                                <Element name={"metadataTable"}
+                                         className={styles.scrollElement}>
+                                    <MetadataTable
+                                        tableData={tableData.get("metadata")}
+                                        reportData={activeReports}/>
+                                </Element>
+                            }
+                            {
+                                tables.includes("qc") &&
+                                <Element name={"qcTable"}
+                                         className={styles.scrollElement}>
+                                    <QualityControlTable
+                                        tableData={tableData.get("qc")}
+                                        qcInfo={qcInfo}/>
+                                </Element>
+                            }
+                            {
+                                tables.includes("assembly") &&
+                                <Element name={"assemblyTable"}
+                                         className={styles.scrollElement}>
+                                    <AssemblyTable
+                                        tableData={tableData.get("assembly")}
+                                        qcInfo={qcInfo}/>
+                                </Element>
+                            }
+                            {
+                                tables.includes("abricate") &&
+                                <Element name={"abricateTable"}
+                                         className={styles.scrollElement}>
+                                    <AbricateTable
+                                        tableData={tableData.get("abricate")}/>
+                                </Element>
+                            }
+                            {
+                                tables.includes("chewbbaca") &&
+                                <Element name={"chewbbacaTable"}
+                                         className={styles.scrollElement}>
+                                    <ChewbbacaTable
+                                        tableData={tableData.get("chewbbaca")}
+                                        reportData={activeReports}
+                                        additionalInfo={this.props.additionalInfo}
+                                    />
+                                </Element>
+                            }
+                            {
+                                tables.includes("phyloviz") &&
+                                <Element name={"phylovizTable"}
+                                         className={styles.scrollElement}>
+                                    <PhylovizTable
+                                        tableData={tableData.get("phyloviz")}
+                                        reportData={activeReports}/>
+                                </Element>
+                            }
+                            {
+                                charts.includes("base_n_content") &&
+                                <Element name={"base_n_contentChart"}
+                                         className={styles.scrollElement}>
+                                    <FastQcCharts rawReports={activeReports}/>
+                                </Element>
+                            }
+                            {
+                                charts.includes("size_dist") &&
+                                <Element name={"size_distChart"}
+                                         className={styles.scrollElement}>
+                                    <AssemblySizeDistChart
+                                        rawReports={activeReports}/>
+                                </Element>
+                            }
+                        </ReportsHeader>
+                    </ReportFilterProvider>
                 </ReportHighlightsProvider>
             </div>
         )

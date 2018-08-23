@@ -59,9 +59,13 @@ export class DraggableView extends React.Component {
     Sets the reportData state of the child component. It overwrites the
     previous one. For merging, see mergeReports method.
      */
-    loadReports = (reportData) => {
+    loadReports = ({reportData, filters, highlights}) => {
         // Change state to trigger re-rendering of the app
-        this.setState({"reportData": reportData});
+        this.setState({
+            reportData,
+            filters,
+            highlights
+        });
         // Close modal
         this.setModalState(false);
     };
@@ -88,17 +92,33 @@ export class DraggableView extends React.Component {
         reader.onload = function (e) {
 
             try {
-                const jsonData = JSON.parse(e.target.result).data.results;
+                const parsedString = JSON.parse(e.target.result);
+                const reportData = parsedString.data.results;
+
+                let filters, highlights;
+
+                // Check if report file has the filters object. If not, add
+                // empty
+                if (parsedString.data.filters !== undefined) {
+                    filters = parsedString.data.filters;
+                }
+                // Check if report file has the highlights object. If not, add
+                // empty
+                if (parsedString.data.highlights !== undefined){
+                    highlights = parsedString.data.highlights;
+                }
+
+                const jsonData = {
+                    reportData,
+                    filters,
+                    highlights
+                };
 
                 // Case no processes on current report, load reports directly
                 // Else, launch modal to ask user if wants to merge reports
                 // or just show the uploaded one
                 if (this.state.reportData === null) {
                     this.loadReports(jsonData);
-                }
-                else {
-                    this.setState({dropData: jsonData});
-                    // this.setModalState(true);
                 }
             } catch (e) {
                 console.log(e);
@@ -130,6 +150,7 @@ export class DraggableView extends React.Component {
  */
 export class DragAndDropModal extends React.Component {
     render() {
+
         return (
             <BasicModal openModal={this.props.openModal}
                         setModalState={this.props.setModalState}
@@ -139,8 +160,10 @@ export class DragAndDropModal extends React.Component {
 
                     {/* Prototype for modal content */}
                     <Typography
-                        className={styles.centeredContent}>Uploaded {this.props.dropData.length}
-                        new processes!</Typography>
+                        className={styles.centeredContent}>
+                        Uploaded {
+                            this.props.dropData.reportData === undefined ? 0 : this.props.dropData.reportData.length
+                        } new processes!</Typography>
                     <Typography className={styles.centeredContent}>What do you
                         want to do?!</Typography>
 

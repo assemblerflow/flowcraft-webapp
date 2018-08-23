@@ -58,7 +58,6 @@ export class SampleDialog extends React.Component{
                 padding: "20px"
             }
         };
-        console.log("dialog")
 
         return(
             <div>
