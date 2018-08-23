@@ -444,11 +444,15 @@ class ProcessMenu extends React.Component{
             container: {
                 maxWidth: "300px",
                 marginBottom: "15px"
+            },
+            dropdownValue: {
+                lineHeight: "33px",
+                fontWeight: "bold"
             }
         };
 
         const options = this.props.processes.map((v) => {
-            return {value: v, label: v}
+            return {value: v, label: <Typography style={style.dropdownValue}>{v}</Typography>}
         });
 
         return(
