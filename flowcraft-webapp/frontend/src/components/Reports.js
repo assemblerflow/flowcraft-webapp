@@ -565,7 +565,10 @@ class ReportsApp extends React.Component {
                                      className={styles.scrollElement}>
                                 <AssemblyTable
                                     tableData={tableData.get("assembly")}
-                                    qcInfo={qcInfo}/>
+                                    qcInfo={qcInfo}
+                                    additionalInfo={this.props.additionalInfo}
+                                    reportData={this.props.reportData}
+                                />
                             </Element>
                         }
                         {

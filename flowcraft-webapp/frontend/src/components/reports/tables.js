@@ -34,6 +34,7 @@ import AlertIcon from "mdi-react/AlertIcon";
 import {LoadingComponent} from "../ReportsBase";
 import {PhylovizModal, PositionedSnackbar} from "./modals";
 import {ReportDataConsumer} from './contexts';
+import {getAssemblies, getFile} from "./utils";
 
 
 const statusColor = {
@@ -448,6 +449,23 @@ export class AssemblyTable extends React.Component {
         this.setState({selection});
     };
 
+    downloadAssemblies = async () => {
+        console.log(this.state.selection);
+        const res = await getAssemblies(
+            this.state.selection.rows,
+            this.props.reportData
+        );
+
+        console.log(res);
+
+        const fileStr = res[0].join(";");
+        const sampleStr = res[1].join(";");
+
+        getFile(fileStr, sampleStr);
+        /*getFile()*/
+
+    };
+
     render() {
         const tableData = genericTableParser(this.props.tableData);
         qcParseAdditionalData(tableData, this.props.tableData,
@@ -466,7 +484,13 @@ export class AssemblyTable extends React.Component {
                             columns={tableData.columnsArray}
                             rawData={tableData.rawTableArray}
                             setSelection={this.setSelection}
-                        />
+                        >
+                            {
+                                (this.props.additionalInfo && this.props.additionalInfo.innuendo) &&
+                                <Button onClick={this.downloadAssemblies}>Download
+                                    Assemblies</Button>
+                            }
+                        </FCTable>
                     </div>
                 </ExpansionPanelDetails>
             </ExpansionPanel>
@@ -725,15 +749,16 @@ export class ChewbbacaTable extends React.Component {
                               allow reportData state update*/}
                             <ReportDataConsumer>
                                 {
-                                    ({updateState, filters, highlights}) => (<PhylovizModal
-                                        specie={this.getCurrentSpecie}
-                                        selection={this.state.selection}
-                                        additionalInfo={this.props.additionalInfo}
-                                        reportData={this.props.reportData}
-                                        filters={filters}
-                                        highlights={highlights}
-                                        updateState={updateState}
-                                    />)
+                                    ({updateState, filters, highlights}) => (
+                                        <PhylovizModal
+                                            specie={this.getCurrentSpecie}
+                                            selection={this.state.selection}
+                                            additionalInfo={this.props.additionalInfo}
+                                            reportData={this.props.reportData}
+                                            filters={filters}
+                                            highlights={highlights}
+                                            updateState={updateState}
+                                        />)
 
                                 }
                             </ReportDataConsumer>

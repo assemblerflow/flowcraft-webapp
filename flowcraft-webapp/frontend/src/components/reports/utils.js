@@ -1,3 +1,6 @@
+
+import {address} from "../../../config.json"
+
 /**
  * Converts a Date object to string format in yyyy-mm-dd
  *
@@ -15,6 +18,9 @@ const convertDateInverse = (date) => {
     }
     return date.getFullYear() + "-" + mm + "-" + dd;
 };
+
+
+
 
 /**
  * Function to send file to user, client-side
@@ -39,6 +45,82 @@ export const sendFile = (filename, text) => {
 
     document.body.removeChild(element);
 };
+
+/**
+ * Get strain related files from INNUENDO instances
+ * @param filePath
+ * @param sampleNames
+ * @returns {Promise.<void>}
+ */
+export const getFile = async (filePath, sampleNames) => {
+
+    const url = address + "app/api/v1.0/reports/strain/files/?path=" +
+        filePath + "&sampleNames=" + sampleNames ;
+
+    const link = document.createElement("a");
+    link.download = filePath.split('/').slice(-1)[0];
+    link.href = url;
+    link.click();
+
+};
+
+/**
+ * Get the assembly location on the INNUENDO instance
+ * @param sampleId
+ * @param pipelineId
+ * @returns {[null,null]}
+ */
+const getAssemblyPath = (sampleId, reportData) => {
+
+    let assemblySuffix = '/results/assembly/';
+    let filePath;
+    let sampleName;
+
+    for (const el of reportData){
+        let wantedTask = false;
+        try{
+            wantedTask = el.task.indexOf("pilon") > -1;
+        }
+        catch(e){
+            wantedTask = false;
+        }
+        if (wantedTask){
+            const pid = `${el.projectid}.${el.reportJson.tableRow[0].sample}`;
+            if (sampleId === pid){
+                //assemblySuffix = assemblySuffix + el.report_json.task + `/${el.sample_name}_trim_spades3111_proc_filt_polished.fasta`;
+                assemblySuffix = assemblySuffix + el.task +
+                    `/${el.reportJson.tableRow[0].sample}_trim_spades3111_proc_filt_polished.fasta`;
+                filePath = el.workdir.split("/").slice(0, -3).join("/") + assemblySuffix;
+                sampleName = el.sample_name
+            }
+        }
+    }
+
+    return [filePath, sampleName];
+};
+
+/**
+ * Get the assembly paths and strain names from the selected rows on the
+ * assembly table
+ * @param dt
+ * @returns {[null,null]}
+ */
+export const getAssemblies = (rows, reportData) => {
+
+    let fileList = [];
+    let sampleNames = [];
+
+    for (const row of rows) {
+        console.log(row);
+        const pid = `${row.projectId}.${row._id}`;
+        const res = getAssemblyPath(pid, reportData);
+        fileList.push(res[0]);
+        sampleNames.push(res[1]);
+    }
+
+    return [fileList, sampleNames];
+};
+
 
 /**
  * Populates the sample and date picker filters according to the data from the
