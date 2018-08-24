@@ -21,7 +21,7 @@ Boost(ReactHighcharts.Highcharts);
 import {Chart, PreviewSnack} from "./chart_utils";
 import {LoadingComponent} from "../ReportsBase";
 
-import {ReportHighlightsConsumer} from "./contexts";
+import {ReportAppConsumer} from "./contexts";
 
 import styles from "../../styles/charts.css"
 
@@ -149,7 +149,7 @@ export class FastQcCharts extends React.Component {
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails>
                         <div style={{"width": "100%", "height": "100%"}}>
-                            <ReportHighlightsConsumer>
+                            <ReportAppConsumer>
                                 {({highlights}) => (
                                     <div className={styles.mainPaper} style={{"height": "100%", "width": "100%"}}>
                                         <div style={style.buttonBar}>
@@ -166,7 +166,7 @@ export class FastQcCharts extends React.Component {
                                         {this.state.tabValue === 4  && <FastqcNContent plotData={chartData.qcCharts["base_n_content"]}/>}
                                     </div>
                                 )}
-                            </ReportHighlightsConsumer>
+                            </ReportAppConsumer>
                             {
                                 chartData.preview &&
                                 <PreviewSnack

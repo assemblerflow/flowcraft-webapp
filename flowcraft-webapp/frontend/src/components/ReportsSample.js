@@ -441,8 +441,6 @@ class SyncCharts extends React.Component{
 
         const currentPlotData = this.state.plotData.get(this.state.selectedProcess);
 
-        console.log(currentPlotData)
-
         const gcConfig = this.getChartLayout(currentPlotData.gcData, currentPlotData.xLabels, currentPlotData.xBars, currentPlotData.window);
         const covConfig = this.getChartLayout(currentPlotData.covData, currentPlotData.xLabels, currentPlotData.xBars, currentPlotData.window);
 

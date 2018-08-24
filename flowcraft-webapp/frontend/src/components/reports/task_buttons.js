@@ -17,8 +17,7 @@ import FilterIcon from "mdi-react/FilterIcon";
 import FileExportIcon from "mdi-react/FileExportIcon";
 import {
     ReportDataConsumer,
-    ReportFilterConsumer,
-    ReportHighlightsConsumer
+    ReportAppConsumer,
 } from './contexts';
 import {sendFile} from './utils';
 
@@ -65,24 +64,18 @@ export class TaskButtons extends React.Component {
                 <ReportDataConsumer>
                     {
                         ({reportData}) => (
-                            <ReportFilterConsumer>
+                            <ReportAppConsumer>
                                 {
-                                    ({filters}) => (
-                                        <ReportHighlightsConsumer>
-                                            {
-                                                ({highlights}) => (
-                                                    <ExportTask
-                                                        active={this.state.active}
-                                                        data={reportData}
-                                                        highlights={highlights}
-                                                        filters={filters}
-                                                    />
-                                                )
-                                            }
-                                        </ReportHighlightsConsumer>
+                                    ({filters, highlights}) => (
+                                        <ExportTask
+                                            active={this.state.active}
+                                            data={reportData}
+                                            highlights={highlights}
+                                            filters={filters}
+                                        />
                                     )
                                 }
-                            </ReportFilterConsumer>
+                            </ReportAppConsumer>
                         )
                     }
                 </ReportDataConsumer>
