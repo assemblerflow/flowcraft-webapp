@@ -176,7 +176,14 @@ export class DragAndDropModal extends React.Component {
                                 }}>Merge</Button>
                         <Button color="secondary"
                                 onClick={() => {
-                                    this.props.loadReports(this.props.dropData)
+                                    // Gets the information of filters and
+                                    // highlights only from the drop file
+                                    // and not from the concatenated version.
+                                    this.props.loadReports({
+                                        reportData: this.props.dropData.reportData,
+                                        filters: this.props.dropData.dropFilters,
+                                        highlights: this.props.dropData.dropHighlights
+                                    })
                                 }}>
                             Remove Previous
                         </Button>

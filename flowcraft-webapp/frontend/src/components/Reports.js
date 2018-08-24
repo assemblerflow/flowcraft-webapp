@@ -168,7 +168,11 @@ export class ReportsRedirect extends React.Component {
     Updates the reportData state and closes drag and drop modal
      */
     loadReports = ({reportData, filters, highlights}) => {
-        this.setState({reportData, filters, highlights});
+        this.setState({
+            reportData,
+            filters,
+            highlights
+        });
         this.setModalState(false)
     };
 
@@ -206,56 +210,62 @@ export class ReportsRedirect extends React.Component {
                 const parsedString = JSON.parse(e.target.result);
                 const reportData = parsedString.data.results;
 
-                let filters = {};
-                let highlights = {};
+                let globalFilters = {};
+                let globalHighlights = {};
+                let dropFilters = {};
+                let dropHighlights = {};
 
                 // Check if report file has the filters object. If not, add
                 // empty
                 if (parsedString.data.filters !== undefined) {
-                    filters = parsedString.data.filters;
+                    dropFilters = parsedString.data.filters;
                 }
-                filters.samples = filters.samples === undefined ? [] : filters.samples;
-                filters.projects = filters.projects === undefined ? [] : filters.projects;
-                filters.components = filters.components === undefined ? [] : filters.components;
+                dropFilters.samples = dropFilters.samples === undefined ? [] : dropFilters.samples;
+                dropFilters.projects = dropFilters.projects === undefined ? [] : dropFilters.projects;
+                dropFilters.components = dropFilters.components === undefined ? [] : dropFilters.components;
 
                 // Check if report file has the highlights object. If not, add
                 // empty
                 if (parsedString.data.highlights !== undefined) {
-                    highlights = parsedString.data.highlights;
+                    dropHighlights = parsedString.data.highlights;
                 }
-                highlights.samples = highlights.samples === undefined ? [] : highlights.samples;
-                highlights.projects = highlights.projects === undefined ? [] : highlights.projects;
+                dropHighlights.samples = dropHighlights.samples === undefined ? [] : dropHighlights.samples;
+                dropHighlights.projects = dropHighlights.projects === undefined ? [] : dropHighlights.projects;
 
                 // Update state filters by updating filters by concatenating
                 // unique state and drop filters
                 if (this.state.filters !== undefined) {
-                    filters.samples = [...new Set([
+                    globalFilters.samples = [...new Set([
                         ...(this.state.filters === null ? [] : this.state.filters.samples),
-                        ...filters.samples])];
-                    filters.projects = [...new Set([
+                        ...dropFilters.samples])];
+                    globalFilters.projects = [...new Set([
                         ...(this.state.filters === null ? [] : this.state.filters.projects),
-                        ...filters.projects])];
-                    filters.components = [...new Set([
+                        ...dropFilters.projects])];
+                    globalFilters.components = [...new Set([
                         ...(this.state.filters === null ? [] : this.state.filters.components),
-                        ...filters.components])];
+                        ...dropFilters.components])];
                 }
 
                 // Update state highlights by concatenating
                 // unique state and drop highlights
                 if (this.state.highlights !== undefined) {
-                    highlights.samples = [...new Set([
+                    globalHighlights.samples = [...new Set([
                         ...(this.state.highlights === null ? [] : this.state.highlights.samples),
-                        ...highlights.samples])];
-                    highlights.projects = [...new Set([
+                        ...dropHighlights.samples])];
+                    globalHighlights.projects = [...new Set([
                         ...(this.state.highlights === null ? [] : this.state.highlights.projects),
-                        ...highlights.projects])];
+                        ...dropHighlights.projects])];
                 }
 
-                // Build dropData object to pass to state
+                // Build dropData object to pass to state. It has the
+                // filters and highlights obtained from the file but also
+                // the concatenation with the previous ones
                 const jsonData = {
                     reportData,
-                    filters,
-                    highlights
+                    filters: globalFilters,
+                    highlights: globalHighlights,
+                    dropFilters: dropFilters,
+                    dropHighlights: dropHighlights
                 };
 
                 if (this.state.reportData === null) {
