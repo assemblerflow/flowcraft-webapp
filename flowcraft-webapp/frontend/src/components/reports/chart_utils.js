@@ -66,6 +66,7 @@ export class Chart {
             series: this.series,
             credits: {},
             tooltip: {},
+            pane: {}
         };
     }
     extend(key, obj) {

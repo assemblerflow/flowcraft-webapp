@@ -2,14 +2,19 @@ import React from "react";
 
 import Select from 'react-select';
 
+import ListItemText from "@material-ui/core/ListItemText";
 import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
+import ListItem from "@material-ui/core/ListItem";
 import CloseIcon from "@material-ui/icons/Close";
 import Toolbar from "@material-ui/core/Toolbar";
 import Button from "@material-ui/core/Button";
 import Dialog from "@material-ui/core/Dialog";
 import AppBar from "@material-ui/core/AppBar";
 import Slide from '@material-ui/core/Slide';
+import Grid from "@material-ui/core/Grid";
+import List from "@material-ui/core/List"
+import Popover from "@material-ui/core/Popover";
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
@@ -29,9 +34,13 @@ import {ReportAppConsumer} from "./reports/contexts";
 import {LoadingComponent, LoadingScreen} from "./ReportsBase";
 
 const ReactHighcharts = require("react-highcharts");
+const HighchartsMore = require("highcharts/highcharts-more");
 const HighchartsHistogram = require("highcharts/modules/histogram-bellcurve");
 const HighchartsxRange = require("highcharts/modules/xrange");
+const HighchartsGauge = require("highcharts/modules/solid-gauge");
 
+HighchartsMore(ReactHighcharts.Highcharts);
+HighchartsGauge(ReactHighcharts.Highcharts);
 HighchartsHistogram(ReactHighcharts.Highcharts);
 HighchartsxRange(ReactHighcharts.Highcharts);
 
@@ -339,7 +348,8 @@ class SyncChartsContainer extends React.Component{
                                     gene: v.gene,
                                     accession: v.accession,
                                     coverage: v.coverage,
-                                    ident: v.identity,
+                                    identity: v.identity,
+                                    window: window
                                 }
                             });
                             xrangeCategories.push(db);
@@ -466,7 +476,12 @@ class SyncChartsContainer extends React.Component{
 
 class SyncCharts extends React.Component{
 
-    prevPath = {};
+    constructor(props){
+        super(props);
+
+        this._geneClick = this._geneClick.bind(this)
+        this.prevPath = {};
+    };
 
     _syncExtremes = (e) => {
 
@@ -598,6 +613,20 @@ class SyncCharts extends React.Component{
 
     };
 
+    _geneClick = (e) => {
+        console.log(e)
+        const data = {
+            gene: e.point.gene,
+            geneLength: parseInt((e.point.x2 - e.point.x) * 2000),
+            genePosition: `${e.point.x * 2000} - ${e.point.x2 * 2000}`,
+            database: e.point.yCategory,
+            accession: e.point.accession,
+            coverage: e.point.coverage,
+            identity: e.point.identity
+        };
+        this.genePopover.handleClick(e.target, data)
+    };
+
     getxRangeLayout = (data, categories, xLabels, plotLines) => {
 
         const seriesHeight = 20;
@@ -622,6 +651,19 @@ class SyncCharts extends React.Component{
         config.extend("title", {
             text: "Antimicrobial resistance and virulence annotation",
             margin: 5
+        });
+        config.extend("plotOptions", {
+            series: {
+                cursor: "pointer",
+                borderColor: "#fff",
+                point: {
+                    events: {
+                        click: (e) => {
+                            this._geneClick(e)
+                        }
+                    }
+                }
+            },
         });
         config.extend("tooltip", {
             positioner() {
@@ -697,8 +739,187 @@ class SyncCharts extends React.Component{
                 <ReactHighcharts config={covConfig.layout} ref={"slidingCov"}></ReactHighcharts>
                 {
                     xRangeConfig &&
-                    <ReactHighcharts config={xRangeConfig.layout} ref={"slidingAbr"}></ReactHighcharts>
+                        <div>
+                            <GenePopup onRef={ref => (this.genePopover = ref)}/>
+                            <ReactHighcharts config={xRangeConfig.layout} ref={"slidingAbr"}></ReactHighcharts>
+                        </div>
                 }
+            </div>
+        )
+    }
+}
+
+class GenePopup extends React.Component{
+
+    state = {
+        anchorEl: null,
+        data: {},
+        show: false
+    };
+
+    // Required to set reference on parent component to allow state change
+    componentDidMount() {
+        this.props.onRef(this);
+    }
+
+    componentWillUnmount() {
+        this.props.onRef(undefined);
+    }
+
+    handleClick = (pos, data) => {
+        this.setState({
+            anchorEl: pos,
+            data: data,
+            show: true
+        });
+    };
+
+    handleClose = () => {
+        this.setState({
+            show: false,
+        });
+    };
+
+    render(){
+
+        const style = {
+            grid: {
+                padding: "10px",
+                minWidth: "400px"
+            }
+        };
+
+        const { anchorEl, show, data } = this.state;
+
+        const infoObject = {
+            "gene": "Gene",
+            "geneLength": "Gene length",
+            "genePosition":"Gene position",
+            "database": "Database",
+            "accession": "Accession"
+        };
+
+        return(
+            <Popover
+                open={show}
+                anchorEl={anchorEl}
+                onClose={this.handleClose}
+                anchorOrigin={{
+                    vertical: 'top',
+                    horizontal: 'center',
+                }}
+                transformOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'center',
+                }}
+                >
+                <div style={{overflow: "hidden"}}>
+                    <Grid style={style.grid} container spacing={16}>
+                        <Grid item xs={8}>
+                            {
+                                Object.keys(infoObject).map((key) => {
+                                    return(
+                                        <Typography key={key}>
+                                            <b>{infoObject[key]}</b>: {data[key]}
+                                        </Typography>
+                                    )
+                                })
+                            }
+                        </Grid>
+                        <Grid item xs={4}>
+                            <GeneGaugeChart title={"Coverage"} value={data.coverage}/>
+                            <GeneGaugeChart title={"Identity"} value={data.identity}/>
+                        </Grid>
+                    </Grid>
+                </div>
+            </Popover>
+        )
+    }
+}
+
+class GeneGaugeChart extends React.Component{
+
+    render(){
+
+        console.log(this.props)
+
+        let config = new Chart({
+            title: this.props.title,
+            axisLabels: {x: null, y: null},
+            series: [{
+                data: [this.props.value],
+                dataLabels: {
+                    format: "<p style='text-align:center;'>{y}%</p>",
+                    y: 33
+                }
+            }]
+        });
+        config.extend("chart", {
+            type: "solidgauge",
+            backgroundColor: "transparent",
+            height: 80,
+        });
+        config.extend("title", {
+            margin: 2,
+            style: {"fontSize": "11px", fontWeight: "bold"}
+        });
+        config.extend("pane", {
+            center: ["50%", "70%"],
+            size: "130%",
+            startAngle: -90,
+            endAngle: 90,
+            background: {
+                backgroundColor: "#fff",
+                innerRadius: "75%",
+                outerRadius: "100%",
+                shape: "arc",
+                borderColor: "transparent"
+            }
+        });
+        config.extend("tooltip", {
+            enabled: false
+        });
+        config.extend("credits", {
+            enabled: false
+        });
+        config.extend("yAxis", {
+            min: 0,
+            max: 100,
+            stops: [
+                [0.1, "#e74c3c"], // red
+                [0.5, "#f1c40f"], // yellow
+                [0.9, "#2ecc71"] // green
+            ],
+            minorTickInterval: null,
+            tickPixelInterval: 400,
+            tickWidth: 0,
+            gridLineWidth: 0,
+            gridLineColor: "transparent",
+            padding: 0,
+            labels: {
+                enabled: false
+            },
+            title: {
+                enabled: false
+            }
+        });
+        config.extend("plotOptions", {
+            solidgauge: {
+                innerRadius: "75%",
+                dataLabels: {
+                    y: -45,
+                    borderWidth: 0,
+                    useHTML: true
+                },
+                animation: {
+                    duration: 0
+                }
+            }
+        });
+
+        return(
+            <div>
+                <ReactHighcharts config={config.layout} ref={"slidingAbr"}></ReactHighcharts>
             </div>
         )
     }
