@@ -525,6 +525,7 @@ class ReportsApp extends React.Component {
                     updateHighlights: this.updateHighlights.bind(this),
                     filters: this.state.filters,
                     updateFilters: this.updateFilters.bind(this),
+                    charts: charts,
                 }}>
                     <ReportsHeader tableHeaders={tables}
                                    chartHeaders={charts}>

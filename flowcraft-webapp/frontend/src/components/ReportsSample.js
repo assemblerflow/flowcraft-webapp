@@ -24,12 +24,16 @@ import {
     highlightHist,
     getContig} from "./reports/sample_specific_utils";
 
+import {ReportAppConsumer} from "./reports/contexts";
+
 import {LoadingComponent} from "./ReportsBase";
 
 const ReactHighcharts = require("react-highcharts");
 const HighchartsHistogram = require("highcharts/modules/histogram-bellcurve");
+const HighchartsxRange = require("highcharts/modules/xrange");
 
 HighchartsHistogram(ReactHighcharts.Highcharts);
+HighchartsxRange(ReactHighcharts.Highcharts);
 
 
 function Transition(props) {
@@ -105,9 +109,15 @@ class SampleSpecificReport extends React.Component{
                 }
                 {
                     this.props.charts.includes("genomeSliding") &&
-                    <SyncCharts sample={this.props.sample}
-                                reportData={this.props.reportData}/>
-                }
+                    <ReportAppConsumer>
+                        {
+                            ({charts}) => (
+                                <SyncCharts sample={this.props.sample}
+                                            charts={charts}
+                                            reportData={this.props.reportData}/>
+                            )
+                        }
+                    </ReportAppConsumer>}
             </div>
         )
     }
@@ -245,13 +255,15 @@ class SyncCharts extends React.Component{
     constructor(props){
         super(props);
 
-        const {processes, data} = this.getSlidingCovData(props.reportData, props.sample);
+        const {processes, data} = this.getSlidingData(props.reportData, props.sample);
 
         this.state = {
             processes: processes,
             selectedProcess: processes[0],
             plotData: data
-        }
+        };
+
+        this.prevPath = {};
     }
 
     handleProcessChange = (value) => {
@@ -262,7 +274,81 @@ class SyncCharts extends React.Component{
         }
     };
 
-    getSlidingCovData = (reportData, sample) => {
+    _convertContigPosition = (xrange, contig, xbars, window) => {
+
+        let contigId;
+        let prevRange = 0;
+
+        for (const val of xbars){
+            contigId = xbars.indexOf(val) + 1;
+
+            if (contigId === contig){
+                return [(xrange[0] + prevRange) / window, (xrange[1] + prevRange) / window]
+            }
+
+            prevRange = val;
+        }
+
+        return [0, 0]
+
+    };
+
+    complementAbricateData = (reportData, sample, assemblyFile, xBars, window) => {
+
+        let xrangeData = [];
+        let xrangeCategories = [];
+
+        for (const el of reportData) {
+
+            if (((el || {}).reportJson || {}).plotData) {
+
+                for (const plot of el.reportJson.plotData) {
+
+                    // Skip entries for different sample/ assembly file
+                    if (plot.sample !== sample || plot.assemblyFile !== assemblyFile) {
+                        continue
+                    }
+
+                    if (plot.data.hasOwnProperty("abricateXrange")) {
+                        let counter = 0;
+                        for (const [db, data] of Object.entries(plot.data.abricateXrange)){
+
+                            const tempData = Array.from(data, (v) => {
+
+                                const correctRange = this._convertContigPosition(v.seqRange, parseInt(v.contig), xBars, window);
+
+                                return {
+                                    x: correctRange[0],
+                                    x2: correctRange[1],
+                                    y: counter,
+                                    gene: v.gene,
+                                    accession: v.accession,
+                                    coverage: v.coverage,
+                                    ident: v.identity,
+                                }
+                            });
+                            xrangeCategories.push(db);
+                            xrangeData.push({
+                                name: db,
+                                data: tempData,
+                                pointWidth: 12,
+                                pointRange: 0
+                            });
+                            counter += 1;
+                        }
+                    }
+                }
+            }
+        }
+
+        return {
+            xrangeData,
+            xrangeCategories
+        }
+
+    };
+
+    getSlidingData = (reportData, sample) => {
 
         let data = new Map();
         let processes = [];
@@ -272,6 +358,7 @@ class SyncCharts extends React.Component{
         let xLabels;
         let xBars;
         let window;
+        let plotLines;
 
         for (const el of reportData){
 
@@ -291,15 +378,37 @@ class SyncCharts extends React.Component{
                         });
                         xBars = Array.from(plot.data.genomeSliding.xbars, v => v[1]);
                         window = plot.data.genomeSliding.window;
-
-                        data.set(el.processName, {
-                            gcData,
-                            covData,
-                            xLabels,
-                            xBars,
-                            window
+                        plotLines = xBars.map((v) => {
+                            return {
+                                value: v / window,
+                                width: 0.15,
+                                color: "grey"
+                            }
                         });
-                        processes.push(el.processName)
+
+                        if (this.props.charts.includes("abricateXrange")){
+                            const {xrangeData, xrangeCategories} = this.complementAbricateData(reportData, sample, plot.data.genomeSliding.assemblyFile, xBars, window);
+                            data.set(el.processName, {
+                                gcData,
+                                covData,
+                                xLabels,
+                                plotLines,
+                                xBars,
+                                window,
+                                xrangeData,
+                                xrangeCategories
+                            });
+                        } else {
+                            data.set(el.processName, {
+                                gcData,
+                                covData,
+                                xLabels,
+                                xBars,
+                                plotLines,
+                                window
+                            });
+                        }
+                        processes.push(el.processName);
                     }
                 }
             }
@@ -332,6 +441,7 @@ class SyncCharts extends React.Component{
 
         let point,
             event,
+            seriesName,
             chartObj;
 
             for (const chart of Object.keys(this.refs)){
@@ -339,27 +449,44 @@ class SyncCharts extends React.Component{
 
                 event = chartObj.pointer.normalize(e);
 
-                point = chartObj.series[0].searchPoint(event, true);
+                if (chartObj.userOptions.chart.type === "xrange"){
 
-                if (point){
-                    point.highlight(e);
+                    for (const s of chartObj.series){
+
+                        if (!s){
+                            continue
+                        }
+
+                        seriesName = s.userOptions.name;
+                        if (this.prevPath.hasOwnProperty(seriesName)){
+                            this.prevPath[seriesName].element.remove();
+                        }
+
+                        point = s.searchPoint(event, true);
+                        if (!point){
+                            continue
+                        }
+
+                        // Get corrected coordinates for crosshairs
+                        const crossX = point.plotX + chartObj.plotBox.x;
+                        const crossY = point.plotY + chartObj.plotBox.y - 10;
+                        const crossOffSet = point.plotY + chartObj.plotBox.y + 10;
+
+                        this.prevPath[seriesName] = chartObj.renderer.path(["M", crossX, crossY, "V", crossOffSet])
+                            .attr({"stroke-width": 5, stroke: point.color, id:s.userOptions.name, zIndex: -1, opacity: .7})
+                            .add();
+                    }
+
+                } else {
+                    point = chartObj.series[0].searchPoint(event, true);
+                    if (point){
+                        point.highlight(e);
+                    }
                 }
             }
     };
 
-    getChartLayout = (seriesData, xLabels, xBars, window) => {
-
-        console.log(xBars)
-
-        let contigPlotLines = [];
-        for (const c of xBars){
-            contigPlotLines.push({
-                value: c / window,
-                width: .15,
-                color: "grey",
-            })
-        }
-        console.log(contigPlotLines)
+    getChartLayout = (seriesData, xLabels, plotLines, xBars, window) => {
 
         let config = new Chart({
             title: null,
@@ -390,7 +517,7 @@ class SyncCharts extends React.Component{
             tickInterval: 100,
             min: 0,
             max: xLabels.length,
-            plotLines: contigPlotLines,
+            plotLines: plotLines,
             events: {
                 setExtremes: this._syncExtremes
             },
@@ -423,6 +550,71 @@ class SyncCharts extends React.Component{
 
     };
 
+    getxRangeLayout = (data, categories, xLabels, plotLines) => {
+
+        const seriesHeight = 20;
+        const chartHeight = 60 + (seriesHeight * categories.length);
+
+        let config = new Chart({
+            title: null,
+            axisLabels: {x: null, y: null},
+            series: data
+        });
+
+        config.extend("chart", {
+            marginLeft: 100,
+            spacingTop: 10,
+            spacingBottom: 10,
+            zoomType: "x",
+            panning: true,
+            panKey: "ctrl",
+            height: chartHeight,
+            type: "xrange",
+        });
+        config.extend("title", {
+            text: "Antimicrobial resistance and virulence annotation",
+            margin: 5
+        });
+        config.extend("tooltip", {
+            positioner() {
+                return {
+                    x: 30,
+                    y: 0
+                };
+            },
+            pointFormatter() {
+                return `<span>Gene: <b>${this.gene}</b> (Click for details)</span>`;
+            },
+            borderWidth: 0,
+            backgroundColor: "none",
+            headerFormat: "",
+            shadow: false
+        });
+        config.extend("xAxis", {
+            min: 0,
+            max: xLabels.length,
+            plotLines: plotLines,
+            events: {
+                setExtremes: this._syncExtremes
+            },
+            labels: {
+                enabled: false
+            }
+        });
+        config.extend("yAxis", {
+            categories: categories,
+            title: {
+                text: null
+            },
+        });
+        config.extend("credits", {
+            enabled: false
+        });
+
+        return config
+
+    };
+
     componentDidMount(){
         this.chartContainer.addEventListener("mousemove", this._syncCrosshair)
 
@@ -441,8 +633,13 @@ class SyncCharts extends React.Component{
 
         const currentPlotData = this.state.plotData.get(this.state.selectedProcess);
 
-        const gcConfig = this.getChartLayout(currentPlotData.gcData, currentPlotData.xLabels, currentPlotData.xBars, currentPlotData.window);
-        const covConfig = this.getChartLayout(currentPlotData.covData, currentPlotData.xLabels, currentPlotData.xBars, currentPlotData.window);
+        const gcConfig = this.getChartLayout(currentPlotData.gcData, currentPlotData.xLabels, currentPlotData.plotLines, currentPlotData.xBars, currentPlotData.window);
+        const covConfig = this.getChartLayout(currentPlotData.covData, currentPlotData.xLabels, currentPlotData.plotLines, currentPlotData.xBars, currentPlotData.window);
+
+        let xRangeConfig;
+        if (currentPlotData.hasOwnProperty("xrangeData")){
+            xRangeConfig = this.getxRangeLayout(currentPlotData.xrangeData, currentPlotData.xrangeCategories, currentPlotData.xLabels, currentPlotData.plotLines)
+        }
 
         return(
             <ExpansionPanel defaultExpanded>
@@ -461,6 +658,10 @@ class SyncCharts extends React.Component{
                         <div ref={elem => this.chartContainer = elem} style={{"width":"100%"}}>
                             <ReactHighcharts config={gcConfig.layout} ref={"slidindGc"}></ReactHighcharts>
                             <ReactHighcharts config={covConfig.layout} ref={"slidingCov"}></ReactHighcharts>
+                            {
+                                xRangeConfig &&
+                                    <ReactHighcharts config={xRangeConfig.layout} ref={"slidingAbr"}></ReactHighcharts>
+                            }
                         </div>
                     </div>
                 </ExpansionPanelDetails>
