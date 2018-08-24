@@ -28,17 +28,17 @@ export class Chart {
                 zoomType: "x"
             },
             boost: {
-                enabled: true,
-                seriesThreshold: 1,
-                useGPUTranslations: true
+                // enabled: true,
+                // seriesThreshold: 1,
+                // useGPUTranslations: true
             },
             title: {
                 text: this.title
             },
             plotOptions: {
-                series: {
-                    animation: false
-                }
+                // series: {
+                //     animation: false
+                // }
             },
             legend: {
                 enabled: false

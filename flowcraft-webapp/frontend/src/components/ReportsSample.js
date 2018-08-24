@@ -366,7 +366,8 @@ class SyncCharts extends React.Component{
             axisLabels: {x: null, y: null},
             series: [{
                 data: seriesData,
-                type: "line"
+                type: "line",
+                lineWidth: 0.8
             }]
         });
 
@@ -429,7 +430,11 @@ class SyncCharts extends React.Component{
             this.onMouseOver(); // Show the hover marker
             this.series.chart.tooltip.refresh(this); // Show the tooltip
             this.series.chart.xAxis[0].drawCrosshair(event, this); // Show the crosshair
-        }
+        };
+
+        ReactHighcharts.Highcharts.Pointer.prototype.reset = function () {
+            return undefined;
+        };
     }
 
     render(){
