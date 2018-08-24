@@ -26,7 +26,7 @@ import {
 
 import {ReportAppConsumer} from "./reports/contexts";
 
-import {LoadingComponent} from "./ReportsBase";
+import {LoadingComponent, LoadingScreen} from "./ReportsBase";
 
 const ReactHighcharts = require("react-highcharts");
 const HighchartsHistogram = require("highcharts/modules/histogram-bellcurve");
@@ -206,10 +206,43 @@ class ContigSizeDistribution extends React.Component{
 
         const currentPlotData = this.state.plotData.get(this.state.selectedProcess);
 
+        return(
+            <ExpansionPanel defaultExpanded>
+                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
+                    <Typography variant={"headline"}>Contig size distribution</Typography>
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails>
+                    <div style={{flexGrow: 1}}>
+                        {
+                            this.state.processes.length > 1 &&
+                            <ProcessMenu
+                                selectedProcess={this.state.selectedProcess}
+                                handleProcessChange={this.handleProcessChange}
+                                processes={this.state.processes}/>
+                        }
+                        <LoadingComponent>
+                            <ContigSizeDistributionChart plotData={currentPlotData}/>
+                        </LoadingComponent>
+                    </div>
+                </ExpansionPanelDetails>
+            </ExpansionPanel>
+        )
+    }
+}
+
+class ContigSizeDistributionChart extends React.Component{
+
+    shouldComponentUpdate(nextProps, nextState){
+
+        return nextProps.plotData !== this.props.plotData;
+    }
+
+    render(){
+
         let config = new Chart({
             title: "",
             axisLabels: {x: "Contig", y: "Size"},
-            series: currentPlotData
+            series: this.props.plotData
         });
 
         config.layout.xAxis = [{
@@ -226,28 +259,12 @@ class ContigSizeDistribution extends React.Component{
         }];
 
         return(
-            <ExpansionPanel defaultExpanded>
-                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
-                    <Typography variant={"headline"}>Contig size distribution</Typography>
-                </ExpansionPanelSummary>
-                <ExpansionPanelDetails>
-                    <div style={{flexGrow: 1}}>
-                        {
-                            this.state.processes.length > 1 &&
-                            <ProcessMenu
-                                selectedProcess={this.state.selectedProcess}
-                                handleProcessChange={this.handleProcessChange}
-                                processes={this.state.processes}/>
-                        }
-                        <div style={{"height": "400px", "width":"100%"}}>
-                            <ReactHighcharts config={config.layout} ref={"ssSizeDist"}></ReactHighcharts>
-                        </div>
-                    </div>
-                </ExpansionPanelDetails>
-            </ExpansionPanel>
+            <div style={{"height": "400px", "width":"100%"}}>
+                <ReactHighcharts config={config.layout} ref={"ssSizeDist"}></ReactHighcharts>
+            </div>
         )
     }
-}
+};
 
 
 class SyncChartsContainer extends React.Component{
