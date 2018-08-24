@@ -112,7 +112,7 @@ class SampleSpecificReport extends React.Component{
                     <ReportAppConsumer>
                         {
                             ({charts}) => (
-                                <SyncCharts sample={this.props.sample}
+                                <SyncChartsContainer sample={this.props.sample}
                                             charts={charts}
                                             reportData={this.props.reportData}/>
                             )
@@ -250,7 +250,7 @@ class ContigSizeDistribution extends React.Component{
 }
 
 
-class SyncCharts extends React.Component{
+class SyncChartsContainer extends React.Component{
 
     constructor(props){
         super(props);
@@ -262,8 +262,6 @@ class SyncCharts extends React.Component{
             selectedProcess: processes[0],
             plotData: data
         };
-
-        this.prevPath = {};
     }
 
     handleProcessChange = (value) => {
@@ -420,6 +418,39 @@ class SyncCharts extends React.Component{
         }
     };
 
+    render(){
+
+        const currentPlotData = this.state.plotData.get(this.state.selectedProcess);
+
+        return(
+            <ExpansionPanel defaultExpanded>
+                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
+                    <Typography variant={"headline"}>Genome sliding window</Typography>
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails>
+                    <div style={{flexGrow: 1}}>
+                        {
+                            this.state.processes.length > 1 &&
+                            <ProcessMenu
+                                selectedProcess={this.state.selectedProcess}
+                                handleProcessChange={this.handleProcessChange}
+                                processes={this.state.processes}/>
+                        }
+                        <LoadingComponent>
+                            <SyncCharts plotData={currentPlotData}/>
+                        </LoadingComponent>
+                    </div>
+                </ExpansionPanelDetails>
+            </ExpansionPanel>
+        )
+    }
+}
+
+
+class SyncCharts extends React.Component{
+
+    prevPath = {};
+
     _syncExtremes = (e) => {
 
         if (!e.animation){
@@ -444,46 +475,46 @@ class SyncCharts extends React.Component{
             seriesName,
             chartObj;
 
-            for (const chart of Object.keys(this.refs)){
-                chartObj = this.refs[chart].getChart();
+        for (const chart of Object.keys(this.refs)){
+            chartObj = this.refs[chart].getChart();
 
-                event = chartObj.pointer.normalize(e);
+            event = chartObj.pointer.normalize(e);
 
-                if (chartObj.userOptions.chart.type === "xrange"){
+            if (chartObj.userOptions.chart.type === "xrange"){
 
-                    for (const s of chartObj.series){
+                for (const s of chartObj.series){
 
-                        if (!s){
-                            continue
-                        }
-
-                        seriesName = s.userOptions.name;
-                        if (this.prevPath.hasOwnProperty(seriesName)){
-                            this.prevPath[seriesName].element.remove();
-                        }
-
-                        point = s.searchPoint(event, true);
-                        if (!point){
-                            continue
-                        }
-
-                        // Get corrected coordinates for crosshairs
-                        const crossX = point.plotX + chartObj.plotBox.x;
-                        const crossY = point.plotY + chartObj.plotBox.y - 10;
-                        const crossOffSet = point.plotY + chartObj.plotBox.y + 10;
-
-                        this.prevPath[seriesName] = chartObj.renderer.path(["M", crossX, crossY, "V", crossOffSet])
-                            .attr({"stroke-width": 5, stroke: point.color, id:s.userOptions.name, zIndex: -1, opacity: .7})
-                            .add();
+                    if (!s){
+                        continue
                     }
 
-                } else {
-                    point = chartObj.series[0].searchPoint(event, true);
-                    if (point){
-                        point.highlight(e);
+                    seriesName = s.userOptions.name;
+                    if (this.prevPath.hasOwnProperty(seriesName)){
+                        this.prevPath[seriesName].element.remove();
                     }
+
+                    point = s.searchPoint(event, true);
+                    if (!point){
+                        continue
+                    }
+
+                    // Get corrected coordinates for crosshairs
+                    const crossX = point.plotX + chartObj.plotBox.x;
+                    const crossY = point.plotY + chartObj.plotBox.y - 10;
+                    const crossOffSet = point.plotY + chartObj.plotBox.y + 10;
+
+                    this.prevPath[seriesName] = chartObj.renderer.path(["M", crossX, crossY, "V", crossOffSet])
+                        .attr({"stroke-width": 5, stroke: point.color, id:s.userOptions.name, zIndex: -1, opacity: .7})
+                        .add();
+                }
+
+            } else {
+                point = chartObj.series[0].searchPoint(event, true);
+                if (point){
+                    point.highlight(e);
                 }
             }
+        }
     };
 
     getChartLayout = (seriesData, xLabels, plotLines, xBars, window) => {
@@ -629,43 +660,29 @@ class SyncCharts extends React.Component{
         };
     }
 
+    shouldComponentUpdate(nextProps, nextState){
+        return nextProps.plotData !== this.props.plotData;
+    }
+
     render(){
 
-        const currentPlotData = this.state.plotData.get(this.state.selectedProcess);
-
-        const gcConfig = this.getChartLayout(currentPlotData.gcData, currentPlotData.xLabels, currentPlotData.plotLines, currentPlotData.xBars, currentPlotData.window);
-        const covConfig = this.getChartLayout(currentPlotData.covData, currentPlotData.xLabels, currentPlotData.plotLines, currentPlotData.xBars, currentPlotData.window);
+        const gcConfig = this.getChartLayout(this.props.plotData.gcData, this.props.plotData.xLabels, this.props.plotData.plotLines, this.props.plotData.xBars, this.props.plotData.window);
+        const covConfig = this.getChartLayout(this.props.plotData.covData, this.props.plotData.xLabels, this.props.plotData.plotLines, this.props.plotData.xBars, this.props.plotData.window);
 
         let xRangeConfig;
-        if (currentPlotData.hasOwnProperty("xrangeData")){
-            xRangeConfig = this.getxRangeLayout(currentPlotData.xrangeData, currentPlotData.xrangeCategories, currentPlotData.xLabels, currentPlotData.plotLines)
+        if (this.props.plotData.hasOwnProperty("xrangeData")){
+            xRangeConfig = this.getxRangeLayout(this.props.plotData.xrangeData, this.props.plotData.xrangeCategories, this.props.plotData.xLabels, this.props.plotData.plotLines)
         }
 
         return(
-            <ExpansionPanel defaultExpanded>
-                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
-                    <Typography variant={"headline"}>Genome sliding window</Typography>
-                </ExpansionPanelSummary>
-                <ExpansionPanelDetails>
-                    <div style={{flexGrow: 1}}>
-                        {
-                            this.state.processes.length > 1 &&
-                            <ProcessMenu
-                                selectedProcess={this.state.selectedProcess}
-                                handleProcessChange={this.handleProcessChange}
-                                processes={this.state.processes}/>
-                        }
-                        <div ref={elem => this.chartContainer = elem} style={{"width":"100%"}}>
-                            <ReactHighcharts config={gcConfig.layout} ref={"slidindGc"}></ReactHighcharts>
-                            <ReactHighcharts config={covConfig.layout} ref={"slidingCov"}></ReactHighcharts>
-                            {
-                                xRangeConfig &&
-                                    <ReactHighcharts config={xRangeConfig.layout} ref={"slidingAbr"}></ReactHighcharts>
-                            }
-                        </div>
-                    </div>
-                </ExpansionPanelDetails>
-            </ExpansionPanel>
+            <div ref={elem => this.chartContainer = elem} style={{"width":"100%"}}>
+                <ReactHighcharts config={gcConfig.layout} ref={"slidindGc"}></ReactHighcharts>
+                <ReactHighcharts config={covConfig.layout} ref={"slidingCov"}></ReactHighcharts>
+                {
+                    xRangeConfig &&
+                    <ReactHighcharts config={xRangeConfig.layout} ref={"slidingAbr"}></ReactHighcharts>
+                }
+            </div>
         )
     }
 }
