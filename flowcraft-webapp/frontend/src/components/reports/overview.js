@@ -630,13 +630,20 @@ class OverviewTable extends React.Component{
         return(
             <div>
                 <div style={style.btnContainer}>
-                    <Button color={"primary"} style={style.btn} onClick={this.props.closeTable}>
+                    <Button color={"primary"}
+                            style={style.btn}
+                            onClick={this.props.closeTable}>
                         <ExpandLessIcon />
                     </Button>
                 </div>
                 <div style={style.toolbar}>
                     <Tooltip title={"Filter and keep only selection"} placement={"bottom"}>
-                        <Button onClick={this.props.filterSelection} color={"primary"} variant={"contained"}><FilterIcon color={"#fff"}/></Button>
+                        <Button onClick={this.props.filterSelection}
+                                color={"primary"}
+                                size={"small"}
+                                variant={"contained"}>
+                            <FilterIcon color={"#fff"}/>
+                        </Button>
                     </Tooltip>
                 </div>
                 <div style={style.tableContainer}>
