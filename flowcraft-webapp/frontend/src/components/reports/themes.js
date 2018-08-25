@@ -3,6 +3,7 @@
 import {createMuiTheme} from '@material-ui/core/styles';
 
 // Color imports
+import lightblue from "@material-ui/core/colors/lightBlue"
 import green from "@material-ui/core/colors/green";
 import indigo from "@material-ui/core/colors/indigo";
 import grey from "@material-ui/core/colors/grey";
@@ -15,7 +16,7 @@ const base = createMuiTheme({
             main: indigo[400]
         },
         secondary: {
-            main: green[400]
+            main: lightblue[500]
         },
     },
     typography: {
@@ -26,6 +27,11 @@ const base = createMuiTheme({
         },
         headline: {
             fontSize: 22,
+            fontWeight: "bold",
+            color: indigo[400],
+        },
+        subheading: {
+            fontSize: 18,
             fontWeight: "bold",
             color: indigo[400],
         },

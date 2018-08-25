@@ -2,23 +2,26 @@ import React from "react";
 
 import Select from 'react-select';
 
-import ListItemText from "@material-ui/core/ListItemText";
 import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
-import ListItem from "@material-ui/core/ListItem";
 import CloseIcon from "@material-ui/icons/Close";
 import Toolbar from "@material-ui/core/Toolbar";
+import Divider from "@material-ui/core/Divider";
 import Button from "@material-ui/core/Button";
 import Dialog from "@material-ui/core/Dialog";
 import AppBar from "@material-ui/core/AppBar";
 import Slide from '@material-ui/core/Slide';
 import Grid from "@material-ui/core/Grid";
-import List from "@material-ui/core/List"
 import Popover from "@material-ui/core/Popover";
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
+import {MuiThemeProvider} from "@material-ui/core/styles";
+
+// Theme imports
+import {themes} from "./reports/themes";
+import {theme} from "../../config.json";
 
 import {Chart} from "./reports/chart_utils";
 import {sortNumber} from "./reports/utils";
@@ -782,9 +785,24 @@ class GenePopup extends React.Component{
     render(){
 
         const style = {
+            root: {
+                overflow: "hidden",
+                padding: "10px"
+            },
             grid: {
                 padding: "10px",
                 minWidth: "400px"
+            },
+            header: {
+                display: "flex"
+            },
+            headerTitle: {
+                flexGrow: "1",
+                margin: "auto"
+            },
+            textItems: {
+                fontSize: "15px",
+                marginBottom: "7px"
             }
         };
 
@@ -811,21 +829,28 @@ class GenePopup extends React.Component{
                     vertical: 'bottom',
                     horizontal: 'center',
                 }}
-                >
-                <div style={{overflow: "hidden"}}>
+            >
+                <div style={style.root}>
+                    <div style={style.header}>
+                        <Typography variant={"subheading"} style={style.headerTitle}>AMR gene details</Typography>
+                        <IconButton size={"small"}>
+                            <CloseIcon onClick={this.handleClose}/>
+                        </IconButton>
+                    </div>
+                    <Divider/>
                     <Grid style={style.grid} container spacing={16}>
-                        <Grid item xs={8}>
+                        <Grid item xs={9}>
                             {
                                 Object.keys(infoObject).map((key) => {
                                     return(
-                                        <Typography key={key}>
+                                        <Typography style={style.textItems} key={key}>
                                             <b>{infoObject[key]}</b>: {data[key]}
                                         </Typography>
                                     )
                                 })
                             }
                         </Grid>
-                        <Grid item xs={4}>
+                        <Grid item xs={3}>
                             <GeneGaugeChart title={"Coverage"} value={data.coverage}/>
                             <GeneGaugeChart title={"Identity"} value={data.identity}/>
                         </Grid>
