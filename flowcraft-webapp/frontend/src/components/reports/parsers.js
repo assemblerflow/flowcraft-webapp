@@ -5,6 +5,8 @@ import Typography from "@material-ui/core/Typography";
 import {CellBar} from "./tables";
 import {QcPopover} from "./tables";
 
+import {sortByPropsValue} from "./utils";
+
 import styles from "../../styles/reports.css"
 
 /**
@@ -496,7 +498,8 @@ export const genericTableParser = (reportArray) => {
                     className={styles.tableSecondaryHeader}>{h.processName}</Typography>
             </div>,
             accessor: h.accessor,
-            minWidth: 120
+            minWidth: 120,
+            sortMethod: sortByPropsValue
         })
     }
 

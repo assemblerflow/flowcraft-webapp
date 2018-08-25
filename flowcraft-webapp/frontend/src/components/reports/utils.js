@@ -187,6 +187,17 @@ export const sortByContent = (a, b) => {
 
 };
 
+
+export const sortByPropsValue = (a, b) => {
+
+    const aValue = a.props.hasOwnProperty("value") ? a.props.value : -1;
+    const bValue = b.props.hasOwnProperty("value") ? b.props.value : -1;
+
+    return aValue > bValue ? 1 : -1;
+
+};
+
+
 export const sortNumber = (a, b) => {
     return a - b
 };
