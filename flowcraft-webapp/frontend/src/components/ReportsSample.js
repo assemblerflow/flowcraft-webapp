@@ -19,6 +19,8 @@ import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
 import {MuiThemeProvider} from "@material-ui/core/styles";
 
+import red from "@material-ui/core/colors/red";
+
 // Theme imports
 import {themes} from "./reports/themes";
 import {theme} from "../../config.json";
@@ -793,6 +795,12 @@ class GenePopup extends React.Component{
                 padding: "10px",
                 minWidth: "400px"
             },
+            button: {
+                padding: 0,
+                width: "40px",
+                height: "40px",
+                color: red[400],
+            },
             header: {
                 display: "flex"
             },
@@ -833,7 +841,7 @@ class GenePopup extends React.Component{
                 <div style={style.root}>
                     <div style={style.header}>
                         <Typography variant={"subheading"} style={style.headerTitle}>AMR gene details</Typography>
-                        <IconButton size={"small"}>
+                        <IconButton style={style.button} size={"small"}>
                             <CloseIcon onClick={this.handleClose}/>
                         </IconButton>
                     </div>
