@@ -614,7 +614,6 @@ class SyncCharts extends React.Component{
     };
 
     _geneClick = (e) => {
-        console.log(e)
         const data = {
             gene: e.point.gene,
             geneLength: parseInt((e.point.x2 - e.point.x) * 2000),

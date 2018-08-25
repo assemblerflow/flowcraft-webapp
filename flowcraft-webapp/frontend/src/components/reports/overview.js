@@ -115,6 +115,11 @@ export class ReportOverview extends React.Component{
      */
     getSamplesOverview = (sampleList, qcInfo) => {
 
+        const headerStyle = {
+            fontSize: "15px",
+            fontWeight: "bold"
+        };
+
         let rawSamples = [];
         let samples = [];
         let columns = [{
@@ -128,22 +133,26 @@ export class ReportOverview extends React.Component{
                 textAlign: "center"
             }
         }, {
-            Header: <Typography>Sample</Typography>,
+            Header: <Typography style={headerStyle}>Sample</Typography>,
             accessor: "rowId",
             filterable: true,
             filterMethod: (filter, rows) =>
                 matchSorter(rows, filter.value, {keys: ["rowId.props.children"]}),
-            filterAll: true
+            filterAll: true,
+            style: {
+                margin: "auto",
+                textAlign: "left"
+            }
         }, {
-            Header: <Typography>Warnings</Typography>,
+            Header: <Typography style={headerStyle}>Warnings</Typography>,
             accessor: "warnings",
             sortMethod: sortByContent
         }, {
-            Header: <Typography>Fails</Typography>,
+            Header: <Typography style={headerStyle}>Fails</Typography>,
             accessor: "fail",
             sortMethod: sortByContent
         }, {
-            Header: <Typography>More options</Typography>,
+            Header: <Typography style={headerStyle}>More options</Typography>,
             accessor: "moreOptions",
         }];
         let sampleQcInfo;
@@ -199,7 +208,7 @@ export class ReportOverview extends React.Component{
                     _projects.set(el.projectid, {
                         "visibility": this.props.filters.projects.includes(el.projectid) ? <EyeOffIcon/> : <EyeIcon/>,
                         "_id": el.projectid,
-                        "project": el.projectid,
+                        "project": <Typography>{el.projectid}</Typography>,
                         "warnings": <OverviewQcPopover content={projectQcInfo.warnings}/>,
                         "fail": <OverviewQcPopover content={projectQcInfo.fail}/>
                     })
@@ -216,13 +225,18 @@ export class ReportOverview extends React.Component{
                     _components.set(el.processName, {
                         "visibility": this.props.filters.components.includes(el.processName) ? <EyeOffIcon/> : <EyeIcon/>,
                         "_id": el.processName,
-                        "component": el.processName,
+                        "component": <Typography>{el.processName}</Typography>,
                         "warnings": <OverviewQcPopover content={componentQcInfo.warnings}/>,
                         "fail": <OverviewQcPopover content={componentQcInfo.fail}/>
                     })
                 }
             }
         }
+
+        const headerStyle = {
+            fontSize: "15px",
+            fontWeight: "bold"
+        };
 
         const projectColumns = [{
             Header: "",
@@ -235,14 +249,18 @@ export class ReportOverview extends React.Component{
                 textAlign: "center"
             }
         }, {
-            Header: "Project",
-            accessor: "project"
+            Header: <Typography style={headerStyle}>Project</Typography>,
+            accessor: "project",
+            style: {
+                margin: "auto",
+                textAlign: "left"
+            }
         }, {
-            Header: "Warnings",
+            Header: <Typography style={headerStyle}>Warnings</Typography>,
             accessor: "warnings",
             sortMethod: sortByContent
         }, {
-            Header: "Fails",
+            Header: <Typography style={headerStyle}>Fails</Typography>,
             accessor: "fail",
             sortMethod: sortByContent
         }];
@@ -257,14 +275,18 @@ export class ReportOverview extends React.Component{
                 textAlign: "center"
             }
         }, {
-            Header: "Component",
-            accessor: "component"
+            Header: <Typography style={headerStyle}>Component</Typography>,
+            accessor: "component",
+            style: {
+                margin: "auto",
+                textAlign: "left"
+            }
         }, {
-            Header: "Warnings",
+            Header: <Typography style={headerStyle}>Warnings</Typography>,
             accessor: "warnings",
             sortMethod: sortByContent
         }, {
-            Header: "Fails",
+            Header: <Typography style={headerStyle}>Fails</Typography>,
             accessor: "fail",
             sortMethod: sortByContent
         }];
