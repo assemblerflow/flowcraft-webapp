@@ -9,6 +9,7 @@ import {Main} from "./Main";
 import {themes} from "./reports/themes";
 import {theme} from "../../config.json";
 
+
 class App extends React.Component {
     render() {
         return (

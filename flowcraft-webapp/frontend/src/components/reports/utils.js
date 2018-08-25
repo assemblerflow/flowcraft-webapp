@@ -19,9 +19,6 @@ const convertDateInverse = (date) => {
     return date.getFullYear() + "-" + mm + "-" + dd;
 };
 
-
-
-
 /**
  * Function to send file to user, client-side
  * @param filename
@@ -111,7 +108,6 @@ export const getAssemblies = (rows, reportData) => {
     let sampleNames = [];
 
     for (const row of rows) {
-        console.log(row);
         const pid = `${row.projectId}.${row._id}`;
         const res = getAssemblyPath(pid, reportData);
         fileList.push(res[0]);

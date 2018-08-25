@@ -44,7 +44,7 @@ import {ReportsHome} from "../Reports";
 import {InnuendoReportsTableParser} from './parsers';
 
 // Other imports
-import {address} from "../../../config.json"
+import {address} from "../../../config.json";
 
 
 /////////////////////// INNUENDO Class ///////////////////////////////
@@ -88,6 +88,16 @@ export class Innuendo {
                 username: username,
                 password: password
             }
+        })
+    }
+
+    /*
+    Check INNUENDO user
+     */
+    checkUser() {
+        return axios({
+            method: "get",
+            url: address + `app/api/v1.0/user/check/`
         })
     }
 
@@ -258,6 +268,40 @@ export class HomeInnuendo extends React.Component {
             innuendo: innuendoClass
         })
     };
+
+    // Method used to parse message form iframe
+    receiveMessage = (e) => {
+
+        // Verify if message comes from INNUENDO platform
+        if (e.origin === address.substring(0, address.length - 1)) {
+            if (typeof e.data === "string") {
+                try {
+                    const parts = e.data.split(":");
+                    if (parts.length === 2) {
+                        // Set userId on INNUENDO state
+                        this.state.innuendo.setUserId(parts[1]);
+
+                        this.setState({
+                            showProjects: true
+                        });
+                    }
+                } catch (e) {
+                    return;
+                }
+            }
+        }
+
+    };
+
+    componentDidMount() {
+        // Event to receive message from iframe
+        window.addEventListener('message', this.receiveMessage);
+    }
+
+    componentWillUnmount() {
+        // Remove event on component unmount
+        window.removeEventListener('message', this.receiveMessage);
+    }
 
     render() {
         return (
