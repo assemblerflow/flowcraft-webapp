@@ -33,7 +33,10 @@ export class Chart {
                 // useGPUTranslations: true
             },
             title: {
-                text: this.title
+                text: this.title,
+                style: {
+                    fontWeight: "bold"
+                }
             },
             plotOptions: {
                 // series: {

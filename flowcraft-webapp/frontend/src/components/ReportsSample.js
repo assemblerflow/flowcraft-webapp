@@ -554,10 +554,10 @@ class SyncCharts extends React.Component{
         }
     };
 
-    getChartLayout = (seriesData, xLabels, plotLines, xBars, window) => {
+    getChartLayout = (seriesData, title, xLabels, plotLines, xBars, window) => {
 
         let config = new Chart({
-            title: null,
+            title: title,
             axisLabels: {x: null, y: null},
             series: [{
                 data: seriesData,
@@ -567,12 +567,13 @@ class SyncCharts extends React.Component{
         });
 
         config.extend("chart", {
-            marginTop: 40,
+            marginLeft: 80,
+            spacingTop: 30,
             spacingBottom: 10,
             zoomType: "x",
             panning: true,
             panKey: "ctrl",
-            height: 300,
+            height: 270,
         });
         config.extend("legend", {
             enabled: false
@@ -596,8 +597,8 @@ class SyncCharts extends React.Component{
         config.extend("tooltip", {
             positioner() {
                 return {
-                    x: 40,
-                    y: -10
+                    x: 70,
+                    y: 20
                 }
             },
             borderWidth: 0,
@@ -634,7 +635,7 @@ class SyncCharts extends React.Component{
     getxRangeLayout = (data, categories, xLabels, plotLines) => {
 
         const seriesHeight = 20;
-        const chartHeight = 60 + (seriesHeight * categories.length);
+        const chartHeight = 90 + (seriesHeight * categories.length);
 
         let config = new Chart({
             title: null,
@@ -643,8 +644,8 @@ class SyncCharts extends React.Component{
         });
 
         config.extend("chart", {
-            marginLeft: 100,
-            spacingTop: 10,
+            marginLeft: 80,
+            spacingTop: 30,
             spacingBottom: 10,
             zoomType: "x",
             panning: true,
@@ -654,7 +655,6 @@ class SyncCharts extends React.Component{
         });
         config.extend("title", {
             text: "Antimicrobial resistance and virulence annotation",
-            margin: 5
         });
         config.extend("plotOptions", {
             series: {
@@ -672,8 +672,8 @@ class SyncCharts extends React.Component{
         config.extend("tooltip", {
             positioner() {
                 return {
-                    x: 30,
-                    y: 0
+                    x: 70,
+                    y: 35
                 };
             },
             pointFormatter() {
@@ -685,15 +685,17 @@ class SyncCharts extends React.Component{
             shadow: false
         });
         config.extend("xAxis", {
+            categories: xLabels,
             min: 0,
+            tickInterval: 100,
             max: xLabels.length,
             plotLines: plotLines,
+            crosshair: {
+                width: 10
+            },
             events: {
                 setExtremes: this._syncExtremes
             },
-            labels: {
-                enabled: false
-            }
         });
         config.extend("yAxis", {
             categories: categories,
@@ -729,8 +731,8 @@ class SyncCharts extends React.Component{
 
     render(){
 
-        const gcConfig = this.getChartLayout(this.props.plotData.gcData, this.props.plotData.xLabels, this.props.plotData.plotLines, this.props.plotData.xBars, this.props.plotData.window);
-        const covConfig = this.getChartLayout(this.props.plotData.covData, this.props.plotData.xLabels, this.props.plotData.plotLines, this.props.plotData.xBars, this.props.plotData.window);
+        const gcConfig = this.getChartLayout(this.props.plotData.gcData, "GC% content", this.props.plotData.xLabels, this.props.plotData.plotLines, this.props.plotData.xBars, this.props.plotData.window);
+        const covConfig = this.getChartLayout(this.props.plotData.covData, "Coverage depth", this.props.plotData.xLabels, this.props.plotData.plotLines, this.props.plotData.xBars, this.props.plotData.window);
 
         let xRangeConfig;
         if (this.props.plotData.hasOwnProperty("xrangeData")){
@@ -872,8 +874,6 @@ class GenePopup extends React.Component{
 class GeneGaugeChart extends React.Component{
 
     render(){
-
-        console.log(this.props)
 
         let config = new Chart({
             title: this.props.title,
