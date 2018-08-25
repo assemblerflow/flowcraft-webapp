@@ -839,7 +839,7 @@ class GenePopup extends React.Component{
                     </div>
                     <Divider/>
                     <Grid style={style.grid} container spacing={16}>
-                        <Grid item xs={9}>
+                        <Grid item xs={9} style={{margin: "auto"}}>
                             {
                                 Object.keys(infoObject).map((key) => {
                                     return(
