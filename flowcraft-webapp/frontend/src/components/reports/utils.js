@@ -198,6 +198,22 @@ export const sortByPropsValue = (a, b) => {
 };
 
 
+export const sortQcValues = (a, b) => {
+
+    let aValue = a.props.status === "pass" ? 0 : a.props.status === "warnings" ? 10 : 100;
+    let bValue = b.props.status === "pass" ? 0 : b.props.status === "warnings" ? 10 : 100;
+
+    if (a.props.hasOwnProperty("badgeCount")){
+        aValue += a.props.badgeCount
+    }
+    if (b.props.hasOwnProperty("badgeCount")){
+        bValue += b.props.badgeCount
+    }
+
+    return aValue > bValue ? 1 : -1;
+};
+
+
 export const sortNumber = (a, b) => {
     return a - b
 };

@@ -5,7 +5,7 @@ import Typography from "@material-ui/core/Typography";
 import {CellBar} from "./tables";
 import {QcPopover} from "./tables";
 
-import {sortByPropsValue} from "./utils";
+import {sortByPropsValue, sortQcValues} from "./utils";
 
 import styles from "../../styles/reports.css"
 
@@ -590,7 +590,8 @@ export const qcParseAdditionalData = (tableData, originalData, qcInfo, signature
         Header: <Typography>QC</Typography>,
         accessor: "qc",
         minWidth: 55,
-        style: style.qcColumn
+        style: style.qcColumn,
+        sortMethod: sortQcValues
     });
 
     // Iterate over each row in table and add the corresponding QC icon and
