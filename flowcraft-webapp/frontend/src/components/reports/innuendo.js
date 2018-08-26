@@ -19,10 +19,9 @@ import Select from '../SelectPlusAll';
 import {FCTable} from './tables';
 
 // styles
-import {withStyles} from '@material-ui/core/styles';
 import styles from "../../styles/innuendo.css";
 import "../../styles/innuendo.css";
-import 'react-select/dist/react-select.css';
+// import 'react-select/dist/react-select.css';
 
 // Import Colors
 import red from "@material-ui/core/colors/red";
