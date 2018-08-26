@@ -830,6 +830,8 @@ class InnuendoProjects extends React.Component {
         const projectIndexes = [];
         const selectedProjects = [];
 
+        console.log(selectedValues);
+
         for (const entry of selectedValues) {
             projectIndexes.push(this.state.projectNameToId[entry.value]);
             selectedProjects.push(entry.value);
@@ -1021,9 +1023,9 @@ class InnuendoProjectSelector extends React.Component {
                     <Typography variant="title" style={style.typoText}>Choose
                         Projects</Typography>
                     <Select
-                        onClose={this.props.getProjectStrains}
-                        closeOnSelect={false}
-                        multi
+                        onMenuClose={this.props.getProjectStrains}
+                        closeMenuOnSelect={false}
+                        isMulti
                         allowSelectAll={true}
                         value={this.state.values}
                         onChange={(values) => {
@@ -1107,8 +1109,8 @@ class InnuendoFilters extends React.Component {
                             <Typography
                                 style={style.filterStrainText}>Strains</Typography>
                             <Select
-                                closeOnSelect={false}
-                                multi
+                                closeMenuOnSelect={false}
+                                isMulti
                                 allowSelectAll={true}
                                 label="Strains"
                                 value={this.state.values}

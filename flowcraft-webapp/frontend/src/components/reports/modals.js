@@ -600,10 +600,9 @@ export class PhylovizModal extends React.Component {
                                         </label>
                                         <Select
                                             id="speciesDatabase"
-                                            /*onClose={console.log("close")}*/
-                                            closeOnSelect={false}
+                                            closeMenuOnSelect={false}
+                                            isMulti
                                             value={this.state.speciesValues}
-                                            multi
                                             onChange={(values) => {
                                                 this.handleSelectChange(values);
                                             }}
