@@ -69,7 +69,7 @@ export class ReportsHome extends DraggableView {
                                 service === "innuendo" ?
                                     <div>
                                         <Header
-                                            headerTitle={"INNUENDO Reports"}/>
+                                            headerTitle={"Reports"}/>
                                         <HomeInnuendo route={"reports"}/>
                                     </div> :
                                     <div>

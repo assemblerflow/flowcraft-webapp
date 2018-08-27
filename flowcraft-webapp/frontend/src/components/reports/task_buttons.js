@@ -10,11 +10,13 @@ import Tooltip from "@material-ui/core/Tooltip";
 import Divider from "@material-ui/core/Divider";
 import Button from '@material-ui/core/Button';
 import Dialog from "@material-ui/core/Dialog";
+import {InfoDrawer} from "../ReportsInformation";
 
 import PlusIcon from "mdi-react/PlusIcon";
 import MagnifyIcon from "mdi-react/MagnifyIcon";
 import FilterIcon from "mdi-react/FilterIcon";
 import FileExportIcon from "mdi-react/FileExportIcon";
+
 import {
     ReportDataConsumer,
     ReportAppConsumer,
@@ -61,6 +63,7 @@ export class TaskButtons extends React.Component {
                  onClick={this.hideTaskButtons}>
                 {/*<FilterTask tableData={this.props.tableData} tableSamples={this.props.tableSamples} active={this.state.active}/>
                 <SearchTask tableData={this.props.tableData} tableSamples={this.props.tableSamples} active={this.state.active}/>*/}
+                <InfoTask active={this.state.active}/>
                 <ReportDataConsumer>
                     {
                         ({reportData}) => (
@@ -215,6 +218,24 @@ class FilterTask extends React.Component {
                         <FilterIcon/>
                     </Tooltip>
                 </Button>
+            </div>
+        )
+    }
+}
+
+/**
+ * A button to get all information regarding the software used, reports
+ * version and developers.
+ */
+class InfoTask extends React.Component {
+
+    render() {
+        return (
+            <div className={styles.taskButton} style={{
+                "opacity": this.props.active ? 1 : 0,
+                "marginBottom": this.props.active ? "15px" : "0"
+            }}>
+                <InfoDrawer/>
             </div>
         )
     }
