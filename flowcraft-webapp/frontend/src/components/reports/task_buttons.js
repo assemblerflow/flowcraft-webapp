@@ -237,7 +237,7 @@ class ExportTask extends React.Component {
 
         console.log(exportObject);
         const dataString = JSON.stringify(exportObject);
-        sendFile("report.json", dataString);
+        sendFile("report.json", dataString, "application/json");
 
     };
 

@@ -1,4 +1,3 @@
-
 import {address} from "../../../config.json"
 
 /**
@@ -10,11 +9,11 @@ import {address} from "../../../config.json"
 const convertDateInverse = (date) => {
     let dd = date.getDate();
     let mm = date.getMonth() + 1;
-    if(dd<10){
-        dd="0" + dd;
+    if (dd < 10) {
+        dd = "0" + dd;
     }
-    if(mm<10){
-        mm="0" + mm;
+    if (mm < 10) {
+        mm = "0" + mm;
     }
     return date.getFullYear() + "-" + mm + "-" + dd;
 };
@@ -24,15 +23,15 @@ const convertDateInverse = (date) => {
  * @param filename
  * @param text
  */
-export const sendFile = (filename, text) => {
+export const sendFile = (filename, text, type) => {
 
     window.URL = window.URL || window.webkitURL;
 
-    const csvData = new Blob([text], { type: "application/json" });
+    const csvData = new Blob([text], {type: type});
     const csvUrl = window.URL.createObjectURL(csvData);
 
     const element = document.createElement("a");
-    element.href =  csvUrl;
+    element.href = csvUrl;
     element.setAttribute("download", filename);
 
     element.style.display = "none";
@@ -52,7 +51,7 @@ export const sendFile = (filename, text) => {
 export const getFile = async (filePath, sampleNames) => {
 
     const url = address + "app/api/v1.0/reports/strain/files/?path=" +
-        filePath + "&sampleNames=" + sampleNames ;
+        filePath + "&sampleNames=" + sampleNames;
 
     const link = document.createElement("a");
     link.download = filePath.split('/').slice(-1)[0];
@@ -73,17 +72,17 @@ const getAssemblyPath = (sampleId, reportData) => {
     let filePath;
     let sampleName;
 
-    for (const el of reportData){
+    for (const el of reportData) {
         let wantedTask = false;
-        try{
+        try {
             wantedTask = el.task.indexOf("pilon") > -1;
         }
-        catch(e){
+        catch (e) {
             wantedTask = false;
         }
-        if (wantedTask){
+        if (wantedTask) {
             const pid = `${el.projectid}.${el.reportJson.tableRow[0].sample}`;
-            if (sampleId === pid){
+            if (sampleId === pid) {
                 //assemblySuffix = assemblySuffix + el.report_json.task + `/${el.sample_name}_trim_spades3111_proc_filt_polished.fasta`;
                 assemblySuffix = assemblySuffix + el.task +
                     `/${el.reportJson.tableRow[0].sample}_trim_spades3111_proc_filt_polished.fasta`;
@@ -133,10 +132,10 @@ export const parseProjectSearch = (projectsData) => {
     let totalNames = [];
 
     projectsData.map((entry) => {
-        if(totalDates.indexOf(entry.timestamp) < 0){
+        if (totalDates.indexOf(entry.timestamp) < 0) {
             totalDates.push(new Date(entry.timestamp));
         }
-        if(totalNames.indexOf(entry.sample_name) < 0){
+        if (totalNames.indexOf(entry.sample_name) < 0) {
             totalNames.push(entry.sample_name);
         }
     });
@@ -153,6 +152,80 @@ export const parseProjectSearch = (projectsData) => {
 };
 
 /**
+ * Download profiles from chewbbaca in a tab-delimited format
+ */
+export const downloadChewbbacaProfiles = (selection, reportData) => {
+
+    console.log(selection);
+
+
+    let headers = ["FILE"];
+    let body = [];
+    let firstTime = true;
+    let dataKey;
+    let auxBody = [];
+
+    const selectionRows = selection.rows === undefined ? [] : selection.rows;
+
+    if (selectionRows.length === 0) {
+        return false;
+    }
+
+    for (const row of selectionRows) {
+
+
+        console.log(row);
+        const idToCheck = `${row.projectId}.${row.pipelineId}.${row.processId}`;
+
+        for (const [index, report] of reportData.entries()) {
+            const indexToCheck = `${report.projectid}.${report.pipelineId}.${report.processId}`;
+
+
+            if (indexToCheck === idToCheck) {
+
+                console.log(report);
+
+                auxBody = [];
+
+                if (firstTime) {
+                    firstTime = false;
+                    headers = headers.concat(report.reportJson.cagao[0].header);
+                }
+
+                for (const d in report.reportJson.cagao[0]) {
+                    if (d !== "header"){
+                        dataKey = d;
+                        break;
+                    }
+                }
+
+                auxBody.push(report.sample_name);
+                auxBody = auxBody.concat(report.reportJson.cagao[0][dataKey]);
+                body.push(auxBody);
+
+            }
+        }
+    }
+    ;
+
+    // Create string for user to download
+    let downloadString = "";
+    downloadString += (headers.join("\t") + "\n");
+
+    for (const profile of body) {
+        downloadString += (profile.join("\t") + "\n");
+    }
+
+    // Send to download
+    const fileName = Math.random().toString(36).substring(7);
+    sendFile(fileName, downloadString, "text/csv");
+    return true;
+
+
+};
+
+
+/**
  * Filter metadata based on the selected strains
  * @param reportInfo
  * @param selectedSamples
@@ -164,7 +237,7 @@ export const getMetadataMapping = (reportInfo, selectedSamples) => {
     let sampleAr = [];
 
     for (const el of reportInfo) {
-        if (selectedSamples.includes(el.sample_name)){
+        if (selectedSamples.includes(el.sample_name)) {
             projectAr.push(el.project_id);
             sampleAr.push(el.sample_name);
         }
@@ -175,6 +248,19 @@ export const getMetadataMapping = (reportInfo, selectedSamples) => {
 
     return [projectStr, sampleStr];
 
+};
+
+
+export const getSpeciesMapping = () => {
+
+    const speciesMapping = {
+        "E.coli": "Escherichia coli",
+        "Campylobacter": "Campylobacter jejuni",
+        "Yersinia": "Yersinia enterocolitica",
+        "Salmonella": "Salmonella enterica"
+    };
+
+    return speciesMapping;
 };
 
 
@@ -203,10 +289,10 @@ export const sortQcValues = (a, b) => {
     let aValue = a.props.status === "pass" ? 0 : a.props.status === "warnings" ? 10 : 100;
     let bValue = b.props.status === "pass" ? 0 : b.props.status === "warnings" ? 10 : 100;
 
-    if (a.props.hasOwnProperty("badgeCount")){
+    if (a.props.hasOwnProperty("badgeCount")) {
         aValue += a.props.badgeCount
     }
-    if (b.props.hasOwnProperty("badgeCount")){
+    if (b.props.hasOwnProperty("badgeCount")) {
         bValue += b.props.badgeCount
     }
 

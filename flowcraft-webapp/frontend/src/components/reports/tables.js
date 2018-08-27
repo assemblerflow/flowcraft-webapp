@@ -34,7 +34,12 @@ import AlertIcon from "mdi-react/AlertIcon";
 import {LoadingComponent} from "../ReportsBase";
 import {PhylovizModal, PositionedSnackbar} from "./modals";
 import {ReportDataConsumer} from './contexts';
-import {getAssemblies, getFile} from "./utils";
+import {
+    getAssemblies,
+    getFile,
+    downloadChewbbacaProfiles,
+    getSpeciesMapping
+} from "./utils";
 
 
 const statusColor = {
@@ -487,7 +492,9 @@ export class AssemblyTable extends React.Component {
                         >
                             {
                                 (this.props.additionalInfo && this.props.additionalInfo.innuendo) &&
-                                <Button onClick={this.downloadAssemblies}>Download
+                                <Button variant={"contained"}
+                                        color={"primary"}
+                                        onClick={this.downloadAssemblies}>Download
                                     Assemblies</Button>
                             }
                         </FCTable>
@@ -650,6 +657,10 @@ export class ChewbbacaTable extends React.Component {
 
     };
 
+    downloadProfiles = () => {
+        downloadChewbbacaProfiles(this.state.selection, this.props.reportData);
+    };
+
     chewbbacaParser = (tableData, originalData) => {
 
         // Add status header to table columns
@@ -724,6 +735,7 @@ export class ChewbbacaTable extends React.Component {
                                 this.props.additionalInfo.innuendo &&
                                 Object.keys(this.props.additionalInfo.innuendo.species).map((item, index) => {
                                     let species = this.props.additionalInfo.innuendo.species;
+                                    const speciesMapping = getSpeciesMapping();
                                     return <Button key={item}
                                                    style={style.button}
                                                    className={classNames(this.state.tabValue === index && styles.tabButton)}
@@ -731,7 +743,7 @@ export class ChewbbacaTable extends React.Component {
                                                        this.handleClickSpecies(species[item], index);
                                                    }}>
                                         {
-                                            this.props.additionalInfo.innuendo.species[item]
+                                            speciesMapping[this.props.additionalInfo.innuendo.species[item]]
                                         }
                                     </Button>
                                 })
@@ -762,6 +774,10 @@ export class ChewbbacaTable extends React.Component {
 
                                 }
                             </ReportDataConsumer>
+                            <Button variant={"contained"}
+                                    color={"primary"}
+                                    onClick={this.downloadProfiles}>Download
+                                Profiles</Button>
                         </FCTable>
                     </div>
                 </ExpansionPanelDetails>
