@@ -22,7 +22,9 @@ import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
 
 import Crosshairs from "mdi-react/CrosshairsIcon"
 import {MuiThemeProvider} from "@material-ui/core/styles";
-import { withTheme } from '@material-ui/core/styles';
+
+import {themes} from "./reports/themes";
+import {theme} from "../../config.json";
 
 import red from "@material-ui/core/colors/red";
 import indigo from "@material-ui/core/colors/indigo";
