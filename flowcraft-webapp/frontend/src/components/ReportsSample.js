@@ -268,16 +268,16 @@ class HeaderCard extends React.Component{
                 display: "flex"
             },
             header: {
-                fontSize: "11px",
+                fontSize: "15px",
                 fontWeight: "bold",
                 color: "#8e8e8e"
             },
             value: {
-                fontSize: "20px",
+                fontSize: "24px",
                 fontWeight: "bold",
             },
             process: {
-                fontSize: "11px",
+                fontSize: "13px",
                 fontWeight: "bold",
                 color: "#8e8e8e"
             },
@@ -315,8 +315,8 @@ class GaugeChart extends React.Component{
         const config = {
             chart: {
                 type: "solidgauge",
-                height: "65",
-                width: "65",
+                height: "80",
+                width: "80",
                 marginRight: "-25",
                 marginLeft: "-15"
             },
@@ -372,8 +372,8 @@ class GaugeChart extends React.Component{
                     color:  "#5c6bc0",
                 }],
                 dataLabels: {
-                    format: "<p style='text-align:center;font-size:8px'>{y}%</p>",
-                    y: 6,
+                    format: "<Typography style='text-align:center;font-size:14px'>{y}%</Typography>",
+                    y: 15,
                     backgroundColor: "transparent",
                     borderColor: "transparent",
                     color: "#5c6bc0"
