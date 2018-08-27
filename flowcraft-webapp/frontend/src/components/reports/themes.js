@@ -8,7 +8,7 @@ import green from "@material-ui/core/colors/green";
 import indigo from "@material-ui/core/colors/indigo";
 import grey from "@material-ui/core/colors/grey";
 import red from "@material-ui/core/colors/red";
-import orange from "@material-ui/core/colors/orange";
+import amber from "@material-ui/core/colors/amber";
 
 
 // Base theme used for FlowCraft reporting system
@@ -30,7 +30,7 @@ const base = createMuiTheme({
             main: grey[600],
         },
         warning: {
-            main: orange[300]
+            main: amber[300]
         }
     },
     typography: {

@@ -658,7 +658,7 @@ class OverviewTable extends React.Component{
 }
 
 
-class OverviewQcPopover extends React.Component{
+export class OverviewQcPopover extends React.Component{
 
     state = {
         anchorEl: null
@@ -716,7 +716,7 @@ class OverviewQcPopover extends React.Component{
 
         return(
             <div>
-                <Button style={style.btn} onClick={this.handleClick}>{this.props.content.length}</Button>
+                <Button variant={this.props.buttonContained ? "contained" : "text"} style={style.btn} onClick={this.handleClick}>{this.props.content.length}</Button>
                 <Popover open={Boolean(anchorEl)}
                          anchorEl={anchorEl}
                          onClose={this.handleClose}

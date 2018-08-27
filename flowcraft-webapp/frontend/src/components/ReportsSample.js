@@ -30,6 +30,7 @@ import red from "@material-ui/core/colors/red";
 import indigo from "@material-ui/core/colors/indigo";
 
 import {Chart} from "./reports/chart_utils";
+import {OverviewQcPopover} from "./reports/overview";
 import {sortNumber} from "./reports/utils";
 
 import {
@@ -303,8 +304,6 @@ class QualityCard extends React.Component{
 
     render(){
 
-        console.log(themes[theme])
-
         const sampleQcInfo = this._getSampleQcInfo(this.props.sample, this.props.qcInfo);
         const status = (sampleQcInfo.warnings.length === 0 && sampleQcInfo.fail.length === 0) ?
             "pass" :
@@ -316,12 +315,61 @@ class QualityCard extends React.Component{
             root: {
                 padding: "15px",
                 backgroundColor: status === "pass" ? themes[theme].palette.success.main : status === "warning" ? themes[theme].palette.warning.main : themes[theme].palette.error.main
+            },
+            statusLine: {
+                display: "flex",
+                marginBottom: "15px"
+            },
+            statusText: {
+                flexGrow: "1",
+                // color: "#fff",
+                fontSize: "20px",
+                fontWeight: "bold"
+            },
+            statusValue: {
+                // color: "#fff",
+                fontSize: "25px",
+                fontWeight: "bold",
+                textTransform: "capitalize"
+            },
+            text: {
+                fontSize: "18px",
+                textAlign: "left",
+                width: "100%",
+                lineHeight: "33px"
             }
+        };
+
+        const messages = {
+            "pass": <Typography>Sample has successfully passed all quality control checks!</Typography>,
+            "warning": (
+                <div style={style.statusLine}>
+                    <Typography style={style.text}>Warnings: </Typography>
+                    <OverviewQcPopover buttonContained content={sampleQcInfo.warnings}/>
+                </div>
+            ),
+            "fail": (
+                <div>
+                    <div style={style.statusLine}>
+                        <Typography style={style.text}>Warnings: </Typography>
+                        <OverviewQcPopover buttonContained content={sampleQcInfo.warnings}/>
+                    </div>
+                    <div style={style.statusLine}>
+                        <Typography style={style.text}>Fail: </Typography>
+                        <OverviewQcPopover buttonContained content={sampleQcInfo.fail}/>
+                    </div>
+                </div>)
         };
 
         return(
             <Paper style={style.root}>
-                OMAGODE
+                <div style={style.statusLine}>
+                    <Typography style={style.statusText}>Quality control status:</Typography>
+                    <Typography style={style.statusValue}>{status}</Typography>
+                </div>
+                {
+                    messages[status]
+                }
             </Paper>
         )
     }
