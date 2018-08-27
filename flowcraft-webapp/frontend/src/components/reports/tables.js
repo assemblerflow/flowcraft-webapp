@@ -33,7 +33,7 @@ import AlertOctagonIcon from "mdi-react/AlertOctagonIcon";
 import AlertIcon from "mdi-react/AlertIcon";
 import {LoadingComponent} from "../ReportsBase";
 import {PhylovizModal, PositionedSnackbar} from "./modals";
-import {ReportDataConsumer} from './contexts';
+import {ReportDataConsumer, ReportAppConsumer} from './contexts';
 import {
     getAssemblies,
     getFile,
@@ -762,16 +762,23 @@ export class ChewbbacaTable extends React.Component {
                             <ReportDataConsumer>
                                 {
                                     ({updateState, filters, highlights}) => (
-                                        <PhylovizModal
-                                            specie={this.getCurrentSpecie}
-                                            selection={this.state.selection}
-                                            additionalInfo={this.props.additionalInfo}
-                                            reportData={this.props.reportData}
-                                            filters={filters}
-                                            highlights={highlights}
-                                            updateState={updateState}
-                                        />)
-
+                                        <ReportAppConsumer>
+                                            {
+                                                ({tableData}) => (
+                                                    <PhylovizModal
+                                                        specie={this.getCurrentSpecie}
+                                                        selection={this.state.selection}
+                                                        additionalInfo={this.props.additionalInfo}
+                                                        reportData={this.props.reportData}
+                                                        filters={filters}
+                                                        highlights={highlights}
+                                                        updateState={updateState}
+                                                        tableData={tableData}
+                                                    />
+                                                )
+                                            }
+                                        </ReportAppConsumer>
+                                    )
                                 }
                             </ReportDataConsumer>
                             <Button variant={"contained"}

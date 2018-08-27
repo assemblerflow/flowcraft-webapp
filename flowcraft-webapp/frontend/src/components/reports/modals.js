@@ -225,7 +225,9 @@ export class PhylovizModal extends React.Component {
             selection: {keys: []},
             // Intervals used to retrieve status of phyloviz trees processing
             intervalCheckTree: {},
-            intervalCheckPhylovizTrees: {}
+            intervalCheckPhylovizTrees: {},
+            additionalInfoValues: [],
+            additionalData: {}
 
         };
     }
@@ -236,6 +238,56 @@ export class PhylovizModal extends React.Component {
             selection: props.selection
         }
     }
+
+    /*
+    Get available column entries on the report to pass to PHYLOViZ has
+     additional data
+     */
+    getAvailableColumnEntries = () => {
+
+        const fields = [];
+        const fieldsKeys = [];
+
+        for (const [table, vals] of this.props.tableData.entries()) {
+            for (const val of vals) {
+                if (!fieldsKeys.includes(val.header)) {
+                    fieldsKeys.push(val.header);
+                    fields.push({label: val.header, value: val.header});
+
+                }
+            }
+        }
+
+        return fields;
+
+    };
+
+    /*
+    Set the additionalData object to pass to PHYLOViZ Online (PROTOTYPE)
+     */
+    setAdditionaData = () => {
+
+        const additionalData = {};
+        // Get job identifier from selection data
+        const sampleNames = this.state.selection.rows.map((s) => {
+            return `${s._id}`
+        });
+
+        for (const sample of sampleNames) {
+            additionalData[sample] = {};
+            for (const infoKey of this.state.additionalInfoValues) {
+                for (const [table, vals] of this.props.tableData.entries()) {
+                    for (const val of vals) {
+                        if (val.rowId === sample && val.header === infoKey.value) {
+                            additionalData[sample][infoKey] = val.value
+                        }
+                    }
+                }
+            }
+        }
+
+    };
+
 
     /*
     Handle change state for modal Open
@@ -293,7 +345,15 @@ export class PhylovizModal extends React.Component {
      */
     handleSelectChange(speciesValues) {
         this.setState({speciesValues});
-    };
+    }
+    ;
+
+    /*
+    Set additional information values
+     */
+    handleSelectInfoChange(additionalInfoValues) {
+        this.setState({additionalInfoValues});
+    }
 
     /*
     Set the options for the available species
@@ -322,7 +382,7 @@ export class PhylovizModal extends React.Component {
                 job_ids: jobIds.join(","),
                 dataset_name: this.state.name,
                 dataset_description: this.state.description,
-                additional_data: "{}",
+                additional_data: JSON.stringify(this.setAdditionaData()),
                 max_closest: this.state.closestStrains,
                 database_to_include: this.state.speciesValues[0].label,
                 species_id: this.state.speciesValues[0].value,
@@ -458,12 +518,12 @@ export class PhylovizModal extends React.Component {
             for (const result of resultsPhyloviz.data) {
                 let exists = false;
                 for (const report of this.props.reportData) {
-                    if(report.hasOwnProperty("phyloviz_user") && report.name === result.name){
+                    if (report.hasOwnProperty("phyloviz_user") && report.name === result.name) {
                         exists = true;
                         break;
                     }
                 }
-                if (!exists){
+                if (!exists) {
                     newReportsData.push(result);
                 }
             }
@@ -539,11 +599,14 @@ export class PhylovizModal extends React.Component {
                         <div style={style.modalBody}>
                             <div className={styles.modalHeader}>
                                 <Typography style={{"flexGrow": 1}}
-                                            variant="title" id="modal-title">
-                                    Send the Closest Profiles to PHYLOViZ Online
+                                            variant="title"
+                                            id="modal-title">
+                                    Send the Closest Profiles to
+                                    PHYLOViZ Online
                                 </Typography>
-                                <IconButton className={styles.modalCloseButton}
-                                            onClick={this.handleClose}>
+                                <IconButton
+                                    className={styles.modalCloseButton}
+                                    onClick={this.handleClose}>
                                     <CloseCircleIcon size={30}
                                                      color={red[300]}/>
                                 </IconButton>
@@ -570,7 +633,8 @@ export class PhylovizModal extends React.Component {
                                             onChange={this.handleChange("description")}
                                         />
                                     </FormGroup>
-                                    <FormGroup row style={style.groupRow}>
+                                    <FormGroup row
+                                               style={style.groupRow}>
                                         <FormControlLabel
                                             control={
                                                 <Checkbox
@@ -594,7 +658,8 @@ export class PhylovizModal extends React.Component {
                                         }
                                     </FormGroup>
                                     <FormGroup style={style.groupRow}>
-                                        <label htmlFor="speciesDatabase">
+                                        <label
+                                            htmlFor="speciesDatabase">
                                             <Typography>Species
                                                 Database</Typography>
                                         </label>
@@ -607,6 +672,23 @@ export class PhylovizModal extends React.Component {
                                                 this.handleSelectChange(values);
                                             }}
                                             options={this.setSpeciesOptions()}
+                                            style={style.rowComponent}
+                                            required
+                                        />
+                                        <label
+                                            htmlFor="speciesDatabase">
+                                            <Typography>Additional
+                                                Info</Typography>
+                                        </label>
+                                        <Select
+                                            id="speciesDatabase"
+                                            closeMenuOnSelect={false}
+                                            isMulti
+                                            value={this.state.additionalInfoValues}
+                                            onChange={(values) => {
+                                                this.handleSelectInfoChange(values);
+                                            }}
+                                            options={this.getAvailableColumnEntries()}
                                             style={style.rowComponent}
                                             required
                                         />
