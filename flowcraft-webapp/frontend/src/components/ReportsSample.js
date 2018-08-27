@@ -10,6 +10,7 @@ import Divider from "@material-ui/core/Divider";
 import Button from "@material-ui/core/Button";
 import Dialog from "@material-ui/core/Dialog";
 import AppBar from "@material-ui/core/AppBar";
+import Badge from "@material-ui/core/Badge";
 import Slide from '@material-ui/core/Slide';
 import Paper from "@material-ui/core/Paper";
 import Grid from "@material-ui/core/Grid";
@@ -18,13 +19,11 @@ import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
-import {MuiThemeProvider} from "@material-ui/core/styles";
+
+import Crosshairs from "mdi-react/CrosshairsIcon"
 
 import red from "@material-ui/core/colors/red";
-
-// Theme imports
-import {themes} from "./reports/themes";
-import {theme} from "../../config.json";
+import indigo from "@material-ui/core/colors/indigo";
 
 import {Chart} from "./reports/chart_utils";
 import {sortNumber} from "./reports/utils";
@@ -37,7 +36,7 @@ import {
 
 import {ReportAppConsumer} from "./reports/contexts";
 
-import {LoadingComponent, LoadingScreen} from "./ReportsBase";
+import {LoadingComponent} from "./ReportsBase";
 import {Header} from "./Header";
 
 const ReactHighcharts = require("react-highcharts");
@@ -607,6 +606,7 @@ class SyncChartsContainer extends React.Component{
                                     accession: v.accession,
                                     coverage: v.coverage,
                                     identity: v.identity,
+                                    contig: v.contig,
                                     window: window
                                 }
                             });
@@ -873,6 +873,7 @@ class SyncCharts extends React.Component{
     };
 
     _geneClick = (e) => {
+        console.log(e)
         const data = {
             gene: e.point.gene,
             geneLength: parseInt((e.point.x2 - e.point.x) * 2000),
@@ -964,6 +965,62 @@ class SyncCharts extends React.Component{
 
     };
 
+    highlightAbrSelection = (value) => {
+
+        if (!this.refs.hasOwnProperty("slidingAbr")){
+            return
+        }
+        let chartObj = this.refs.slidingAbr.getChart();
+
+        const highlightRange = [
+            value.pos - chartObj.xAxis[0].max * 0.003,
+            value.pos + chartObj.xAxis[0].max * 0.003,
+        ];
+
+        chartObj.xAxis[0].removePlotBand("geneHighlight");
+
+        chartObj.xAxis[0].addPlotBand({
+            id: "geneHighlight",
+            color: "rgba(169, 255, 176, 0.5)",
+            from: highlightRange[0],
+            to: highlightRange[1]
+        });
+
+    };
+
+    zoomAbrSelection = (value) => {
+
+        if (!this.refs.hasOwnProperty("slidingAbr")){
+            return
+        }
+        let chartObj = this.refs.slidingAbr.getChart();
+
+        const zoomRange = [
+            value.pos - chartObj.xAxis[0].max * 0.001,
+            value.pos + chartObj.xAxis[0].max * 0.001,
+        ];
+
+        this._syncExtremes({
+            min: zoomRange[0],
+            max: zoomRange[1],
+            animation: true
+        });
+
+        // Get index of series for the database
+        const seriesIdx = chartObj.series.findIndex(
+            (x) => x.name === value.database
+        );
+        const pointIdx = chartObj.series[seriesIdx].data.findIndex(
+            (x) => x.x === value.pos
+        );
+
+        const point = chartObj.series[seriesIdx].data[pointIdx]
+        console.log(chartObj.series[seriesIdx])
+
+        setTimeout(() => {point.firePointEvent("click");}, 500);
+
+    };
+
     componentDidMount(){
         this.chartContainer.addEventListener("mousemove", this._syncCrosshair)
 
@@ -984,6 +1041,8 @@ class SyncCharts extends React.Component{
 
     render(){
 
+        console.log(this.props)
+
         const gcConfig = this.getChartLayout(this.props.plotData.gcData, "GC% content", this.props.plotData.xLabels, this.props.plotData.plotLines, this.props.plotData.xBars, this.props.plotData.window);
         const covConfig = this.getChartLayout(this.props.plotData.covData, "Coverage depth", this.props.plotData.xLabels, this.props.plotData.plotLines, this.props.plotData.xBars, this.props.plotData.window);
 
@@ -1001,6 +1060,10 @@ class SyncCharts extends React.Component{
                         <div>
                             <GenePopup onRef={ref => (this.genePopover = ref)}/>
                             <ReactHighcharts config={xRangeConfig.layout} ref={"slidingAbr"}></ReactHighcharts>
+                            <AbricateSelect
+                                highlightAbrSelection={this.highlightAbrSelection}
+                                zoomAbrSelection={this.zoomAbrSelection}
+                                data={this.props.plotData.xrangeData}/>
                         </div>
                 }
             </div>
@@ -1205,6 +1268,106 @@ class GeneGaugeChart extends React.Component{
         return(
             <div>
                 <ReactHighcharts config={config.layout} ref={"slidingAbr"}></ReactHighcharts>
+            </div>
+        )
+    }
+}
+
+class AbricateSelect extends React.Component{
+
+    state = {
+        selected: null,
+    };
+
+    prepareOptions = (data) => {
+
+        let options = [];
+        let currentOpts;
+
+        for (const el of data) {
+            currentOpts = {
+                label: el.name,
+                options: []
+            };
+            for (const d of el.data) {
+                currentOpts.options.push({
+                    value: `${d.gene}_${d.x}`,
+                    label: d.gene,
+                    pos: d.x,
+                    database: el.name
+                });
+            }
+            options.push(currentOpts);
+        }
+
+        return options;
+    };
+
+
+
+    render(){
+
+        const groupedOpts = this.prepareOptions(this.props.data);
+
+        const style = {
+            root: {
+                maxWidth: "400px",
+                margin: "auto",
+                marginTop: "10px"
+            },
+            container: {
+                display: "flex"
+            },
+            text: {
+                fontSize: "16px",
+                margin: "auto",
+                marginRight: "10px"
+            },
+            button: {
+                padding: 0,
+                width: "40px",
+                height: "40px",
+                marginLeft: "10px"
+            },
+            badge: {
+                width: "10px",
+                height: "10px",
+                marginLeft: "50px"
+            },
+            groupName: {
+                flexGrow: "1",
+                color: indigo[400],
+                fontWeight: "bold",
+            },
+            groupCount: {
+
+            }
+        };
+
+        const formatGroupLabel = data => (
+            <div>
+                <div style={{display: "flex"}}>
+                    <Typography style={style.groupName}>{data.label}</Typography>
+                    <Typography style={style.groupCount}>{data.options.length}</Typography>
+                </div>
+                <Divider/>
+            </div>
+        );
+
+        return(
+            <div style={style.root}>
+                <div style={style.container}>
+                    <Typography style={style.text}>Search genes: </Typography>
+                    <div style={{flexGrow: "1"}}>
+                        <Select options={groupedOpts}
+                                menuPlacement={"top"}
+                                onChange={(value) => {this.props.highlightAbrSelection(value); this.setState({selected: value})}}
+                                formatGroupLabel={formatGroupLabel}/>
+                    </div>
+                    <IconButton onClick={() => {this.props.zoomAbrSelection(this.state.selected)}} variant={"container"} style={style.button} >
+                        <Crosshairs color={indigo[300]}/>
+                    </IconButton>
+                </div>
             </div>
         )
     }
