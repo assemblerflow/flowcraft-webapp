@@ -21,6 +21,8 @@ import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
 
 import Crosshairs from "mdi-react/CrosshairsIcon"
+import {MuiThemeProvider} from "@material-ui/core/styles";
+import { withTheme } from '@material-ui/core/styles';
 
 import red from "@material-ui/core/colors/red";
 import indigo from "@material-ui/core/colors/indigo";
@@ -119,8 +121,9 @@ class SampleSpecificReport extends React.Component{
             <div>
                 <ReportAppConsumer>
                     {
-                        ({tableData}) => (
+                        ({tableData, qcInfo}) => (
                             <Overview tableData={tableData}
+                                      qcInfo={qcInfo}
                                       sample={this.props.sample}/>
                         )
                     }
@@ -205,6 +208,7 @@ class Overview extends React.Component{
 
         const headerMap = {
             "qc": "Quality Control",
+            "assembly": "Assembly",
             "abricate": "AMR"
         };
 
@@ -216,32 +220,47 @@ class Overview extends React.Component{
                     <Typography variant={"headline"}>Overview</Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails>
-                    <Grid container spacing={24}>
-                        {
-                            Array.from(data, ([key, val]) => {
-                                return (
-                                    <Grid item xs={12} key={key}>
-                                        <div style={style.headerContainer}>
-                                            <Typography style={style.header}>{headerMap.hasOwnProperty(key) ? headerMap[key] : key}</Typography>
-                                            <Divider/>
-                                        </div>
-                                        <Grid container spacing={24}>
-                                        {
-                                            val.map((el) => {
-                                                return(
-                                                    <Grid style={{minWidth: "220px"}} xs={2} item key={`${el.header}${el.process}`}>
-                                                        <HeaderCard values={el}
-                                                                    dataExtremes={dataExtremes}/>
-                                                    </Grid>
-                                                )
-                                            })
-                                        }
-                                        </Grid>
-                                    </Grid>
-                                )
-                            })
-                        }
-                    </Grid>
+                    <MuiThemeProvider theme={themes[theme]}>
+                        <div>
+                            <Grid container spacing={24}>
+                                <Grid item xs={4}>
+                                    <Typography>Sample: {this.props.sample}</Typography>
+                                </Grid>
+                                <Grid item xs={4}>
+                                    <Typography>as</Typography>
+                                </Grid>
+                                <Grid item xs={4}>
+                                    <QualityCard qcInfo={this.props.qcInfo} sample={this.props.sample} />
+                                </Grid>
+                            </Grid>
+                            <Grid container spacing={24}>
+                                {
+                                    Array.from(data, ([key, val]) => {
+                                        return (
+                                            <Grid item xs={12} key={key}>
+                                                <div style={style.headerContainer}>
+                                                    <Typography style={style.header}>{headerMap.hasOwnProperty(key) ? headerMap[key] : key}</Typography>
+                                                    <Divider/>
+                                                </div>
+                                                <Grid container spacing={24}>
+                                                {
+                                                    val.map((el) => {
+                                                        return(
+                                                            <Grid style={{minWidth: "220px"}} xs={2} item key={`${el.header}${el.process}`}>
+                                                                <HeaderCard values={el}
+                                                                            dataExtremes={dataExtremes}/>
+                                                            </Grid>
+                                                        )
+                                                    })
+                                                }
+                                                </Grid>
+                                            </Grid>
+                                        )
+                                    })
+                                }
+                            </Grid>
+                        </div>
+                    </MuiThemeProvider>
                 </ExpansionPanelDetails>
             </ExpansionPanel>
         )
@@ -249,7 +268,69 @@ class Overview extends React.Component{
 }
 
 
+class QualityCard extends React.Component{
+
+    /*
+    Retrieves an object with two key:value pairs with the warnings and fails for
+    a given sample.
+     */
+    _getSampleQcInfo = (sample, qcInfo) => {
+
+        let sampleQcInfo = {
+            "warnings": [],
+            "fail": []
+        };
+
+        for (const [pname, samples] of qcInfo.entries()) {
+            for (const [smpl, vals] of samples.entries()) {
+                if (sample === smpl) {
+
+                    if (vals.hasOwnProperty("warnings")) {
+                        sampleQcInfo.warnings = sampleQcInfo.warnings.concat(vals.warnings)
+                    }
+                    if (vals.hasOwnProperty("fail")) {
+                        sampleQcInfo.fail = sampleQcInfo.fail.concat(vals.fail)
+                    }
+
+                }
+            }
+        }
+
+        return sampleQcInfo
+    };
+
+    render(){
+
+        console.log(themes[theme])
+
+        const sampleQcInfo = this._getSampleQcInfo(this.props.sample, this.props.qcInfo);
+        const status = (sampleQcInfo.warnings.length === 0 && sampleQcInfo.fail.length === 0) ?
+            "pass" :
+            sampleQcInfo.fail.length > 0 ?
+                "fail" :
+                "warning";
+
+        const style = {
+            root: {
+                padding: "15px",
+                backgroundColor: status === "pass" ? themes[theme].palette.success.main : status === "warning" ? themes[theme].palette.warning.main : themes[theme].palette.error.main
+            }
+        };
+
+        return(
+            <Paper style={style.root}>
+                OMAGODE
+            </Paper>
+        )
+    }
+}
+
 class HeaderCard extends React.Component{
+
+    shouldComponentUpdate = (nextProps) => {
+        return nextProps.values !== this.props.values
+    };
+
     render(){
 
         let proportion;

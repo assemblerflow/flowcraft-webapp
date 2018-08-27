@@ -7,6 +7,8 @@ import lightblue from "@material-ui/core/colors/lightBlue"
 import green from "@material-ui/core/colors/green";
 import indigo from "@material-ui/core/colors/indigo";
 import grey from "@material-ui/core/colors/grey";
+import red from "@material-ui/core/colors/red";
+import orange from "@material-ui/core/colors/orange";
 
 
 // Base theme used for FlowCraft reporting system
@@ -18,6 +20,18 @@ const base = createMuiTheme({
         secondary: {
             main: lightblue[500]
         },
+        success: {
+            main: green[300]
+        },
+        error: {
+            main: red[600]
+        },
+        info: {
+            main: grey[600],
+        },
+        warning: {
+            main: orange[300]
+        }
     },
     typography: {
         // Use the system font instead of the default Roboto font.
