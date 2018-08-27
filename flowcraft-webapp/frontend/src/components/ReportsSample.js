@@ -253,6 +253,17 @@ class Overview extends React.Component{
 class HeaderCard extends React.Component{
     render(){
 
+        let proportion;
+        let ranges;
+        if (this.props.dataExtremes.has(this.props.values.header)){
+            ranges = this.props.dataExtremes.get(this.props.values.header);
+            if (this.props.values.value === ranges.min){
+                proportion = 100;
+            } else {
+                proportion = parseInt(((this.props.values.value - ranges.min) / (ranges.max - ranges.min)) * 100)
+            }
+        }
+
         const style = {
             root: {
                 display: "flex"
@@ -276,21 +287,17 @@ class HeaderCard extends React.Component{
                 marginLeft: "0",
                 paddingLeft: "5px",
                 paddingRight: "10px",
-                borderLeft: "1px solid grey"
+                borderLeft: proportion ? "1px solid grey" : "0px"
             }
         };
-
-        let proportion;
-        let ranges;
-        if (this.props.dataExtremes.has(this.props.values.header)){
-            ranges = this.props.dataExtremes.get(this.props.values.header);
-            proportion = parseInt(((this.props.values.value - ranges.min) / (ranges.max - ranges.min)) * 100)
-        }
 
         return(
             <div>
                 <div style={style.root}>
-                    <GaugeChart value={proportion}/>
+                    {
+                        proportion &&
+                            <GaugeChart value={proportion}/>
+                    }
                     <div style={style.textContainer}>
                         <Typography style={style.header}>{this.props.values.header}</Typography>
                         <Typography style={style.value}>{this.props.values.value}</Typography>
@@ -366,8 +373,8 @@ class GaugeChart extends React.Component{
                     color:  "#5c6bc0",
                 }],
                 dataLabels: {
-                    format: "<p style='text-align:center;font-size:9px'>{y}%</p>",
-                    y: 7,
+                    format: "<p style='text-align:center;font-size:8px'>{y}%</p>",
+                    y: 6,
                     backgroundColor: "transparent",
                     borderColor: "transparent",
                     color: "#5c6bc0"
