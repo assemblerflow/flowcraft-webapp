@@ -11,6 +11,7 @@ import Button from "@material-ui/core/Button";
 import Dialog from "@material-ui/core/Dialog";
 import AppBar from "@material-ui/core/AppBar";
 import Slide from '@material-ui/core/Slide';
+import Paper from "@material-ui/core/Paper";
 import Grid from "@material-ui/core/Grid";
 import Popover from "@material-ui/core/Popover";
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
@@ -37,6 +38,7 @@ import {
 import {ReportAppConsumer} from "./reports/contexts";
 
 import {LoadingComponent, LoadingScreen} from "./ReportsBase";
+import {Header} from "./Header";
 
 const ReactHighcharts = require("react-highcharts");
 const HighchartsMore = require("highcharts/highcharts-more");
@@ -116,6 +118,14 @@ class SampleSpecificReport extends React.Component{
 
         return(
             <div>
+                <ReportAppConsumer>
+                    {
+                        ({tableData}) => (
+                            <Overview tableData={tableData}
+                                      sample={this.props.sample}/>
+                        )
+                    }
+                </ReportAppConsumer>
                 {
                     this.props.charts.includes("size_dist") &&
                     <ContigSizeDistribution sample={this.props.sample}
@@ -132,6 +142,242 @@ class SampleSpecificReport extends React.Component{
                             )
                         }
                     </ReportAppConsumer>}
+            </div>
+        )
+    }
+}
+
+
+class Overview extends React.Component{
+
+    getOverviewData = (tableData, sample) => {
+
+        let data = new Map;
+        let dataExtremes = new Map;
+        let tempData;
+
+        for (const [table, vals] of tableData.entries()){
+            for (const el of vals){
+
+                if (!isNaN(el.value)){
+                    if (!dataExtremes.has(el.header)){
+                        dataExtremes.set(el.header, {min: el.value, max: el.value})
+                    } else if (parseFloat(el.value) > dataExtremes.get(el.header).max ){
+                        dataExtremes.get(el.header).max = el.value
+                    } else if (parseFloat(el.value) < dataExtremes.get(el.header).min){
+                        dataExtremes.get(el.header).min = el.value
+                    }
+                }
+
+                if (el.rowId === sample){
+
+                    tempData = {
+                        header: el.header,
+                        value: el.value,
+                        process: el.processName
+                    };
+
+                    if (!data.has(table)){
+                        data.set(table, [tempData])
+                    } else {
+                        data.get(table).push(tempData)
+                    }
+                }
+            }
+        }
+
+        return {
+            data,
+            dataExtremes
+        };
+    };
+
+    render(){
+
+        const style = {
+            header: {
+                fontSize: "20px",
+                fontWeight: "bold"
+            },
+            headerContainer: {
+                marginBottom: "20px"
+            },
+        };
+
+        const headerMap = {
+            "qc": "Quality Control",
+            "abricate": "AMR"
+        };
+
+        const {data, dataExtremes} = this.getOverviewData(this.props.tableData, this.props.sample);
+
+        return(
+            <ExpansionPanel defaultExpanded>
+                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
+                    <Typography variant={"headline"}>Overview</Typography>
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails>
+                    <Grid container spacing={24}>
+                        {
+                            Array.from(data, ([key, val]) => {
+                                return (
+                                    <Grid item xs={12} key={key}>
+                                        <div style={style.headerContainer}>
+                                            <Typography style={style.header}>{headerMap.hasOwnProperty(key) ? headerMap[key] : key}</Typography>
+                                            <Divider/>
+                                        </div>
+                                        <Grid container spacing={24}>
+                                        {
+                                            val.map((el) => {
+                                                return(
+                                                    <Grid style={{minWidth: "220px"}} xs={2} item key={`${el.header}${el.process}`}>
+                                                        <HeaderCard values={el}
+                                                                    dataExtremes={dataExtremes}/>
+                                                    </Grid>
+                                                )
+                                            })
+                                        }
+                                        </Grid>
+                                    </Grid>
+                                )
+                            })
+                        }
+                    </Grid>
+                </ExpansionPanelDetails>
+            </ExpansionPanel>
+        )
+    }
+}
+
+
+class HeaderCard extends React.Component{
+    render(){
+
+        const style = {
+            root: {
+                display: "flex"
+            },
+            header: {
+                fontSize: "11px",
+                fontWeight: "bold",
+                color: "#8e8e8e"
+            },
+            value: {
+                fontSize: "20px",
+                fontWeight: "bold",
+            },
+            process: {
+                fontSize: "11px",
+                fontWeight: "bold",
+                color: "#8e8e8e"
+            },
+            textContainer: {
+                margin: "auto",
+                marginLeft: "0",
+                paddingLeft: "5px",
+                paddingRight: "10px",
+                borderLeft: "1px solid grey"
+            }
+        };
+
+        let proportion;
+        let ranges;
+        if (this.props.dataExtremes.has(this.props.values.header)){
+            ranges = this.props.dataExtremes.get(this.props.values.header);
+            proportion = parseInt(((this.props.values.value - ranges.min) / (ranges.max - ranges.min)) * 100)
+        }
+
+        return(
+            <div>
+                <div style={style.root}>
+                    <GaugeChart value={proportion}/>
+                    <div style={style.textContainer}>
+                        <Typography style={style.header}>{this.props.values.header}</Typography>
+                        <Typography style={style.value}>{this.props.values.value}</Typography>
+                        <Typography style={style.process}>{this.props.values.process}</Typography>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+}
+
+
+class GaugeChart extends React.Component{
+    render(){
+
+        const config = {
+            chart: {
+                type: "solidgauge",
+                height: "65",
+                width: "65",
+                marginRight: "-25",
+                marginLeft: "-15"
+            },
+            title: {
+                text: "",
+                margin: 0
+            },
+            pane: {
+                startAngle: 0,
+                endAngle: 360,
+                background: [{
+                    backgroundColor: "transparent",
+                    borderColor: "transparent",
+                }, {
+                    backgroundColor: "#bababa",
+                    borderColor: "transparent",
+                    innerRadius: "75%",
+                    outerRadius: "100%"
+                }],
+                shape: "arc"
+            },
+            yAxis: {
+                min: 0,
+                max: 100,
+                minorTickInterval: null,
+                tickWidth: 0,
+                gridLineWidth: 0,
+                gridLineColor: "transparent",
+                padding: 0,
+                labels: {
+                    enabled: false
+                },
+                title: {
+                    enabled: false
+                }
+            },
+            tooltip: {
+                enabled: false
+            },
+            plotOptions: {
+                solidgauge: {
+                    innerRadius: "75%",
+                    animation: false
+                }
+
+            },
+            credits: {
+                enabled: false
+            },
+            series: [{
+                data: [{
+                    y: this.props.value,
+                    color:  "#5c6bc0",
+                }],
+                dataLabels: {
+                    format: "<p style='text-align:center;font-size:9px'>{y}%</p>",
+                    y: 7,
+                    backgroundColor: "transparent",
+                    borderColor: "transparent",
+                    color: "#5c6bc0"
+                }
+            }]
+        };
+
+        return(
+            <div>
+                <ReactHighcharts config={config} ref={"gaugeChart"}></ReactHighcharts>
             </div>
         )
     }
