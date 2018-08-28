@@ -31,13 +31,13 @@ import {genericTableParser, qcParseAdditionalData} from "./parsers";
 
 const CheckboxTable = checkboxHOC(ReactTable);
 
-import IconButton from '@material-ui/core/IconButton';
 import ApprovalIcon from "mdi-react/ApprovalIcon";
 import ExportIcon from "mdi-react/ExportIcon";
 import DownloadIcon from "mdi-react/DownloadIcon";
 import FileDelimitedIcon from "mdi-react/FileDelimitedIcon";
 import AlertOctagonIcon from "mdi-react/AlertOctagonIcon";
 import AlertIcon from "mdi-react/AlertIcon";
+
 import {LoadingComponent} from "../ReportsBase";
 import {PhylovizModal, PositionedSnackbar} from "./modals";
 import {ReportDataConsumer, ReportAppConsumer} from './contexts';

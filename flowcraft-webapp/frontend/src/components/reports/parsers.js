@@ -75,7 +75,7 @@ export const findTableSignatures = (reportArray) => {
             if (r.hasOwnProperty("phyloviz_user")) {
                 parsePhylovizTrees(r, tables);
             }
-            else {
+            else if (r.hasOwnProperty("strain_metadata")) {
                 // Case metadata in report
                 parseInnuendoMetadata(r, tables);
             }
