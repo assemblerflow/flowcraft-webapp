@@ -37,6 +37,7 @@ import DownloadIcon from "mdi-react/DownloadIcon";
 import FileDelimitedIcon from "mdi-react/FileDelimitedIcon";
 import AlertOctagonIcon from "mdi-react/AlertOctagonIcon";
 import AlertIcon from "mdi-react/AlertIcon";
+import Magnify from "mdi-react/MagnifyIcon";
 
 import {LoadingComponent} from "../ReportsBase";
 import {PhylovizModal, PositionedSnackbar} from "./modals";
@@ -47,6 +48,7 @@ import {
     downloadChewbbacaProfiles,
     getSpeciesMapping
 } from "./utils";
+import {SampleDialog} from "../ReportsSample";
 
 
 const statusColor = {
@@ -207,6 +209,23 @@ export class FCTable extends React.Component {
         const style = {
             toolbar: {
                 marginBottom: "20px",
+                display: "flex"
+            },
+            fieldset: {
+                border: "1px #bababa solid",
+                padding: "4px",
+                borderRadius: "3%",
+                marginRight: "5px",
+                marginLeft: "5px"
+            },
+            toolbarHeader: {
+                fontWeight: "bold",
+                fontSize: "13px",
+                color: "#bababa"
+            },
+            selectionContainer: {
+                marginLeft: "10px",
+                borderLeft: "1px solid #bababa"
             }
         };
 
@@ -237,11 +256,27 @@ export class FCTable extends React.Component {
                 <LoadingComponent>
                     <div style={style.toolbar}>
                         {
-                            this.props.rawData &&
-                            <ExportTooltipButton
-                                tableData={this.props.rawData}/>
+                            (this.props.rawData || this.props.children) &&
+                            <fieldset style={style.fieldset}>
+                                <legend><Typography style={style.toolbarHeader}>Toolbar</Typography></legend>
+                                {
+                                    this.props.rawData &&
+                                    <ExportTooltipButton
+                                        tableData={this.props.rawData}/>
+                                }
+                                {this.props.children}
+                            </fieldset>
                         }
-                        {this.props.children}
+                        {
+                            this.state.selection.keys.length > 0 &&
+                            <fieldset style={style.fieldset}>
+                                <legend><Typography style={style.toolbarHeader}>Selection</Typography></legend>
+                                {
+                                    this.state.selection.keys.length === 1 &&
+                                    <SampleDialog sample={this.state.selection.keys[0]} button={<TableButton tooltip={"Open sample specific report"}><Magnify style={{fill: "#fff"}}/></TableButton>}/>
+                                }
+                            </fieldset>
+                        }
                     </div>
                     <CheckboxTable
                         ref={r => (this.checkboxTable = r)}

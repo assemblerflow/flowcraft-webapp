@@ -16,7 +16,7 @@ import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
 
 import indigo from "@material-ui/core/colors/indigo";
-import {FCTable} from "./tables";
+import {FCTable, TableButton} from "./tables";
 import matchSorter from "match-sorter";
 
 import MarkerIcon from "mdi-react/MarkerIcon";
@@ -641,21 +641,15 @@ class OverviewTable extends React.Component{
                         <ExpandLessIcon />
                     </Button>
                 </div>
-                <div style={style.toolbar}>
-                    <Tooltip title={"Filter and keep only selection"} placement={"bottom"}>
-                        <Button onClick={this.props.filterSelection}
-                                color={"primary"}
-                                size={"small"}
-                                variant={"contained"}>
-                            <FilterIcon color={"#fff"}/>
-                        </Button>
-                    </Tooltip>
-                </div>
                 <div style={style.tableContainer}>
                     <FCTable data={this.props.data.data}
                              columns={this.props.data.columns}
                              initialSelection={this.props.selection}
-                             setSelection={this.props.setSelection}/>
+                             setSelection={this.props.setSelection}>
+                        <TableButton onClick={this.props.filterSelection} tooltip={"Filter and keep only selection"}>
+                            <FilterIcon color={"#fff"}/>
+                        </TableButton>
+                    </FCTable>
                 </div>
             </div>
         )
