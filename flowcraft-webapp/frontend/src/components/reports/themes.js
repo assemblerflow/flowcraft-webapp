@@ -68,6 +68,18 @@ const innuendo = createMuiTheme({
         secondary: {
             main: green[400]
         },
+        success: {
+            main: green[300]
+        },
+        error: {
+            main: red[600]
+        },
+        info: {
+            main: grey[600],
+        },
+        warning: {
+            main: amber[300]
+        }
     },
     typography: {
         // Use the system font instead of the default Roboto font.
@@ -77,6 +89,11 @@ const innuendo = createMuiTheme({
         },
         headline: {
             fontSize: 22,
+            fontWeight: "bold",
+            color: grey[900],
+        },
+        subheading: {
+            fontSize: 18,
             fontWeight: "bold",
             color: grey[900],
         },

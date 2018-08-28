@@ -6,8 +6,10 @@ import Divider from '@material-ui/core/Divider';
 import TextField from '@material-ui/core/TextField';
 import Snackbar from '@material-ui/core/Snackbar';
 import SnackbarContent from '@material-ui/core/SnackbarContent';
+import Tooltip from "@material-ui/core/Tooltip";
 
 import CloseCircleIcon from "mdi-react/CloseCircleIcon";
+import FileTreeIcon from "mdi-react/FileTreeIcon";
 import IconButton from "@material-ui/core/IconButton";
 import Button from "@material-ui/core/Button";
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
@@ -574,8 +576,12 @@ export class PhylovizModal extends React.Component {
             },
             buttonSendDiv: {
                 display: "inline-block"
+            },
+            icon: {
+                fill: "white"
             }
         };
+
 
         return (
             <div style={style.buttonSendDiv}>
@@ -585,9 +591,13 @@ export class PhylovizModal extends React.Component {
                     handleClose={this.handleSnackClose}
                     onRef={ref => (this.snackBar = ref)}
                 />
-                <Button onClick={this.handleOpen} variant={"contained"}
-                        color={"primary"}>
-                    Send To PHYLOViZ
+                <Button variant={"fab"} mini color={"primary"}
+                        onClick={this.handleOpen}>
+                    <Tooltip id={"tooltip-phyloviz"}
+                             title={"Send To PHYLOViZ"}
+                             placement={"top"}>
+                        <FileTreeIcon style={style.icon}/>
+                    </Tooltip>
                 </Button>
                 <Modal
                     aria-labelledby="simple-modal-title"

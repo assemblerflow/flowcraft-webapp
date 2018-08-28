@@ -28,7 +28,11 @@ import {genericTableParser, qcParseAdditionalData} from "./parsers";
 
 const CheckboxTable = checkboxHOC(ReactTable);
 
+import IconButton from '@material-ui/core/IconButton';
 import ApprovalIcon from "mdi-react/ApprovalIcon";
+import ExportIcon from "mdi-react/ExportIcon";
+import DownloadIcon from "mdi-react/DownloadIcon";
+import FileDelimitedIcon from "mdi-react/FileDelimitedIcon";
 import AlertOctagonIcon from "mdi-react/AlertOctagonIcon";
 import AlertIcon from "mdi-react/AlertIcon";
 import {LoadingComponent} from "../ReportsBase";
@@ -345,6 +349,12 @@ export class PhylovizTable extends React.Component {
         console.log(tableData);
         console.log("render phyloviz table");
 
+        const style = {
+            icon: {
+                fill: "white"
+            }
+        };
+
         return (
             <ExpansionPanel defaultExpanded>
                 <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
@@ -366,9 +376,13 @@ export class PhylovizTable extends React.Component {
                             setSelection={this.setSelection}
                         >
                             <Button onClick={this.showTree}
-                                    variant={"contained"}
-                                    color={"primary"}
-                            >Show Tree</Button>
+                                        variant={"fab"} mini color={"primary"}>
+                                    <Tooltip id={"tooltip-tree"}
+                                             title={"Show Trees"}
+                                             placement={"top"}>
+                                        <ExportIcon style={style.icon}/>
+                                    </Tooltip>
+                                </Button>
                         </FCTable>
                     </div>
                 </ExpansionPanelDetails>
@@ -475,7 +489,13 @@ export class AssemblyTable extends React.Component {
         const tableData = genericTableParser(this.props.tableData);
         qcParseAdditionalData(tableData, this.props.tableData,
             this.props.qcInfo, "assembly");
-        console.log("render assembly table")
+        console.log("render assembly table");
+
+        const style = {
+            icon: {
+                fill: "white"
+            }
+        };
 
         return (
             <ExpansionPanel defaultExpanded>
@@ -492,10 +512,14 @@ export class AssemblyTable extends React.Component {
                         >
                             {
                                 (this.props.additionalInfo && this.props.additionalInfo.innuendo) &&
-                                <Button variant={"contained"}
-                                        color={"primary"}
-                                        onClick={this.downloadAssemblies}>Download
-                                    Assemblies</Button>
+                                <Button onClick={this.downloadAssemblies}
+                                        variant={"fab"} mini color={"primary"}>
+                                    <Tooltip id={"tooltip-downloadP"}
+                                             title={"Download Assemblies"}
+                                             placement={"top"}>
+                                        <DownloadIcon style={style.icon}/>
+                                    </Tooltip>
+                                </Button>
                             }
                         </FCTable>
                     </div>
@@ -557,6 +581,12 @@ export class AbricateTable extends React.Component {
         const tableData = genericTableParser(this.props.tableData);
         console.log("render abricate table")
 
+        const style = {
+            icon: {
+                fill: "white"
+            }
+        };
+
         return (
             <ExpansionPanel defaultExpanded>
                 <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
@@ -572,8 +602,13 @@ export class AbricateTable extends React.Component {
                             {/*CSV export button that exports the table gene names*/}
                             <CSVLink
                                 data={this.exportGeneNames(this.props.tableData)}>
-                                <Button variant={"contained"} color={"primary"}>Export
-                                    genes</Button>
+                                <Button variant={"fab"} mini color={"primary"}>
+                                    <Tooltip id={"tooltip-downloadP"}
+                                             title={"Download Gene List"}
+                                             placement={"top"}>
+                                        <DownloadIcon style={style.icon}/>
+                                    </Tooltip>
+                                </Button>
                             </CSVLink>
                         </FCTable>
                     </div>
@@ -719,6 +754,9 @@ export class ChewbbacaTable extends React.Component {
             mainPaper: {
                 flexGrow: "1",
                 width: "100%"
+            },
+            icon: {
+                fill: "white"
             }
         };
 
@@ -781,10 +819,15 @@ export class ChewbbacaTable extends React.Component {
                                     )
                                 }
                             </ReportDataConsumer>
-                            <Button variant={"contained"}
+                            <Button variant={"fab"} mini
                                     color={"primary"}
-                                    onClick={this.downloadProfiles}>Download
-                                Profiles</Button>
+                                    onClick={this.downloadProfiles}>
+                                <Tooltip id={"tooltip-downloadP"}
+                                         title={"Download Profiles"}
+                                         placement={"top"}>
+                                    <DownloadIcon style = {style.icon}/>
+                                </Tooltip>
+                            </Button>
                         </FCTable>
                     </div>
                 </ExpansionPanelDetails>
@@ -856,11 +899,24 @@ export class TableButtons extends React.Component {
 class ExportTooltipButton extends React.Component {
 
     render() {
+
+        const style = {
+            icon: {
+                fill: "white"
+            }
+        };
+
         return (
             <CSVLink data={this.props.tableData} filename="table_data.csv"
                      style={{"textDecoration": "none"}}>
-                <Button onClick={this.handleClickOpen} variant={"contained"}
-                        color={"primary"}>Export CSV</Button>
+                <Button variant={"fab"} mini color={"primary"}
+                        onClick={this.handleClickOpen}>
+                    <Tooltip id={"tooltip-downloadP"}
+                             title={"Export CSV"}
+                             placement={"top"}>
+                        <FileDelimitedIcon style={style.icon}/>
+                    </Tooltip>
+                </Button>
             </CSVLink>
         )
     }
