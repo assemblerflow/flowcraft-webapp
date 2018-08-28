@@ -18,6 +18,9 @@ import Button from "@material-ui/core/Button";
 import styles from "../../styles/reports.css";
 import classNames from "classnames";
 
+import {themes} from "./themes";
+import {theme} from "../../../config.json";
+
 // Import Colors
 import red from "@material-ui/core/colors/red";
 import green from "@material-ui/core/colors/green";
@@ -375,14 +378,9 @@ export class PhylovizTable extends React.Component {
                             rawData={tableData.rawTableArray}
                             setSelection={this.setSelection}
                         >
-                            <Button onClick={this.showTree}
-                                        variant={"fab"} mini color={"primary"}>
-                                    <Tooltip id={"tooltip-tree"}
-                                             title={"Show Trees"}
-                                             placement={"top"}>
-                                        <ExportIcon style={style.icon}/>
-                                    </Tooltip>
-                                </Button>
+                            <TableButton tooltip={"Show Trees"} onClick={this.showTree}>
+                                <ExportIcon style={style.icon}/>
+                            </TableButton>
                         </FCTable>
                     </div>
                 </ExpansionPanelDetails>
@@ -512,14 +510,10 @@ export class AssemblyTable extends React.Component {
                         >
                             {
                                 (this.props.additionalInfo && this.props.additionalInfo.innuendo) &&
-                                <Button onClick={this.downloadAssemblies}
-                                        variant={"fab"} mini color={"primary"}>
-                                    <Tooltip id={"tooltip-downloadP"}
-                                             title={"Download Assemblies"}
-                                             placement={"top"}>
-                                        <DownloadIcon style={style.icon}/>
-                                    </Tooltip>
-                                </Button>
+                                <TableButton tooltip={"Download assemblies as Fasta"}
+                                             onClick={this.downloadAssemblies}>
+                                    <DownloadIcon style={style.icon}/>
+                                </TableButton>
                             }
                         </FCTable>
                     </div>
@@ -581,12 +575,6 @@ export class AbricateTable extends React.Component {
         const tableData = genericTableParser(this.props.tableData);
         console.log("render abricate table")
 
-        const style = {
-            icon: {
-                fill: "white"
-            }
-        };
-
         return (
             <ExpansionPanel defaultExpanded>
                 <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
@@ -602,13 +590,9 @@ export class AbricateTable extends React.Component {
                             {/*CSV export button that exports the table gene names*/}
                             <CSVLink
                                 data={this.exportGeneNames(this.props.tableData)}>
-                                <Button variant={"fab"} mini color={"primary"}>
-                                    <Tooltip id={"tooltip-downloadP"}
-                                             title={"Download Gene List"}
-                                             placement={"top"}>
-                                        <DownloadIcon style={style.icon}/>
-                                    </Tooltip>
-                                </Button>
+                                <TableButton tooltip={"Download Gene List"}>
+                                        <DownloadIcon style={{fill: "#fff"}}/>
+                                </TableButton>
                             </CSVLink>
                         </FCTable>
                     </div>
@@ -819,15 +803,10 @@ export class ChewbbacaTable extends React.Component {
                                     )
                                 }
                             </ReportDataConsumer>
-                            <Button variant={"fab"} mini
-                                    color={"primary"}
-                                    onClick={this.downloadProfiles}>
-                                <Tooltip id={"tooltip-downloadP"}
-                                         title={"Download Profiles"}
-                                         placement={"top"}>
-                                    <DownloadIcon style = {style.icon}/>
-                                </Tooltip>
-                            </Button>
+                            <TableButton tooltip={"Download Profiles"}
+                                         onClick={this.downloadProfiles}>
+                                <DownloadIcon style = {style.icon}/>
+                            </TableButton>
                         </FCTable>
                     </div>
                 </ExpansionPanelDetails>
@@ -900,27 +879,41 @@ class ExportTooltipButton extends React.Component {
 
     render() {
 
-        const style = {
-            icon: {
-                fill: "white"
-            }
-        };
-
         return (
             <CSVLink data={this.props.tableData} filename="table_data.csv"
                      style={{"textDecoration": "none"}}>
-                <Button variant={"fab"} mini color={"primary"}
-                        onClick={this.handleClickOpen}>
-                    <Tooltip id={"tooltip-downloadP"}
-                             title={"Export CSV"}
-                             placement={"top"}>
-                        <FileDelimitedIcon style={style.icon}/>
-                    </Tooltip>
-                </Button>
+                <TableButton tooltip={"Export table as CSV"} onClick={this.handleClickOpen}>
+                    <FileDelimitedIcon style={{fill: "#fff"}}/>
+                </TableButton>
+
             </CSVLink>
         )
     }
 }
+
+export class TableButton extends React.Component{
+    render(){
+
+        const style = {
+            root: {
+                marginLeft: "2.5px",
+                marginRight: "2.5px",
+                padding: 0,
+                minWidth: "50px",
+                height: "40px",
+            }
+        };
+
+        return(
+            <Tooltip title={this.props.tooltip} placement={"top"}>
+                <Button {...this.props} variant={"contained"} color={"primary"} style={style.root}>
+                    {this.props.children}
+                </Button>
+            </Tooltip>
+        )
+    }
+}
+
 
 export class QcPopover extends React.Component {
 
