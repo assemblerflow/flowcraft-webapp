@@ -254,7 +254,9 @@ export class HomeInnuendo extends React.Component {
 
     state = {
         showProjects: false,
-        innuendo: new Innuendo()
+        innuendo: new Innuendo(),
+        initialProjects: [],
+        initialStrains: []
     };
 
     showProjects = () => {
@@ -273,17 +275,18 @@ export class HomeInnuendo extends React.Component {
 
         // Verify if message comes from INNUENDO platform
         if (e.origin === address.substring(0, address.length - 1)) {
-            if (typeof e.data === "string") {
+            console.log(e.data, typeof e.data);
+            if (typeof e.data === "object") {
                 try {
-                    const parts = e.data.split(":");
-                    if (parts.length === 2) {
-                        // Set userId on INNUENDO state
-                        this.state.innuendo.setUserId(parts[1]);
+                    // Set userId on INNUENDO state
+                    this.state.innuendo.setUserId(e.data.current_user_id);
 
-                        this.setState({
-                            showProjects: true
-                        });
-                    }
+                    this.setState({
+                        showProjects: true,
+                        initialProjects: e.data.projects,
+                        initialStrains: e.data.strains
+                    });
+
                 } catch (e) {
                     return;
                 }
@@ -303,12 +306,15 @@ export class HomeInnuendo extends React.Component {
     }
 
     render() {
+        console.log(this.state.initialProjects, this.state.initialStrains);
         return (
             <div>
                 {
                     this.state.showProjects ?
                         <InnuendoHomePage
                             innuendo={this.state.innuendo}
+                            initialProjects={this.state.initialProjects}
+                            initialStrains={this.state.initialStrains}
                         /> :
                         <InnuendoLogin
                             showProjects={this.showProjects}
@@ -432,6 +438,8 @@ class InnuendoHomePage extends React.Component {
             }
         };
 
+        console.log(this.props.initialProjects, this.props.initialStrains);
+
         return (
             <div>
                 <InnuendoGeneralStatistics
@@ -439,7 +447,10 @@ class InnuendoHomePage extends React.Component {
                 />
                 <Paper style={style.paper}>
                     <InnuendoTabs
-                        innuendo={this.props.innuendo}/>
+                        innuendo={this.props.innuendo}
+                        initialProjects={this.props.initialProjects}
+                        initialStrains={this.props.initialStrains}
+                    />
                 </Paper>
             </div>
         )
@@ -625,6 +636,8 @@ class InnuendoTabs extends React.Component {
             }
         };
 
+        console.log(this.props.initialProjects, this.props.initialStrains);
+
         return (
             <div>
                 <AppBar position="static" color="default">
@@ -644,7 +657,10 @@ class InnuendoTabs extends React.Component {
                     this.state.value === 0 &&
                     <TabContainer>
                         <InnuendoProjects
-                            innuendo={this.props.innuendo}></InnuendoProjects>
+                            innuendo={this.props.innuendo}
+                            initialProjects={this.props.initialProjects}
+                            initialStrains={this.props.initialStrains}
+                        />
                     </TabContainer>
                 }
                 {
@@ -684,7 +700,12 @@ class InnuendoProjects extends React.Component {
             resultsMetadata: [],
         };
 
-        this.loadInnuendoData();
+        if (props.initialStrains.length > 0) {
+            this.submitInitialStrains();
+        }
+        else {
+            this.loadInnuendoData();
+        }
 
     }
 
@@ -780,6 +801,24 @@ class InnuendoProjects extends React.Component {
     getPhylovizTrees = this.props.innuendo.getPhylovizTrees;
 
     /*
+    Method used for submission of initial strains requested by the INNUENDO
+     Platform directly from a project
+     */
+    submitInitialStrains = () => {
+
+        let metadataMap = [[], []];
+
+        for (const strain of this.props.initialStrains) {
+            metadataMap[0].push(this.props.initialProjects);
+            metadataMap[1].push(strain);
+        }
+
+        this.submissionRoutine(this.props.initialStrains, [this.props.initialProjects], metadataMap);
+
+    };
+
+
+    /*
     Loads all reports according with the chosen strains.
      */
     submitStrains = async () => {
@@ -799,9 +838,18 @@ class InnuendoProjects extends React.Component {
 
         const metadataMap = await getMetadataMapping(this.state.reportInfo, this.state.selectedStrains);
 
+        this.submissionRoutine(strainsForRequest, this.state.selectedProjectIds, metadataMap);
+
+    };
+
+    /*
+    Method to get the required data from the INNUENDO Platform database
+     */
+    submissionRoutine = async (selectedStrains, selectedProjects, metadataMap) => {
+
         const resultsReports = await this.getReportsByFilter({
-            selectedProjects: this.state.selectedProjectIds.join(),
-            selectedStrains: strainsForRequest.join()
+            selectedProjects: selectedProjects.join(),
+            selectedStrains: selectedStrains.join()
 
         });
 
@@ -821,7 +869,6 @@ class InnuendoProjects extends React.Component {
             resultsReports: finalResults,
             resultsMetadata: resultsMetadata.data
         })
-
 
     };
 
