@@ -24,6 +24,10 @@ import CloseIcon from "mdi-react/CloseIcon";
 import FilterIcon from "mdi-react/FilterIcon";
 import EyeIcon from "mdi-react/EyeIcon";
 import EyeOffIcon from "mdi-react/EyeOffIcon";
+import MagnifyIcon from "mdi-react/MagnifyIcon";
+
+import {themes} from "./themes";
+import {theme} from "../../../config"
 
 import {sortByContent} from "./utils";
 import {SampleDialog} from "../ReportsSample";
@@ -154,6 +158,7 @@ export class ReportOverview extends React.Component{
         }, {
             Header: <Typography style={headerStyle}>More options</Typography>,
             accessor: "moreOptions",
+            style: {textAlign: "center"}
         }];
         let sampleQcInfo;
 
@@ -759,11 +764,28 @@ export class OverviewQcPopover extends React.Component{
 
 class SampleOptions extends React.Component {
     render(){
+
+        const style = {
+            button: {
+                padding: 0,
+                minWidth: "50px",
+                minHeight: "35px"
+            }
+        };
+
+        const button = (
+            <Tooltip title={"Open sample specific report"} placement={"top"}>
+                <Button style={style.button} variant={"outlined"} color={"primary"}>
+                    <MagnifyIcon style={{fill: themes[theme].palette.primary.main}}/>
+                </Button>
+            </Tooltip>
+        );
+
         return(
             <div>
-                <SampleDialog sample={this.props.sample}
-                              charts={this.props.charts}
-                              reportData={this.props.reportData}/>
+                <SampleDialog
+                    button={button}
+                    sample={this.props.sample}/>
             </div>
         )
     }

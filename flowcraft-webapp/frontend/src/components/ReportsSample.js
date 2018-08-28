@@ -43,6 +43,7 @@ import {ReportAppConsumer} from "./reports/contexts";
 
 import {LoadingComponent} from "./ReportsBase";
 import {Header} from "./Header";
+import {PhylovizModal} from "./reports/modals";
 
 const ReactHighcharts = require("react-highcharts");
 const HighchartsMore = require("highcharts/highcharts-more");
@@ -84,29 +85,38 @@ export class SampleDialog extends React.Component{
         };
 
         return(
-            <div>
-                <Button onClick={this.handleClickOpen}>OI!?</Button>
-                <Dialog fullScreen
-                        onClose={this.handleClose}
-                        open={this.state.open}
-                        TransitionComponent={Transition}>
-                    <AppBar>
-                        <Toolbar>
-                            <IconButton color="inherit" onClick={this.handleClose} aria-label="Close">
-                                <CloseIcon />
-                            </IconButton>
-                            <Typography variant="title" color="inherit">
-                                Sample specific report for {this.props.sample}
-                            </Typography>
-                        </Toolbar>
-                    </AppBar>
-                    <div style={style.reportContainer}>
-                        <SampleSpecificReport charts={this.props.charts}
-                                              sample={this.props.sample}
-                                              reportData={this.props.reportData}/>
-                    </div>
-                </Dialog>
-            </div>
+            <ReportAppConsumer>
+                {
+                    ({charts, reportData}) => (
+                        <div>
+                            <div onClick={this.handleClickOpen}>
+                                {this.props.button}
+                            </div>
+                            <Dialog fullScreen
+                                    onClose={this.handleClose}
+                                    open={this.state.open}
+                                    TransitionComponent={Transition}>
+                                <AppBar>
+                                    <Toolbar>
+                                        <IconButton color="inherit" onClick={this.handleClose} aria-label="Close">
+                                            <CloseIcon />
+                                        </IconButton>
+                                        <Typography variant="title" color="inherit">
+                                            Sample specific report for {this.props.sample}
+                                        </Typography>
+                                    </Toolbar>
+                                </AppBar>
+                                <div style={style.reportContainer}>
+                                    <SampleSpecificReport charts={charts}
+                                                          sample={this.props.sample}
+                                                          reportData={reportData}/>
+                                </div>
+                            </Dialog>
+                        </div>
+                    )
+                }
+
+            </ReportAppConsumer>
         )
     }
 }
@@ -127,6 +137,7 @@ class SampleSpecificReport extends React.Component{
                         ({tableData, qcInfo}) => (
                             <Overview tableData={tableData}
                                       qcInfo={qcInfo}
+                                      reportData={this.props.reportData}
                                       sample={this.props.sample}/>
                         )
                     }
@@ -230,7 +241,7 @@ class Overview extends React.Component{
                                     <Typography>Sample: {this.props.sample}</Typography>
                                 </Grid>
                                 <Grid item xs={4}>
-                                    <Typography>as</Typography>
+                                    <DataLossOverview sample={this.props.sample} reportData={this.props.reportData} />
                                 </Grid>
                                 <Grid item xs={4}>
                                     <QualityCard qcInfo={this.props.qcInfo} sample={this.props.sample} />
@@ -503,8 +514,8 @@ class GaugeChart extends React.Component{
                     color:  "#5c6bc0",
                 }],
                 dataLabels: {
-                    format: "<Typography style='text-align:center;font-size:14px'>{y}%</Typography>",
-                    y: 15,
+                    format: "<Typography style='text-align:center;font-size:12px'>{y}%</Typography>",
+                    y: 12,
                     backgroundColor: "transparent",
                     borderColor: "transparent",
                     color: "#5c6bc0"
@@ -515,6 +526,42 @@ class GaugeChart extends React.Component{
         return(
             <div>
                 <ReactHighcharts config={config} ref={"gaugeChart"}></ReactHighcharts>
+            </div>
+        )
+    }
+}
+
+
+class DataLossOverview extends React.Component{
+
+    getChartData = (reportData, sample) => {
+        let data = [];
+
+        for (const el of reportData){
+
+            if ( ((el || {}).reportJson || {}).plotData ){
+                for (const plot of el.reportJson.plotData){
+
+                    if (plot.sample !== sample){
+                        continue
+                    }
+
+                    if (plot.data.hasOwnProperty("sparkline")){
+                        console.log(plot)
+                        console.log(el.processName)
+                    }
+                }
+            }
+        }
+    };
+
+    render(){
+
+        const sparklineData = this.getChartData(this.props.reportData, this.props.sample);
+
+        return(
+            <div>
+                OI!
             </div>
         )
     }
