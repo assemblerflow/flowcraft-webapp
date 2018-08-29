@@ -30,6 +30,7 @@ import yellow from "@material-ui/core/colors/yellow";
 
 // Icons
 import ImportContactsIcon from '@material-ui/icons/ImportContacts';
+import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
 import BugReportIcon from '@material-ui/icons/BugReport';
 import TimelineIcon from '@material-ui/icons/Timeline';
 import ExportIcon from "mdi-react/ExportIcon";
@@ -40,6 +41,7 @@ import axios from "axios";
 
 import {ReportsHome} from "../Reports";
 import {TableButton} from "./tables";
+import {PositionedSnackbar} from "./modals";
 
 //parsers
 import {InnuendoReportsTableParser} from './parsers';
@@ -155,6 +157,36 @@ export class Innuendo {
     }
 
     /*
+    Method to get the required data from the INNUENDO Platform database
+     */
+    submissionRoutine = async (selectedStrains, selectedProjects, metadataMap) => {
+
+        const resultsReports = await this.getInnuendoReportsByFilter({
+            selectedProjects: selectedProjects.join(),
+            selectedStrains: selectedStrains.join()
+
+        });
+
+        const resultsMetadata = await this.getInnuendoStrainsMetadata({
+            selectedProjects: metadataMap[0],
+            selectedStrains: metadataMap[1]
+        });
+
+        const resultsPhyloviz = await this.getPhylovizTrees({
+            user_id: this.getUserId()
+        });
+
+        // Merge reports and metadata results
+        const finalResults = [...resultsReports.data, ...resultsMetadata.data, ...resultsPhyloviz.data];
+
+        return {
+            resultsReports: finalResults,
+            resultsMetadata: resultsMetadata.data
+        };
+
+    };
+
+    /*
     Get all strains associated with a given project. The response is then
     parsed to get min and max date for filtering.
     */
@@ -209,15 +241,25 @@ export class Innuendo {
     /*
     Get innuendo saved reports
      */
-    async getSavedReports() {
-        return await
-            axios({
-                method: 'get',
-                url: address + 'app/api/v1.0/reports/saved/',
-                params: {
-                    user_id: this.userId
-                }
-            })
+    getSavedReports() {
+        return axios({
+            method: 'get',
+            url: address + 'app/api/v1.0/reports/saved/',
+            params: {
+                user_id: this.userId
+            }
+        })
+    }
+
+    deleteReport(reportId) {
+        return axios({
+            method: 'delete',
+            url: address + 'app/api/v1.0/reports/saved/',
+            params: {
+                user_id: this.userId,
+                report_id: reportId
+            }
+        })
     }
 
     sendToPHYLOViZ(requestObject) {
@@ -336,7 +378,6 @@ export class HomeInnuendo extends React.Component {
     }
 
     render() {
-        console.log(this.state.initialProjects, this.state.initialStrains);
         return (
             <div>
                 {
@@ -469,8 +510,6 @@ class InnuendoHomePage extends React.Component {
                 height: 'auto'
             }
         };
-
-        console.log(this.props.initialProjects, this.props.initialStrains);
 
         return (
             <div>
@@ -668,8 +707,6 @@ class InnuendoTabs extends React.Component {
             }
         };
 
-        console.log(this.props.initialProjects, this.props.initialStrains);
-
         return (
             <div>
                 <AppBar position="static" color="default">
@@ -837,7 +874,7 @@ class InnuendoProjects extends React.Component {
     Method used for submission of initial strains requested by the INNUENDO
      Platform directly from a project
      */
-    submitInitialStrains = () => {
+    submitInitialStrains = async () => {
 
         let metadataMap = [[], []];
 
@@ -846,7 +883,14 @@ class InnuendoProjects extends React.Component {
             metadataMap[1].push(strain);
         }
 
-        this.submissionRoutine(this.props.initialStrains, [this.props.initialProjects], metadataMap);
+        const results = await this.props.innuendo.submissionRoutine(this.props.initialStrains, [this.props.initialProjects], metadataMap);
+
+        console.log(results);
+
+        this.setState({
+            resultsReports: results.resultsReports,
+            resultsMetadata: results.resultsMetadata
+        });
 
     };
 
@@ -871,39 +915,17 @@ class InnuendoProjects extends React.Component {
 
         const metadataMap = await getMetadataMapping(this.state.reportInfo, this.state.selectedStrains);
 
-        this.submissionRoutine(strainsForRequest, this.state.selectedProjectIds, metadataMap);
+        const results = await this.props.innuendo.submissionRoutine(strainsForRequest, this.state.selectedProjectIds, metadataMap);
 
-    };
-
-    /*
-    Method to get the required data from the INNUENDO Platform database
-     */
-    submissionRoutine = async (selectedStrains, selectedProjects, metadataMap) => {
-
-        const resultsReports = await this.getReportsByFilter({
-            selectedProjects: selectedProjects.join(),
-            selectedStrains: selectedStrains.join()
-
-        });
-
-        const resultsMetadata = await this.getStrainsMetadata({
-            selectedProjects: metadataMap[0],
-            selectedStrains: metadataMap[1]
-        });
-
-        const resultsPhyloviz = await this.getPhylovizTrees({
-            user_id: this.props.innuendo.getUserId()
-        });
-
-        // Merge reports and metadata results
-        const finalResults = [...resultsReports.data, ...resultsMetadata.data, ...resultsPhyloviz.data];
+        console.log(results);
 
         this.setState({
-            resultsReports: finalResults,
-            resultsMetadata: resultsMetadata.data
-        })
+            resultsReports: results.resultsReports,
+            resultsMetadata: results.resultsMetadata
+        });
 
     };
+
 
     handleChangeProjects = (selectedValues) => {
 
@@ -1008,7 +1030,10 @@ class InnuendoSavedReports extends React.Component {
 
         this.state = {
             tableData: [],
-            selection: []
+            selection: [],
+            resultsReports: [],
+            filters: undefined,
+            highlights: undefined
         };
 
         this._getSavedReports();
@@ -1021,22 +1046,68 @@ class InnuendoSavedReports extends React.Component {
 
     _getSavedReports = () => {
         this.props.innuendo.getSavedReports(this.props.innuendo.getUserId()).then((response) => {
-            if (response.data.length > 0) {
-                console.log(response.data);
-                this.setState({
-                    tableData: response.data
-                });
-            }
+            this.setState({
+                tableData: response.data
+            });
         });
     };
 
-    showReport = () => {
-        console.log(this.state.selection);
+    /*
+    SHows the available saved reports for the authentication used in the
+     INNUENDO Platform.
+     */
+    showReport = async () => {
+        if (this.state.selection.rows === undefined || this.state.selection.rows.length === 0) {
+            let message = "Please select an entry first!";
+            this.snackBar.handleOpen(message, "warning");
+            return false;
+        }
+
+        // Get strain names and projects ids associated with the report
+        const selectionRow = this.state.selection.rows[0];
+        const strains = selectionRow.strain_names.split(",");
+        const projects = selectionRow.projects_id.split(",");
+
+        // Get save dreports filters and highlights to pass to the ReportsApp
+        const filters = JSON.parse(selectionRow.filters);
+        const highlights = JSON.parse(selectionRow.highlights);
+
+        let metadataMap = [[], []];
+
+        // Create mapping between strains and projects
+        for (const [index, strain] of strains.entries()) {
+            metadataMap[0].push(projects[index]);
+            metadataMap[1].push(strain);
+        }
+
+        // Fetch report data
+        const results = await this.props.innuendo.submissionRoutine(strains, projects, metadataMap);
+
+        this.setState({
+            resultsReports: results.resultsReports,
+            filters,
+            highlights
+        })
+    };
+
+    /*
+    Deletes a saved report
+     */
+    deleteReport = async () => {
+        if (this.state.selection.rows === undefined || this.state.selection.rows.length === 0) {
+            let message = "Please select an entry first!";
+            this.snackBar.handleOpen(message, "warning");
+            return false;
+        }
+
+        const selectionRow = this.state.selection.rows[0];
+        const result = await this.props.innuendo.deleteReport(selectionRow.report_id);
+
+        this._getSavedReports();
     };
 
 
     render() {
-        console.log(this.state.tableData);
         const tableData = InnuendoReportsTableParser(this.state.tableData);
 
         const style = {
@@ -1047,6 +1118,31 @@ class InnuendoSavedReports extends React.Component {
 
         return (
             <div>
+                <PositionedSnackbar
+                    vertical="top"
+                    horizontal="right"
+                    handleClose={this.handleSnackClose}
+                    onRef={ref => (this.snackBar = ref)}
+                />
+                {
+                    this.state.resultsReports.length > 0 &&
+                    <Redirect to={{
+                        pathname: "/reports/innuendo",
+                        state: {
+                            data: this.state.resultsReports,
+                            filters: this.state.filters,
+                            highlights: this.state.highlights,
+                            additionalInfo: {
+                                innuendo: {
+                                    userId: this.props.innuendo.getUserId(),
+                                    species: this.state.species,
+                                    username: this.props.innuendo.getUsername()
+                                }
+                            }
+                        }
+                    }}
+                    />
+                }
                 {
                     tableData.tableArray.length > 0 ?
                         <FCTable
@@ -1060,7 +1156,11 @@ class InnuendoSavedReports extends React.Component {
                                          onClick={this.showReport}>
                                 <ExportIcon style={style.icon}/>
                             </TableButton>
-                        </FCTable>:
+                            <TableButton tooltip={"Delete Report"}
+                                         onClick={this.deleteReport}>
+                                <DeleteForeverIcon style={style.icon}/>
+                            </TableButton>
+                        </FCTable> :
                         <Typography>No saved reports available!</Typography>
                 }
             </div>
