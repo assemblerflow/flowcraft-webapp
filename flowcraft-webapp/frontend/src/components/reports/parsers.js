@@ -624,10 +624,11 @@ export const qcParseAdditionalData = (tableData, originalData, qcInfo, signature
                                 qcInfo.get(signature).get(sample).warnings.map((el) => {
                                     return (
                                         <div key={el.process}>
-                                            <Typography><b>Process:</b> {el.process}
+                                            <Typography>
+                                                <b>Process:</b> {el.process}
                                             </Typography>
                                             <Typography
-                                                style={{"marginBottom": "7px"}}><b>Cause: </b>{el.message}
+                                                style={{"marginBottom": "7px"}}><b>Cause: </b>{el.message.join("; ")}
                                             </Typography>
                                         </div>
                                     )
@@ -653,7 +654,7 @@ export const qcParseAdditionalData = (tableData, originalData, qcInfo, signature
                                             <Typography><b>Process:</b> {el.process}
                                             </Typography>
                                             <Typography
-                                                style={{"marginBottom": "7px"}}><b>Cause: </b>{el.message}
+                                                style={{"marginBottom": "7px"}}><b>Cause: </b>{el.message.join("; ")}
                                             </Typography>
                                         </div>
                                     )
