@@ -6,7 +6,6 @@ import Divider from '@material-ui/core/Divider';
 import TextField from '@material-ui/core/TextField';
 import Snackbar from '@material-ui/core/Snackbar';
 import SnackbarContent from '@material-ui/core/SnackbarContent';
-import Tooltip from "@material-ui/core/Tooltip";
 
 import CloseCircleIcon from "mdi-react/CloseCircleIcon";
 import FileTreeIcon from "mdi-react/FileTreeIcon";
@@ -21,6 +20,7 @@ import WarningIcon from '@material-ui/icons/Warning';
 import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
+import {TableButton} from "./tables";
 
 import Select from '../SelectPlusAll';
 
@@ -247,20 +247,41 @@ export class PhylovizModal extends React.Component {
      */
     getAvailableColumnEntries = () => {
 
-        const fields = [];
-        const fieldsKeys = [];
+        const processToOptions = {};
+        const mergedOptions = [];
+        let count = 0;
 
         for (const [table, vals] of this.props.tableData.entries()) {
             for (const val of vals) {
-                if (!fieldsKeys.includes(val.header)) {
-                    fieldsKeys.push(val.header);
-                    fields.push({label: val.header, value: val.header});
-
+                if (!processToOptions.hasOwnProperty(val.processName)) {
+                    count += 1;
+                    processToOptions[val.processName] = {
+                        key: count,
+                        label: val.processName,
+                        options: [],
+                        fieldKeys: []
+                    }
+                }
+                else {
+                    if (!processToOptions[val.processName].fieldKeys.includes(val.header)) {
+                        processToOptions[val.processName].fieldKeys.push(val.header);
+                        processToOptions[val.processName].options.push(
+                            {
+                                label: val.header,
+                                value: val.header,
+                                process: val.processName
+                            }
+                        )
+                    }
                 }
             }
         }
 
-        return fields;
+        for (const vals of Object.values(processToOptions)) {
+            mergedOptions.push(vals);
+        }
+
+        return mergedOptions;
 
     };
 
@@ -280,13 +301,27 @@ export class PhylovizModal extends React.Component {
             for (const infoKey of this.state.additionalInfoValues) {
                 for (const [table, vals] of this.props.tableData.entries()) {
                     for (const val of vals) {
-                        if (val.rowId === sample && val.header === infoKey.value) {
-                            additionalData[sample][infoKey] = val.value
+                        // Check if process, sample and property match the
+                        // report entry
+                        if (val.rowId === sample && val.processName === infoKey.process && val.header === infoKey.value) {
+                            // Add each gene as part of the additionalData
+                            // in case of AMR
+                            if (val.table === "abricate") {
+                                for (const gene of val.geneList) {
+                                    additionalData[sample][gene] = true
+                                }
+                            } else {
+                                // Add the value of each of the selected
+                                // table fields to the additionalData
+                                additionalData[sample][infoKey.value] = val.value
+                            }
                         }
                     }
                 }
             }
         }
+
+        return additionalData;
 
     };
 
@@ -354,6 +389,7 @@ export class PhylovizModal extends React.Component {
     Set additional information values
      */
     handleSelectInfoChange(additionalInfoValues) {
+        console.log(additionalInfoValues);
         this.setState({additionalInfoValues});
     }
 
@@ -579,8 +615,27 @@ export class PhylovizModal extends React.Component {
             },
             icon: {
                 fill: "white"
+            },
+            groupName: {
+                flexGrow: "1",
+                fontWeight: "bold",
+            },
+            groupCount: {
+
             }
         };
+
+        const formatGroupLabel = data => (
+            <div key={data.key}>
+                <div style={{display: "flex"}}>
+                    <Typography
+                        style={style.groupName}>{data.label}</Typography>
+                    <Typography
+                        style={style.groupCount}>{data.options.length}</Typography>
+                </div>
+                <Divider/>
+            </div>
+        );
 
 
         return (
@@ -591,14 +646,10 @@ export class PhylovizModal extends React.Component {
                     handleClose={this.handleSnackClose}
                     onRef={ref => (this.snackBar = ref)}
                 />
-                <Button variant={"fab"} mini color={"primary"}
-                        onClick={this.handleOpen}>
-                    <Tooltip id={"tooltip-phyloviz"}
-                             title={"Send To PHYLOViZ"}
-                             placement={"top"}>
-                        <FileTreeIcon style={style.icon}/>
-                    </Tooltip>
-                </Button>
+                <TableButton tooltip={"Send To PHYLOViZ"}
+                             onClick={this.handleOpen}>
+                    <FileTreeIcon style={style.icon}/>
+                </TableButton>
                 <Modal
                     aria-labelledby="simple-modal-title"
                     aria-describedby="simple-modal-description"
@@ -691,7 +742,7 @@ export class PhylovizModal extends React.Component {
                                                 Info</Typography>
                                         </label>
                                         <Select
-                                            id="speciesDatabase"
+                                            id="additionalInfo"
                                             closeMenuOnSelect={false}
                                             isMulti
                                             value={this.state.additionalInfoValues}
@@ -701,6 +752,7 @@ export class PhylovizModal extends React.Component {
                                             options={this.getAvailableColumnEntries()}
                                             style={style.rowComponent}
                                             required
+                                            formatGroupLabel={formatGroupLabel}
                                         />
                                         <TextField
                                             id="closestStrains"

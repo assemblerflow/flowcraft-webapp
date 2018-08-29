@@ -32,12 +32,14 @@ import yellow from "@material-ui/core/colors/yellow";
 import ImportContactsIcon from '@material-ui/icons/ImportContacts';
 import BugReportIcon from '@material-ui/icons/BugReport';
 import TimelineIcon from '@material-ui/icons/Timeline';
+import ExportIcon from "mdi-react/ExportIcon";
 
 // utils
 import {parseProjectSearch, getMetadataMapping} from "./utils"
 import axios from "axios";
 
 import {ReportsHome} from "../Reports";
+import {TableButton} from "./tables";
 
 //parsers
 import {InnuendoReportsTableParser} from './parsers';
@@ -57,10 +59,19 @@ export class Innuendo {
     constructor() {
         this.userId = "";
         this.species = {};
+        this.username = "";
     }
 
     setUserId(userId) {
         this.userId = userId;
+    }
+
+    setUsername(username) {
+        this.username = username;
+    }
+
+    getUsername() {
+        return this.username;
     }
 
     getUserId() {
@@ -217,6 +228,24 @@ export class Innuendo {
         });
     }
 
+    saveReport(requestObject) {
+        return axios({
+            method: "post",
+            url: address + "app/api/v1.0/reports/saved/",
+            data: requestObject
+        });
+    }
+
+    getSavedReports(userId) {
+        return axios({
+            method: "get",
+            url: address + "app/api/v1.0/reports/saved/",
+            params: {
+                user_id: userId
+            }
+        });
+    }
+
     //Request to get PHYLOViZ Online Platform job status
     fetchJob(redisJobId) {
         return axios({
@@ -280,6 +309,7 @@ export class HomeInnuendo extends React.Component {
                 try {
                     // Set userId on INNUENDO state
                     this.state.innuendo.setUserId(e.data.current_user_id);
+                    this.state.innuendo.setUsername(e.data.current_user_name);
 
                     this.setState({
                         showProjects: true,
@@ -350,6 +380,8 @@ class InnuendoLogin extends React.Component {
                     if (response.data !== null && response.data.access === true) {
                         this.props.showProjects();
                         this.props.innuendo.setUserId(response.data.user_id);
+                        this.props.innuendo.setUsername(this.state.username);
+                        console.log(this.props.innuendo.getUsername());
                         console.log(this.props.innuendo.getUserId());
                         this.props.setCredentials(this.props.innuendo);
                     }
@@ -701,6 +733,7 @@ class InnuendoProjects extends React.Component {
         };
 
         if (props.initialStrains.length > 0) {
+            this.getSpecies();
             this.submitInitialStrains();
         }
         else {
@@ -926,7 +959,8 @@ class InnuendoProjects extends React.Component {
                             additionalInfo: {
                                 innuendo: {
                                     userId: this.props.innuendo.getUserId(),
-                                    species: this.state.species
+                                    species: this.state.species,
+                                    username: this.props.innuendo.getUsername()
                                 }
                             }
                         }
@@ -986,8 +1020,9 @@ class InnuendoSavedReports extends React.Component {
     };
 
     _getSavedReports = () => {
-        getSavedReports(this.props.userId).then((response) => {
+        this.props.innuendo.getSavedReports(this.props.innuendo.getUserId()).then((response) => {
             if (response.data.length > 0) {
+                console.log(response.data);
                 this.setState({
                     tableData: response.data
                 });
@@ -995,9 +1030,20 @@ class InnuendoSavedReports extends React.Component {
         });
     };
 
+    showReport = () => {
+        console.log(this.state.selection);
+    };
+
 
     render() {
+        console.log(this.state.tableData);
         const tableData = InnuendoReportsTableParser(this.state.tableData);
+
+        const style = {
+            icon: {
+                fill: "white"
+            }
+        };
 
         return (
             <div>
@@ -1008,7 +1054,13 @@ class InnuendoSavedReports extends React.Component {
                             columns={tableData.columnsArray}
                             rawData={tableData.rawTableArray}
                             setSelection={this.setSelection}
-                        /> :
+                            hideSelectionToolbar
+                        >
+                            <TableButton tooltip={"Show Report"}
+                                         onClick={this.showReport}>
+                                <ExportIcon style={style.icon}/>
+                            </TableButton>
+                        </FCTable>:
                         <Typography>No saved reports available!</Typography>
                 }
             </div>

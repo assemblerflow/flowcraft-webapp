@@ -67,11 +67,13 @@ export class ReportsRedirect extends React.Component {
         if (additionalInfo && additionalInfo.innuendo) {
             const userId = additionalInfo.innuendo.userId;
             const species = additionalInfo.innuendo.species;
+            const username = additionalInfo.innuendo.username;
             // Set instance of class innuendo based on the userId collected
             // from history
             const innuendo = new Innuendo();
             innuendo.setUserId(userId);
             innuendo.setSpecies(species);
+            innuendo.setUsername(username);
 
             additionalInfo = {innuendo: innuendo};
 
@@ -123,7 +125,8 @@ export class ReportsRedirect extends React.Component {
         if (additionalInfo.innuendo) {
             additionalInfo.innuendo = {
                 userId: additionalInfo.innuendo.getUserId(),
-                species: additionalInfo.innuendo.getSpecies()
+                species: additionalInfo.innuendo.getSpecies(),
+                username: additionalInfo.innuendo.getUsername()
             }
         }
 
@@ -528,6 +531,7 @@ class ReportsApp extends React.Component {
                     charts: charts,
                     tableData,
                     qcInfo,
+                    tableSamples,
                     reportData: this.props.reportData
                 }}>
                     <ReportsHeader tableHeaders={tables}

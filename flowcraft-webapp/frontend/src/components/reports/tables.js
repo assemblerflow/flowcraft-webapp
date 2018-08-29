@@ -251,42 +251,58 @@ export class FCTable extends React.Component {
             }
         };
 
+        const hideSelectionToolbar = this.props.hideSelectionToolbar ? this.props.hideSelectionToolbar : false;
+
         return (
             <div>
-                <LoadingComponent>
-                    <div style={style.toolbar}>
-                        {
-                            (this.props.rawData || this.props.children) &&
-                            <fieldset style={style.fieldset}>
-                                <legend><Typography style={style.toolbarHeader}>Toolbar</Typography></legend>
-                                {
-                                    this.props.rawData &&
-                                    <ExportTooltipButton
-                                        tableData={this.props.rawData}/>
-                                }
-                                {this.props.children}
-                            </fieldset>
-                        }
-                        {
-                            this.state.selection.keys.length > 0 &&
-                            <fieldset style={style.fieldset}>
-                                <legend><Typography style={style.toolbarHeader}>Selection</Typography></legend>
-                                {
-                                    this.state.selection.keys.length === 1 &&
-                                    <SampleDialog sample={this.state.selection.keys[0]} button={<TableButton tooltip={"Open sample specific report"}><Magnify style={{fill: "#fff"}}/></TableButton>}/>
-                                }
-                            </fieldset>
-                        }
-                    </div>
-                    <CheckboxTable
-                        ref={r => (this.checkboxTable = r)}
-                        data={this.props.data}
-                        columns={this.props.columns}
-                        defaultPageSize={10}
-                        className={"-striped -highlight"}
-                        {...checkboxProps}
-                    />
-                </LoadingComponent>
+                <ReportAppConsumer>
+                    {
+                        ({tableSamples}) => (
+                            <LoadingComponent>
+                                <div style={style.toolbar}>
+                                    {
+                                        (this.props.rawData || this.props.children) &&
+                                        <fieldset style={style.fieldset}>
+                                            <legend><Typography
+                                                style={style.toolbarHeader}>Toolbar</Typography>
+                                            </legend>
+                                            {
+                                                this.props.rawData &&
+                                                <ExportTooltipButton
+                                                    tableData={this.props.rawData}/>
+                                            }
+                                            {this.props.children}
+                                        </fieldset>
+                                    }
+                                    {
+                                        (this.state.selection.keys.length > 0 && !hideSelectionToolbar ) &&
+                                        <fieldset style={style.fieldset}>
+                                            <legend><Typography
+                                                style={style.toolbarHeader}>Selection</Typography>
+                                            </legend>
+                                            {
+                                                (this.state.selection.keys.length === 1 && tableSamples.length > 0) &&
+                                                <SampleDialog
+                                                    sample={this.state.selection.keys[0]}
+                                                    button={<TableButton
+                                                        tooltip={"Open sample specific report"}><Magnify
+                                                        style={{fill: "#fff"}}/></TableButton>}/>
+                                            }
+                                        </fieldset>
+                                    }
+                                </div>
+                                <CheckboxTable
+                                    ref={r => (this.checkboxTable = r)}
+                                    data={this.props.data}
+                                    columns={this.props.columns}
+                                    defaultPageSize={10}
+                                    className={"-striped -highlight"}
+                                    {...checkboxProps}
+                                />
+                            </LoadingComponent>
+                        )
+                    }
+                </ReportAppConsumer>
             </div>
         )
     }
@@ -412,8 +428,10 @@ export class PhylovizTable extends React.Component {
                             columns={tableData.columnsArray}
                             rawData={tableData.rawTableArray}
                             setSelection={this.setSelection}
+                            hideSelectionToolbar
                         >
-                            <TableButton tooltip={"Show Trees"} onClick={this.showTree}>
+                            <TableButton tooltip={"Show Trees"}
+                                         onClick={this.showTree}>
                                 <ExportIcon style={style.icon}/>
                             </TableButton>
                         </FCTable>
@@ -545,8 +563,9 @@ export class AssemblyTable extends React.Component {
                         >
                             {
                                 (this.props.additionalInfo && this.props.additionalInfo.innuendo) &&
-                                <TableButton tooltip={"Download assemblies as Fasta"}
-                                             onClick={this.downloadAssemblies}>
+                                <TableButton
+                                    tooltip={"Download assemblies as Fasta"}
+                                    onClick={this.downloadAssemblies}>
                                     <DownloadIcon style={style.icon}/>
                                 </TableButton>
                             }
@@ -626,7 +645,7 @@ export class AbricateTable extends React.Component {
                             <CSVLink
                                 data={this.exportGeneNames(this.props.tableData)}>
                                 <TableButton tooltip={"Download Gene List"}>
-                                        <DownloadIcon style={{fill: "#fff"}}/>
+                                    <DownloadIcon style={{fill: "#fff"}}/>
                                 </TableButton>
                             </CSVLink>
                         </FCTable>
@@ -757,6 +776,8 @@ export class ChewbbacaTable extends React.Component {
         const dataToUse = this.state.visibleData === null ?
             this.props.tableData : this.state.visibleData;
 
+        console.log(dataToUse);
+
         const tableData = genericTableParser(dataToUse);
         this.chewbbacaParser(tableData, this.props.reportData);
 
@@ -840,7 +861,7 @@ export class ChewbbacaTable extends React.Component {
                             </ReportDataConsumer>
                             <TableButton tooltip={"Download Profiles"}
                                          onClick={this.downloadProfiles}>
-                                <DownloadIcon style = {style.icon}/>
+                                <DownloadIcon style={style.icon}/>
                             </TableButton>
                         </FCTable>
                     </div>
@@ -917,7 +938,8 @@ class ExportTooltipButton extends React.Component {
         return (
             <CSVLink data={this.props.tableData} filename="table_data.csv"
                      style={{"textDecoration": "none"}}>
-                <TableButton tooltip={"Export table as CSV"} onClick={this.handleClickOpen}>
+                <TableButton tooltip={"Export table as CSV"}
+                             onClick={this.handleClickOpen}>
                     <FileDelimitedIcon style={{fill: "#fff"}}/>
                 </TableButton>
 
@@ -926,8 +948,8 @@ class ExportTooltipButton extends React.Component {
     }
 }
 
-export class TableButton extends React.Component{
-    render(){
+export class TableButton extends React.Component {
+    render() {
 
         const style = {
             root: {
@@ -939,9 +961,10 @@ export class TableButton extends React.Component{
             }
         };
 
-        return(
+        return (
             <Tooltip title={this.props.tooltip} placement={"top"}>
-                <Button {...this.props} variant={"contained"} color={"primary"} style={style.root}>
+                <Button {...this.props} variant={"contained"} color={"primary"}
+                        style={style.root}>
                     {this.props.children}
                 </Button>
             </Tooltip>

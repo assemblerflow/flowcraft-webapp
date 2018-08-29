@@ -1,5 +1,5 @@
 {
-  "service": "",
-  "address": "",
-  "theme": "base"
+  "service": "innuendo",
+  "address": "http://localhost:82/",
+  "theme": "innuendo"
 }
