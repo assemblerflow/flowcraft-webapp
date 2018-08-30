@@ -95,20 +95,13 @@ export class FCTable extends React.Component {
             if (String(rows[index]._id).indexOf(key) >= 0) {
                 keyIndex = index
             }
-            ;
         }
 
         // check to see if the key exists
         if (keyIndex !== null) {
             // it does exist so we will remove it using destructing
-            rows = [
-                ...rows.slice(0, keyIndex),
-                ...rows.slice(keyIndex + 1)
-            ];
-            keys = [
-                ...keys.slice(0, keyIndex),
-                ...keys.slice(keyIndex + 1)
-            ]
+            rows.splice(keyIndex, 1);
+            keys.splice(keyIndex, 1);
         } else {
             // it does not exist so add it
             rows.push(row);
