@@ -362,7 +362,7 @@ export class ReportOverview extends React.Component{
 
             for (const el of activeArray){
                 if (activeSelection.keys.length > 0 && !activeSelection.keys.includes(el)){
-                    filterArray.push(el)
+                    !filterArray.includes(el) && filterArray.push(el)
                 }
             }
 

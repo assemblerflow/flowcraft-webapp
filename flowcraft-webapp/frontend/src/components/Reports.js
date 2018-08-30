@@ -382,6 +382,14 @@ class ReportsApp extends React.Component {
     }
 
     updateFilters = (filters) => {
+
+        if (JSON.stringify(this.state.filters) === JSON.stringify(filters)){
+            return
+        }
+        console.log(filters)
+        console.log(this.state.filters)
+        console.log(this.state.filters === filters)
+
         // Set filterAndHighlighting to true prevents updating filters and
         // highlights from props in the getDerivedStateFromProps function
         this.setState({

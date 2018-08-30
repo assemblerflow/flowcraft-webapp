@@ -24,7 +24,7 @@ const base = createMuiTheme({
             main: green[300]
         },
         error: {
-            main: red[600]
+            main: red[300]
         },
         info: {
             main: grey[600],
