@@ -738,7 +738,7 @@ class MultiSparkline extends React.Component{
             },
             plotOptions: {
                 area: {
-                    // animation: false
+                    animation: false
                 }
             },
             series: [{
