@@ -8,6 +8,7 @@ import Button from '@material-ui/core/Button';
 import {BasicModal} from "./reports/modals";
 import styles from "../styles/reports.css";
 
+import indigo from "@material-ui/core/colors/indigo";
 
 /**
  * This is a base component that provides drag and drop functionality to the
@@ -104,7 +105,7 @@ export class DraggableView extends React.Component {
                 }
                 // Check if report file has the highlights object. If not, add
                 // empty
-                if (parsedString.data.highlights !== undefined){
+                if (parsedString.data.highlights !== undefined) {
                     highlights = parsedString.data.highlights;
                 }
 
@@ -151,30 +152,74 @@ export class DraggableView extends React.Component {
 export class DragAndDropModal extends React.Component {
     render() {
 
+        const style = {
+            uploadedMessage: {
+                fontSize: "20px",
+                textAlign: "center",
+                fontWeight: "bold",
+                color: "#636363",
+                marginBottom: "5px",
+            },
+            text: {
+                fontSize: "16px",
+                textAlign: "center",
+                fontWeight: "bold",
+                color: "#636363",
+                marginBottom: "4%",
+                marginTop: "4%"
+            },
+            processesNumber: {
+                fontSize: "40px",
+                textAlign: "center",
+                color: indigo[900],
+                marginBottom: "5px"
+            },
+            icon: {
+                color: "white"
+            },
+            modalBody: {
+                marginTop: "5%"
+            },
+            centeredContent: {
+                textAlign: "center",
+                marginBottom: "5%"
+            },
+            button: {
+                margin: "2%"
+            }
+        };
+
         return (
             <BasicModal openModal={this.props.openModal}
                         setModalState={this.props.setModalState}
                         title="">
 
-                <div className={styles.modalBody}>
-
+                <div style={style.modalBody}>
                     {/* Prototype for modal content */}
-                    <Typography
-                        className={styles.centeredContent}>
-                        Uploaded {
-                            this.props.dropData.reportData === undefined ? 0 : this.props.dropData.reportData.length
-                        } new processes!</Typography>
-                    <Typography className={styles.centeredContent}>What do you
-                        want to do?!</Typography>
-
+                    <Typography style={style.uploadedMessage}>
+                        Adding a new Report with {
+                        <span style={style.processesNumber}>
+                                {
+                                    this.props.dropData.reportData === undefined ? 0 : this.props.dropData.reportData.length
+                                }
+                            </span>
+                    } processes!
+                    </Typography>
+                    <Typography style={style.text}>
+                        Choose one of the following options:
+                    </Typography>
                     {/* dropData: is the current data uploaded using
                              dragNdrop */}
-                    <div className={styles.centeredContent}>
-                        <Button color="primary"
+                    <div style={style.centeredContent}>
+                        <Button color={"primary"} variant={"contained"}
+                                style={style.button}
                                 onClick={() => {
                                     this.props.mergeReports(this.props.dropData)
-                                }}>Merge</Button>
-                        <Button color="secondary"
+                                }}>
+                            Merge Reports
+                        </Button>
+                        <Button color={"primary"} variant={"contained"}
+                                style={style.button}
                                 onClick={() => {
                                     // Gets the information of filters and
                                     // highlights only from the drop file
@@ -185,7 +230,7 @@ export class DragAndDropModal extends React.Component {
                                         highlights: this.props.dropData.dropHighlights
                                     })
                                 }}>
-                            Remove Previous
+                            Clean Previous
                         </Button>
                     </div>
                 </div>

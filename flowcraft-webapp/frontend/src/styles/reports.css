@@ -34,10 +34,10 @@
     background-color: white!important;
     opacity: 1;
     position:absolute;
-    width:50%;
-    height:50%;
+    width:40%;
+    height:auto;
     top:25%;
-    left:25%;
+    left:30%;
 }
 
 :local(.modalBody) {
