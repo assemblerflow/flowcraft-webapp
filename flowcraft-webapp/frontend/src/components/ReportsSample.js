@@ -59,6 +59,12 @@ function Transition(props) {
   return <Slide direction="up" {...props} />;
 }
 
+/*
+This is the main entry point component for showing the SampleSpecificReport
+component. Using it requires only two props:
+    - this.props.button: used to trigger the opening of the the modal
+    - this.props.sample: used to fetch the sample specific data
+ */
 export class SampleDialog extends React.Component{
 
     state = {
@@ -119,7 +125,9 @@ export class SampleDialog extends React.Component{
     }
 }
 
-
+/*
+Main component of the sample specific report.
+ */
 class SampleSpecificReport extends React.Component{
 
     shouldComponentUpdate(nextProps, nextState){
@@ -162,7 +170,11 @@ class SampleSpecificReport extends React.Component{
     }
 }
 
-
+/*
+The first component of the sample specific report. Specified the first panel
+with an overview of sample information, data loss, quality control and several
+metrics.
+ */
 class Overview extends React.Component{
 
     getOverviewData = (tableData, sample) => {
@@ -217,6 +229,10 @@ class Overview extends React.Component{
             headerContainer: {
                 marginBottom: "20px"
             },
+            gridItems: {
+                minWidth: "300px",
+                // margin: "auto"
+            }
         };
 
         const headerMap = {
@@ -236,15 +252,15 @@ class Overview extends React.Component{
                     <MuiThemeProvider theme={themes[theme]}>
                         <div>
                             <Grid container spacing={40}>
-                                <Grid item xs={4}>
+                                <Grid style={style.gridItems} item xs={4}>
                                     <Typography>Sample: {this.props.sample}</Typography>
                                 </Grid>
-                                <Grid item xs={4}>
+                                <Grid style={style.gridItems} item xs={4}>
                                     <DataLossOverview sample={this.props.sample}
                                                       nfMetadata={this.props.nfMetadata}
                                                       reportData={this.props.reportData} />
                                 </Grid>
-                                <Grid style={{margin: "auto"}} item xs={4}>
+                                <Grid style={style.gridItems} item xs={4}>
                                     <QualityCard qcInfo={this.props.qcInfo} sample={this.props.sample} />
                                 </Grid>
                             </Grid>
@@ -261,7 +277,7 @@ class Overview extends React.Component{
                                                 {
                                                     val.map((el) => {
                                                         return(
-                                                            <Grid style={{minWidth: "220px"}} xs={2} item key={`${el.header}${el.process}`}>
+                                                            <Grid style={{minWidth: "260px"}} xs={2} item key={`${el.header}${el.process}`}>
                                                                 <HeaderCard values={el}
                                                                             dataExtremes={dataExtremes}/>
                                                             </Grid>
@@ -283,6 +299,25 @@ class Overview extends React.Component{
 }
 
 
+class Metadata extends React.Component{
+    render(){
+        return(
+            <div>
+                <Typography>Sample: {this.props.sample}</Typography>
+                <Typography>Project: {this.props.project}</Typography>
+                <Typography>Sample: {this.props.sample}</Typography>
+                <Typography>Sample: {this.props.sample}</Typography>
+
+            </div>
+        )
+    }
+}
+
+/*
+Component that shows the quality control for the sample. If the QC status is
+warning or fail, it also provides buttons to display the individual warnings and
+fails
+ */
 class QualityCard extends React.Component{
 
     /*
@@ -325,6 +360,7 @@ class QualityCard extends React.Component{
 
         const style = {
             root: {
+                height: "75%",
                 padding: "15px",
                 backgroundColor: status === "pass" ? themes[theme].palette.success.main : status === "warning" ? themes[theme].palette.warning.main : themes[theme].palette.error.main
             },
@@ -334,13 +370,11 @@ class QualityCard extends React.Component{
             },
             statusText: {
                 flexGrow: "1",
-                // color: "#fff",
-                fontSize: "20px",
+                fontSize: "18px",
                 fontWeight: "bold"
             },
             statusValue: {
-                // color: "#fff",
-                fontSize: "25px",
+                fontSize: "18px",
                 fontWeight: "bold",
                 textTransform: "capitalize"
             },
@@ -387,6 +421,10 @@ class QualityCard extends React.Component{
     }
 }
 
+/*
+These is the individual component that shows the individual table values in
+the overview component.
+ */
 class HeaderCard extends React.Component{
 
     shouldComponentUpdate = (nextProps) => {
