@@ -7,10 +7,8 @@ import Typography from "@material-ui/core/Typography";
 import CloseIcon from "@material-ui/icons/Close";
 import Toolbar from "@material-ui/core/Toolbar";
 import Divider from "@material-ui/core/Divider";
-import Button from "@material-ui/core/Button";
 import Dialog from "@material-ui/core/Dialog";
 import AppBar from "@material-ui/core/AppBar";
-import Badge from "@material-ui/core/Badge";
 import Slide from '@material-ui/core/Slide';
 import Paper from "@material-ui/core/Paper";
 import Grid from "@material-ui/core/Grid";
@@ -42,19 +40,19 @@ import {
 import {ReportAppConsumer} from "./reports/contexts";
 
 import {LoadingComponent} from "./ReportsBase";
-import {Header} from "./Header";
-import {PhylovizModal} from "./reports/modals";
 
 const ReactHighcharts = require("react-highcharts");
 const HighchartsMore = require("highcharts/highcharts-more");
 const HighchartsHistogram = require("highcharts/modules/histogram-bellcurve");
 const HighchartsxRange = require("highcharts/modules/xrange");
 const HighchartsGauge = require("highcharts/modules/solid-gauge");
+const HighchartsSankey = require("highcharts/modules/sankey");
 
 HighchartsMore(ReactHighcharts.Highcharts);
 HighchartsGauge(ReactHighcharts.Highcharts);
 HighchartsHistogram(ReactHighcharts.Highcharts);
 HighchartsxRange(ReactHighcharts.Highcharts);
+HighchartsSankey(ReactHighcharts.Highcharts);
 
 
 function Transition(props) {
@@ -134,9 +132,10 @@ class SampleSpecificReport extends React.Component{
             <div>
                 <ReportAppConsumer>
                     {
-                        ({tableData, qcInfo}) => (
+                        ({tableData, qcInfo, nfMetadata}) => (
                             <Overview tableData={tableData}
                                       qcInfo={qcInfo}
+                                      nfMetadata={nfMetadata}
                                       reportData={this.props.reportData}
                                       sample={this.props.sample}/>
                         )
@@ -236,14 +235,16 @@ class Overview extends React.Component{
                 <ExpansionPanelDetails>
                     <MuiThemeProvider theme={themes[theme]}>
                         <div>
-                            <Grid container spacing={24}>
+                            <Grid container spacing={40}>
                                 <Grid item xs={4}>
                                     <Typography>Sample: {this.props.sample}</Typography>
                                 </Grid>
                                 <Grid item xs={4}>
-                                    <DataLossOverview sample={this.props.sample} reportData={this.props.reportData} />
+                                    <DataLossOverview sample={this.props.sample}
+                                                      nfMetadata={this.props.nfMetadata}
+                                                      reportData={this.props.reportData} />
                                 </Grid>
-                                <Grid item xs={4}>
+                                <Grid style={{margin: "auto"}} item xs={4}>
                                     <QualityCard qcInfo={this.props.qcInfo} sample={this.props.sample} />
                                 </Grid>
                             </Grid>
@@ -534,8 +535,27 @@ class GaugeChart extends React.Component{
 
 class DataLossOverview extends React.Component{
 
+    _findForkParent = (pipelineId, lane) => {
+
+        for (const nf of this.props.nfMetadata){
+            if (nf.nfMetadata.runName === pipelineId){
+                const forkTree = nf.nfMetadata.forks;
+
+                for (const l of Object.keys(forkTree)){
+                    if (forkTree[l].includes(parseInt(lane))){
+                        return l
+                    }
+                }
+            }
+        }
+
+    };
+
     getChartData = (reportData, sample) => {
-        let data = [];
+
+        let tempData = [];
+        let laneList = [];
+        let maxBp = 0;
 
         for (const el of reportData){
 
@@ -547,24 +567,298 @@ class DataLossOverview extends React.Component{
                     }
 
                     if (plot.data.hasOwnProperty("sparkline")){
-                        console.log(plot)
-                        console.log(el.processName)
+
+                        let process;
+                        let tempLane;
+                        let lane;
+
+                        tempLane = el.processName.split("_");
+                        if (!isNaN(tempLane[tempLane.length - 2])){
+                            lane = tempLane[tempLane.length - 2];
+                            process = tempLane.slice(0, tempLane.length - 2).join(" ")
+                        } else {
+                            lane = 1;
+                            process = tempLane.slice(0, tempLane.length - 1).join(" ")
+                        }
+
+                        tempData.push({
+                            value: plot.data.sparkline,
+                            processId: tempLane[tempLane.length - 1],
+                            process: process,
+                            lane: lane,
+                            pipelineId: el.pipelineId
+                        });
+
+                        if (!laneList.includes(lane)){
+                            laneList.push(lane)
+                        }
+
+                        if (maxBp < plot.data.sparkline){
+                            maxBp = plot.data.sparkline
+                        }
                     }
                 }
             }
         }
+
+        // Get data, depending on the presence of forks
+        if (laneList.length === 1){
+            const rawData = Array.from(tempData.sort((a, b) => {return b.value - a.value}));
+            const data = rawData.map((v) => {return parseFloat(v.value) / maxBp});
+            const categories = rawData.map((v) => {return v.process});
+
+            return {
+                type: "sparkline",
+                data,
+                categories,
+                sample
+            }
+        } else {
+
+            let laneData = {};
+            let tempKeys = [];
+            let chartData = [];
+
+            for (const d of tempData){
+
+                if (Object.keys(laneData).length === 0){
+                    laneData[d.lane] = [d];
+                    continue
+                }
+
+                if (!laneData.hasOwnProperty(d.lane)){
+                    const parentLane = this._findForkParent(d.pipelineId, d.lane);
+                    laneData[d.lane] = JSON.parse(JSON.stringify(laneData[parentLane]));
+                    laneData[d.lane].push(d);
+                    !tempKeys.includes(parentLane) && tempKeys.push(parentLane);
+                } else {
+                    laneData[d.lane].push(d)
+                }
+            }
+
+            for (const k of tempKeys){
+                delete laneData[k];
+            }
+
+            for (const d of Object.keys(laneData)){
+                const data = laneData[d].map((v) => {return parseFloat(v.value) / maxBp})
+                const categories = laneData[d].map((v) => {return v.process});
+                chartData.push({
+                    lane: d,
+                    data,
+                    categories,
+                    sample
+                })
+            }
+
+            return {
+                type: "multisparkline",
+                chartData
+            }
+        }
+
+    };
+
+    shouldComponentUpdate(nextProps, nextState){
+        return nextProps.reportData !== this.props.reportData;
+    }
+    render(){
+
+        const chartData = this.getChartData(this.props.reportData, this.props.sample);
+
+        return(
+            <LoadingComponent>
+                {
+                    chartData.type === "sparkline" ?
+                        <SparkLine data={chartData.data}
+                                   sample={chartData.sample}
+                                   categories={chartData.categories}/> :
+                        <MultiSparkline chartData={chartData.chartData}/>
+                }
+            </LoadingComponent>
+        )
+    }
+}
+
+
+class MultiSparkline extends React.Component{
+
+    constructor(props){
+        super(props);
+
+        this.state = {
+            lane: 0
+        }
+    }
+
+    handleSelectionChange = (value) => {
+        this.setState({lane: value.value})
+    };
+
+    getAreaChart = (data, categories, sample) => {
+
+        const config = {
+            chart: {
+                type: "area",
+                height: "150px"
+            },
+            title: {
+                text: "Data loss sparkline"
+            },
+            xAxis: {
+                categories: categories,
+                tickLength: 0,
+                min: 0.5,
+                max: 2.5,
+                labels: {
+                    enabled: false
+                },
+                title: {
+                    text: null
+                }
+            },
+            yAxis: {
+                max: 1,
+                labels: {
+                    enabled: true
+                },
+                title: {
+                    text: null
+                }
+            },
+            tooltip: {
+                useHTML: true,
+                valueDecimals: 2
+            },
+            legend: {
+                enabled: false
+            },
+            credits: {
+                enabled: false
+            },
+            plotOptions: {
+                area: {
+                    // animation: false
+                }
+            },
+            series: [{
+                name: sample,
+                data: data
+            }]
+        };
+
+        return config
     };
 
     render(){
 
-        const sparklineData = this.getChartData(this.props.reportData, this.props.sample);
+        const data = this.props.chartData[this.state.lane];
+        const config = this.getAreaChart(data.data, data.categories, data.sample);
+        const options = this.props.chartData.map((v, i) => {return {label: v.lane, value: i}});
+
+        const style = {
+            selectContainer: {
+                display: "flex"
+            },
+            selectText: {
+                width: "20%",
+                minWidth: "150px",
+                margin: "auto",
+                fontSize: "16px"
+            },
+            select: {
+                flexGrow: "1"
+            }
+        };
 
         return(
-            <div>
-                OI!
+            <div style={{"height": "180px", "width":"100%"}}>
+                <div style={style.selectContainer}>
+                    <Typography style={style.selectText}>Select lane:</Typography>
+                    <div style={style.select}>
+                        <Select
+                            value={{value: data.lane, label: data.lane}}
+                            options={options}
+                            onChange={(value) => {
+                                this.handleSelectionChange(value)
+                            }}/>
+                    </div>
+                </div>
+                <ReactHighcharts config={config} ref={"datalossMultiSparkline"}></ReactHighcharts>
             </div>
         )
     }
+}
+
+
+class SparkLine extends React.Component{
+
+    getAreaChart = (data, categories, sample) => {
+
+        const config = {
+            chart: {
+                type: "area",
+                height: "180px"
+            },
+            title: {
+                text: "Data loss sparkline"
+            },
+            xAxis: {
+                categories: categories,
+                tickLength: 0,
+                min: 0.5,
+                max: 2.5,
+                labels: {
+                    enabled: false
+                },
+                title: {
+                    text: null
+                }
+            },
+            yAxis: {
+                max: 1,
+                labels: {
+                    enabled: true
+                },
+                title: {
+                    text: null
+                }
+            },
+            tooltip: {
+                useHTML: true,
+                valueDecimals: 2
+            },
+            legend: {
+                enabled: false
+            },
+            credits: {
+                enabled: false
+            },
+            plotOptions: {
+                area: {
+                    animation: false
+                }
+            },
+            series: [{
+                name: sample,
+                data: data
+            }]
+        };
+
+        return config
+    };
+
+    render(){
+
+        const config = this.getAreaChart(this.props.data, this.props.categories, this.props.sample);
+
+        return(
+            <div style={{"height": "180px", "width":"100%"}}>
+                <ReactHighcharts config={config} ref={"datalossSparkline"}></ReactHighcharts>
+            </div>
+        )
+    }
+
 }
 
 
@@ -1051,7 +1345,6 @@ class SyncCharts extends React.Component{
     };
 
     _geneClick = (e) => {
-        console.log(e)
         const data = {
             gene: e.point.gene,
             geneLength: parseInt((e.point.x2 - e.point.x) * 2000),
@@ -1192,8 +1485,7 @@ class SyncCharts extends React.Component{
             (x) => x.x === value.pos
         );
 
-        const point = chartObj.series[seriesIdx].data[pointIdx]
-        console.log(chartObj.series[seriesIdx])
+        const point = chartObj.series[seriesIdx].data[pointIdx];
 
         setTimeout(() => {point.firePointEvent("click");}, 500);
 
@@ -1218,8 +1510,6 @@ class SyncCharts extends React.Component{
     }
 
     render(){
-
-        console.log(this.props)
 
         const gcConfig = this.getChartLayout(this.props.plotData.gcData, "GC% content", this.props.plotData.xLabels, this.props.plotData.plotLines, this.props.plotData.xBars, this.props.plotData.window);
         const covConfig = this.getChartLayout(this.props.plotData.covData, "Coverage depth", this.props.plotData.xLabels, this.props.plotData.plotLines, this.props.plotData.xBars, this.props.plotData.window);
