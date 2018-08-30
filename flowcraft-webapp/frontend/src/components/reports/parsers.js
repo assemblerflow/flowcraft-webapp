@@ -674,6 +674,21 @@ export const qcParseAdditionalData = (tableData, originalData, qcInfo, signature
 };
 
 
+export const findNfMetadata = (reportsArray) => {
+
+    let nfMetadata = [];
+
+    for (const el of reportsArray){
+
+        if (el.hasOwnProperty("nfMetadata")){
+            nfMetadata.push(el);
+        }
+    }
+
+    return nfMetadata;
+};
+
+
 export const InnuendoReportsTableParser = (reportsArray) => {
 
     let columnsArray = [];

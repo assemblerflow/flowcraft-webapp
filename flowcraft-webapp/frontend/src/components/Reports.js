@@ -10,7 +10,8 @@ import {
 import {
     findTableSignatures,
     findChartSignatures,
-    findQcWarnings
+    findQcWarnings,
+    findNfMetadata
 } from "./reports/parsers";
 import {
     QualityControlTable,
@@ -508,12 +509,16 @@ class ReportsApp extends React.Component {
     render() {
 
         const activeReports = this.filterReportArray(this.props.reportData, this.state.filters);
-        // const activeReports = this.props.reportData;
+        const nfMetadata = findNfMetadata(this.props.reportData);
 
+        // const activeReports = this.props.reportData;
         const {tableData, tableSamples} = findTableSignatures(activeReports);
         const {charts, chartSamples} = findChartSignatures(activeReports);
         const qcInfo = findQcWarnings(activeReports);
         const tables = [...tableData.keys()];
+
+        console.log(this.props.reportData)
+        console.log(nfMetadata)
 
         //
         // This is the main element where the Reports components will be added,
@@ -532,6 +537,7 @@ class ReportsApp extends React.Component {
                     tableData,
                     qcInfo,
                     tableSamples,
+                    nfMetadata,
                     reportData: this.props.reportData
                 }}>
                     <ReportsHeader tableHeaders={tables}
