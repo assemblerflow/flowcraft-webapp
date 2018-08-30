@@ -242,6 +242,7 @@ class Overview extends React.Component{
         };
 
         const {data, dataExtremes} = this.getOverviewData(this.props.tableData, this.props.sample);
+        console.log(data)
 
         return(
             <ExpansionPanel defaultExpanded>
@@ -252,15 +253,12 @@ class Overview extends React.Component{
                     <MuiThemeProvider theme={themes[theme]}>
                         <div>
                             <Grid container spacing={40}>
-                                <Grid style={style.gridItems} item xs={4}>
-                                    <Typography>Sample: {this.props.sample}</Typography>
-                                </Grid>
-                                <Grid style={style.gridItems} item xs={4}>
+                                <Grid style={style.gridItems} item xs={6}>
                                     <DataLossOverview sample={this.props.sample}
                                                       nfMetadata={this.props.nfMetadata}
                                                       reportData={this.props.reportData} />
                                 </Grid>
-                                <Grid style={style.gridItems} item xs={4}>
+                                <Grid style={style.gridItems} item xs={6}>
                                     <QualityCard qcInfo={this.props.qcInfo} sample={this.props.sample} />
                                 </Grid>
                             </Grid>
@@ -301,13 +299,13 @@ class Overview extends React.Component{
 
 class Metadata extends React.Component{
     render(){
+
+        console.log(this.props)
+
         return(
             <div>
                 <Typography>Sample: {this.props.sample}</Typography>
-                <Typography>Project: {this.props.project}</Typography>
                 <Typography>Sample: {this.props.sample}</Typography>
-                <Typography>Sample: {this.props.sample}</Typography>
-
             </div>
         )
     }
@@ -702,10 +700,19 @@ class DataLossOverview extends React.Component{
     }
     render(){
 
+        const style = {
+            header: {
+                fontSize: "22px",
+                textAlign: "center",
+                marginBottom: "10px"
+            }
+        };
+
         const chartData = this.getChartData(this.props.reportData, this.props.sample);
 
         return(
             <LoadingComponent>
+                <Typography style={style.header}>Data loss chart</Typography>
                 {
                     chartData.type === "sparkline" ?
                         <SparkLine data={chartData.data}
@@ -738,10 +745,10 @@ class MultiSparkline extends React.Component{
         const config = {
             chart: {
                 type: "area",
-                height: "150px"
+                height: "135px"
             },
             title: {
-                text: "Data loss sparkline"
+                text: null
             },
             xAxis: {
                 categories: categories,
@@ -802,7 +809,9 @@ class MultiSparkline extends React.Component{
                 width: "20%",
                 minWidth: "150px",
                 margin: "auto",
-                fontSize: "16px"
+                fontSize: "16px",
+                paddingLeft: "30px",
+                marginBottom: "5px"
             },
             select: {
                 flexGrow: "1"
@@ -836,10 +845,10 @@ class SparkLine extends React.Component{
         const config = {
             chart: {
                 type: "area",
-                height: "180px"
+                height: "167px"
             },
             title: {
-                text: "Data loss sparkline"
+                text: null
             },
             xAxis: {
                 categories: categories,
