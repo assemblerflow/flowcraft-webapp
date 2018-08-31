@@ -69,11 +69,17 @@ export class ReportsHome extends DraggableView {
                                 service === "innuendo" ?
                                     <div>
                                         <Header
+                                            homeRef={'/reports'}
                                             headerTitle={"Reports"}/>
-                                        <HomeInnuendo route={"reports"}/>
+                                        <HomeInnuendo
+                                            route={"reports"}
+                                            bypassLogin={this.props.location.state}
+                                        />
                                     </div> :
                                     <div>
-                                        <Header headerTitle={"Reports"}/>
+                                        <Header
+                                            homeRef={'/reports'}
+                                            headerTitle={"Reports"}/>
                                         <HomeInput route={"reports"}/>
                                     </div>
                             }

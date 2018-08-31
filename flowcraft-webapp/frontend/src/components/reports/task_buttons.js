@@ -456,13 +456,22 @@ class SaveInnuendoTask extends React.Component {
         exportData = () => {
             const exportObject = {
                 data: {
-                    results: this.props.data,
                     highlights: this.props.highlights,
                     filters: this.props.filters
                 }
             };
 
-            console.log(exportObject);
+            // Filter data to store
+            const results = [];
+            for (const data of this.props.data) {
+                if (!data.hasOwnProperty("phyloviz_user")) {
+                    results.push(data);
+                }
+            }
+
+            // Set the resulting filtered data to the export object.
+            exportObject.data.results = results;
+
             const dataString = JSON.stringify(exportObject);
             sendFile("report.json", dataString, "application/json");
 

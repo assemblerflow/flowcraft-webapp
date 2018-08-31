@@ -65,7 +65,9 @@ export class ReportsHeader extends React.Component {
     render () {
         return (
             <div>
-                <Header headerTitle={"Reports"}
+                <Header
+                        homeRef={'/reports'}
+                        headerTitle={"Reports"}
                         drawerButton={true}
                         drawer={this.state.drawerOpen}
                         openDrawer={this.openDrawer}/>

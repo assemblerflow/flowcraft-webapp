@@ -386,9 +386,6 @@ class ReportsApp extends React.Component {
         if (JSON.stringify(this.state.filters) === JSON.stringify(filters)){
             return
         }
-        console.log(filters)
-        console.log(this.state.filters)
-        console.log(this.state.filters === filters)
 
         // Set filterAndHighlighting to true prevents updating filters and
         // highlights from props in the getDerivedStateFromProps function
@@ -524,9 +521,6 @@ class ReportsApp extends React.Component {
         const {charts, chartSamples} = findChartSignatures(activeReports);
         const qcInfo = findQcWarnings(activeReports);
         const tables = [...tableData.keys()];
-
-        console.log(this.props.reportData)
-        console.log(nfMetadata)
 
         //
         // This is the main element where the Reports components will be added,

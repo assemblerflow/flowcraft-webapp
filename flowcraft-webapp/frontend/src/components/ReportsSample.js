@@ -196,7 +196,7 @@ class Overview extends React.Component{
                     }
                 }
 
-                if (el.rowId === sample){
+                if (el.rowId === sample && !el.hideOverview){
 
                     tempData = {
                         header: el.header,

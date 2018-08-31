@@ -138,6 +138,7 @@ const parseInnuendoMetadata = (metadataEntry, tables) => {
             cell.projectId = "metadata";
             cell.pipelineId = "metadata";
             cell.rowId = metadataEntry.strainID;
+            cell.hideOverview = true;
 
             if (!tables.has(cell.table)) {
                 tables.set(cell.table, [cell])
@@ -180,6 +181,7 @@ const parsePhylovizTrees = (treeEntry, tables) => {
             cell.pipelineId = "phyloviz";
             cell.rowId = treeEntry.name;
             cell.uri = treeEntry.uri;
+            cell.hideOverview = true;
 
             if (!tables.has(cell.table)) {
                 tables.set(cell.table, [cell])

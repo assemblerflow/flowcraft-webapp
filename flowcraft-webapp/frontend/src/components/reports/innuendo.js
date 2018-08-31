@@ -335,7 +335,6 @@ export class HomeInnuendo extends React.Component {
     };
 
     setCredentials = (innuendoClass) => {
-        console.log(innuendoClass.getUserId());
         this.setState({
             innuendo: innuendoClass
         })
@@ -346,7 +345,6 @@ export class HomeInnuendo extends React.Component {
 
         // Verify if message comes from INNUENDO platform
         if (e.origin === address.substring(0, address.length - 1)) {
-            console.log(e.data, typeof e.data);
             if (typeof e.data === "object") {
                 try {
                     // Set userId on INNUENDO state
@@ -368,6 +366,22 @@ export class HomeInnuendo extends React.Component {
     };
 
     componentDidMount() {
+        if (this.props.bypassLogin !== undefined && !this.state.showProjects){
+            if (this.props.bypassLogin.additionalInfo !== undefined) {
+
+                const additionalInfo = JSON.parse(this.props.bypassLogin.additionalInfo);
+
+                if (additionalInfo.innuendo !== undefined) {
+                    this.state.innuendo.setUserId(additionalInfo.innuendo.userId);
+                    this.state.innuendo.setUsername(additionalInfo.innuendo.username);
+
+                    this.setState({
+                        showProjects: true
+                    })
+                }
+            }
+        };
+
         // Event to receive message from iframe
         window.addEventListener('message', this.receiveMessage);
     }
@@ -422,8 +436,6 @@ class InnuendoLogin extends React.Component {
                         this.props.showProjects();
                         this.props.innuendo.setUserId(response.data.user_id);
                         this.props.innuendo.setUsername(this.state.username);
-                        console.log(this.props.innuendo.getUsername());
-                        console.log(this.props.innuendo.getUserId());
                         this.props.setCredentials(this.props.innuendo);
                     }
                     else {
@@ -813,10 +825,10 @@ class InnuendoProjects extends React.Component {
             let projects = [];
             let projectNamesToIds = {};
 
-            response.data.map(r => {
+            for (const r of response.data) {
                 projects.push(`${species[r.species_id]}: ${r.name}`);
                 projectNamesToIds[`${species[r.species_id]}: ${r.name}`] = r.id;
-            });
+            }
 
             this.setState({
                 projects: projects,
@@ -885,8 +897,6 @@ class InnuendoProjects extends React.Component {
 
         const results = await this.props.innuendo.submissionRoutine(this.props.initialStrains, [this.props.initialProjects], metadataMap);
 
-        console.log(results);
-
         this.setState({
             resultsReports: results.resultsReports,
             resultsMetadata: results.resultsMetadata
@@ -917,8 +927,6 @@ class InnuendoProjects extends React.Component {
 
         const results = await this.props.innuendo.submissionRoutine(strainsForRequest, this.state.selectedProjectIds, metadataMap);
 
-        console.log(results);
-
         this.setState({
             resultsReports: results.resultsReports,
             resultsMetadata: results.resultsMetadata
@@ -931,8 +939,6 @@ class InnuendoProjects extends React.Component {
 
         const projectIndexes = [];
         const selectedProjects = [];
-
-        console.log(selectedValues);
 
         for (const entry of selectedValues) {
             projectIndexes.push(this.state.projectNameToId[entry.value]);
