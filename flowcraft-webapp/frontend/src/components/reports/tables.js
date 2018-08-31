@@ -393,7 +393,6 @@ export class PhylovizTable extends React.Component {
         // inside each report entry. If reportJson doesnt exist, the entry
         // goes to the Innuendo metadata parser.
         const tableData = genericTableParser(this.props.tableData);
-        console.log(tableData);
         console.log("render phyloviz table");
 
         const style = {
@@ -406,7 +405,7 @@ export class PhylovizTable extends React.Component {
             <ExpansionPanel defaultExpanded>
                 <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
                     <Typography variant={"headline"}>PHYLOViZ
-                        Online</Typography>
+                        Online Trees</Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails>
                     <div className={styles.mainPaper}>
@@ -563,6 +562,55 @@ export class AssemblyTable extends React.Component {
                                 </TableButton>
                             }
                         </FCTable>
+                    </div>
+                </ExpansionPanelDetails>
+            </ExpansionPanel>
+        )
+    }
+}
+
+export class TypingTable extends React.Component {
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            selection: {keys: []}
+        };
+    }
+
+    shouldComponentUpdate(nextProps, nextState, nextContext) {
+        if (nextProps.tableData !== this.props.tableData) {
+            return true
+        } else if (nextState.selection !== this.state.selection) {
+            return true
+        }
+
+        return false
+    }
+
+    setSelection = (selection) => {
+        this.setState({selection});
+    };
+
+    render() {
+        const tableData = genericTableParser(this.props.tableData);
+
+        console.log("render qc table")
+
+        return (
+            <ExpansionPanel defaultExpanded>
+                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
+                    <Typography variant={"headline"}>In silico Typing</Typography>
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails>
+                    <div className={styles.mainPaper}>
+                        <FCTable
+                            data={tableData.tableArray}
+                            columns={tableData.columnsArray}
+                            rawData={tableData.rawTableArray}
+                            setSelection={this.setSelection}
+                        />
                     </div>
                 </ExpansionPanelDetails>
             </ExpansionPanel>

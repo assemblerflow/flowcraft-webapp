@@ -19,7 +19,8 @@ import {
     AbricateTable,
     ChewbbacaTable,
     MetadataTable,
-    PhylovizTable
+    PhylovizTable,
+    TypingTable
 } from "./reports/tables";
 import {Innuendo} from "./reports/innuendo";
 import {ReportsSample} from "./ReportsSample";
@@ -555,6 +556,8 @@ class ReportsApp extends React.Component {
         const qcInfo = findQcWarnings(activeReports);
         const tables = [...tableData.keys()];
 
+        console.log(tableData);
+
         //
         // This is the main element where the Reports components will be added,
         // Their addition should be conditional on the presence of relevant
@@ -620,11 +623,11 @@ class ReportsApp extends React.Component {
                             </Element>
                         }
                         {
-                            tables.includes("abricate") &&
-                            <Element name={"abricateTable"}
+                            tables.includes("typing") &&
+                            <Element name={"typingTable"}
                                      className={styles.scrollElement}>
-                                <AbricateTable
-                                    tableData={tableData.get("abricate")}/>
+                                <TypingTable
+                                    tableData={tableData.get("typing")}/>
                             </Element>
                         }
                         {
@@ -636,6 +639,14 @@ class ReportsApp extends React.Component {
                                     reportData={activeReports}
                                     additionalInfo={this.props.additionalInfo}
                                 />
+                            </Element>
+                        }
+                        {
+                            tables.includes("abricate") &&
+                            <Element name={"abricateTable"}
+                                     className={styles.scrollElement}>
+                                <AbricateTable
+                                    tableData={tableData.get("abricate")}/>
                             </Element>
                         }
                         {

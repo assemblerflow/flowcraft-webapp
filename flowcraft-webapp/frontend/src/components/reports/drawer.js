@@ -14,7 +14,12 @@ import Paper from "@material-ui/core/Paper";
 import List from "@material-ui/core/List";
 
 import ChevronLeftIcon from "mdi-react/ChevronLeftIcon";
-import HeartIcon from "mdi-react/HeartIcon";
+import SourceMergeIcon from "mdi-react/SourceMergeIcon";
+import ChartScatterplotHexbinIcon from "mdi-react/ChartScatterplotHexbinIcon";
+import HeartPulseIcon from "mdi-react/HeartPulseIcon";
+import TagIcon from "mdi-react/TagIcon";
+import NotificationClearAllIcon from "mdi-react/NotificationClearAllIcon";
+import FileDocumentIcon from "mdi-react/FileDocumentIcon";
 import PillIcon from "mdi-react/PillIcon";
 import AlienIcon from "mdi-react/AlienIcon";
 import TableLargeIcon from "mdi-react/TableLargeIcon";
@@ -118,8 +123,8 @@ class ChartDrawer extends React.Component {
     render () {
 
         const headerMap =  {
-            "base_n_content": {"icon": <HeartIcon/>, "text": "FastQC"},
-            "size_dist": {"icon": <FileDocumentBoxIcon/>, "text": "Contig size distribution"},
+            "base_n_content": {"icon": <HeartPulseIcon/>, "text": "FastQC"},
+            "size_dist": {"icon": <ChartScatterplotHexbinIcon/>, "text": "Contig size distribution"},
         };
 
         return (
@@ -164,13 +169,13 @@ class TableDrawer extends React.Component {
     render () {
 
         const headerMap =  {
-            "qc": {"icon": <HeartIcon/>, "text": "Quality Control"},
-            "assembly": {"icon": <FileDocumentBoxIcon/>, "text": "Assembly"},
+            "qc": {"icon": <HeartPulseIcon/>, "text": "Quality Control"},
+            "assembly": {"icon": <NotificationClearAllIcon/>, "text": "Assembly"},
             "abricate": {"icon": <PillIcon/>, "text": "AMR"},
             "chewbbaca": {"icon": <AlienIcon/>, "text": "chewBBACA"},
-            "typing": {"icon": <PillIcon/>, "text": "Typing"},
-            "metadata": {"icon": <PillIcon/>, "text": "Metadata"},
-            "phyloviz": {"icon": <PillIcon/>, "text": "PHYLOViZ"}
+            "typing": {"icon": <TagIcon/>, "text": "Typing"},
+            "metadata": {"icon": <FileDocumentIcon/>, "text": "Metadata"},
+            "phyloviz": {"icon": <SourceMergeIcon/>, "text": "PHYLOViZ"}
         };
 
         return (
