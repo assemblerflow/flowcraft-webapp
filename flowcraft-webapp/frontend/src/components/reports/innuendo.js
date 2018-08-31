@@ -335,6 +335,7 @@ export class HomeInnuendo extends React.Component {
     };
 
     setCredentials = (innuendoClass) => {
+        this.props.setAdditionalInfo({innuendo: innuendoClass});
         this.setState({
             innuendo: innuendoClass
         })
@@ -350,6 +351,8 @@ export class HomeInnuendo extends React.Component {
                     // Set userId on INNUENDO state
                     this.state.innuendo.setUserId(e.data.current_user_id);
                     this.state.innuendo.setUsername(e.data.current_user_name);
+
+                    this.props.setAdditionalInfo({innuendo: this.state.innuendo});
 
                     this.setState({
                         showProjects: true,
@@ -404,7 +407,8 @@ export class HomeInnuendo extends React.Component {
                         <InnuendoLogin
                             showProjects={this.showProjects}
                             setCredentials={this.setCredentials}
-                            innuendo={this.state.innuendo}/>
+                            innuendo={this.state.innuendo}
+                        />
                 }
             </div>
         )

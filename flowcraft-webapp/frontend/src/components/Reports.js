@@ -306,8 +306,41 @@ export class ReportsRedirect extends React.Component {
         }
     }
 
+    componentDidUpdate() {
+
+        // Prevents the update based on the provided signatures
+        let shouldUpdate = true;
+        const preventUpdateSignatures = ["phyloviz_user"];
+        for (const data of this.state.reportData) {
+            for (const signature of preventUpdateSignatures) {
+                if (data.hasOwnProperty(signature)) {
+                    shouldUpdate = false;
+                }
+            }
+        }
+
+        // Fetch additional reportData from external sources. That are not
+        // stored in the base report.
+        if (shouldUpdate) {
+            if (this.state.additionalInfo !== undefined && this.state.additionalInfo.innuendo !== undefined) {
+                this.state.additionalInfo.innuendo.getPhylovizTrees({
+                    user_id: this.state.additionalInfo.innuendo.getUserId()
+                }).then((response) => {
+                    this.setState({
+                        reportData: [...this.state.reportData, ...response.data]
+                    })
+                }).catch((response) => {
+                    console.log(response);
+                });
+            }
+        }
+        else {
+            return false;
+        }
+    }
+
     render() {
-        /*console.log("RENDER", this.state.reportData, this.state.filters, this.state.highlights);*/
+
         return (
             <div>
                 <FileDrop onDrop={this.handleDrop}>
@@ -383,7 +416,7 @@ class ReportsApp extends React.Component {
 
     updateFilters = (filters) => {
 
-        if (JSON.stringify(this.state.filters) === JSON.stringify(filters)){
+        if (JSON.stringify(this.state.filters) === JSON.stringify(filters)) {
             return
         }
 
@@ -462,7 +495,7 @@ class ReportsApp extends React.Component {
         // current state. Also prevent the update if performing a filter
         // or highlight
         if (!state.filterAndHighlighting && (JSON.stringify(state.filters) !== JSON.stringify(props.filters) && props.filters ||
-            JSON.stringify(state.highlights) !== JSON.stringify(props.highlights) && props.highlights)) {
+                JSON.stringify(state.highlights) !== JSON.stringify(props.highlights) && props.highlights)) {
             update = true;
         }
         // Update filters and highlights if from dragNdrop

@@ -42,9 +42,36 @@ export class ReportsHome extends DraggableView {
             "highlights": null,
             "openModal": false,
             "dropData": null,
-            "loading": false
+            "loading": false,
+            "additionalInfo": {}
         };
     }
+
+    /*
+    This method can be used to set the additional information to pass to the
+     ReportsApp or ReportsRedirect Component to be parsed after.
+     */
+    setAdditionalInfo = (additionalInfo) => {
+        let additionalData = "";
+
+        // Set additional info based on INNUENDO Login
+        if (additionalInfo.innuendo !== undefined) {
+            additionalData = {
+                innuendo: {
+                    userId: additionalInfo.innuendo.getUserId(),
+                    species: additionalInfo.innuendo.species,
+                    username: additionalInfo.innuendo.getUsername()
+                }
+            }
+        }
+        else {
+            additionalData = additionalInfo;
+        }
+
+        this.setState({
+            additionalInfo: additionalData
+        })
+    };
 
 
     render() {
@@ -52,14 +79,15 @@ export class ReportsHome extends DraggableView {
             <div>
                 {
                     this.state.reportData &&
-                        <Redirect to={{
-                            pathname: "/reports/app",
-                            state: {
-                                "data": this.state.reportData,
-                                "filters": this.state.filters,
-                                "highlights": this.state.highlights
-                            }
-                        }}/>
+                    <Redirect to={{
+                        pathname: "/reports/app",
+                        state: {
+                            "data": this.state.reportData,
+                            "filters": this.state.filters,
+                            "highlights": this.state.highlights,
+                            "additionalInfo": this.state.additionalInfo
+                        }
+                    }}/>
                 }
                 {
                     this.state.loading ?
@@ -73,6 +101,7 @@ export class ReportsHome extends DraggableView {
                                             headerTitle={"Reports"}/>
                                         <HomeInnuendo
                                             route={"reports"}
+                                            setAdditionalInfo={this.setAdditionalInfo}
                                             bypassLogin={this.props.location.state}
                                         />
                                     </div> :
