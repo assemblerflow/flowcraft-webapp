@@ -4,10 +4,13 @@ import Typography from "@material-ui/core/Typography";
 
 import {CellBar} from "./tables";
 import {QcPopover} from "./tables";
+import {getHighlight} from "./utils";
 
-import {sortByPropsValue, sortQcValues} from "./utils";
+import {sortByContent, sortByPropsValue, sortQcValues, sortColor} from "./utils";
+import {ColorPaper} from "./overview";
 
 import styles from "../../styles/reports.css"
+import MarkerIcon from "mdi-react/MarkerIcon";
 
 /**
  * Parses the reportData array and search for all unique table signatures.
@@ -22,7 +25,17 @@ import styles from "../../styles/reports.css"
  *
  * @param reportArray : Raw reports array of objects
  */
-export const findTableSignatures = (reportArray) => {
+export const findTableSignatures = (reportArray, highlights) => {
+
+    // Set default highlight values
+    if (!highlights){
+        highlights = {
+            samples: [],
+            projects: []
+        }
+    }
+
+    console.log(highlights)
 
     // Stores the unique table signatures found and sets the value as the
     // array of JSON for those tables
@@ -55,11 +68,16 @@ export const findTableSignatures = (reportArray) => {
                         // Add to samples array, if new sample
                         !samples.includes(tr.sample) && samples.push(tr.sample);
 
+                        // Add highlight, if present. Sample takes precedence over
+                        // project.
+                        const highlightElement = getHighlight(highlights, tr.sample, r.projectid)
+
                         cell.rowId = tr.sample;
                         cell.projectId = r.projectid;
                         cell.processName = r.processName;
                         cell.processId = r.processId;
                         cell.pipelineId = r.pipelineId;
+                        cell.highlight = highlightElement ? highlightElement : null;
 
                         if (!tables.has(cell.table)) {
                             tables.set(cell.table, [cell])
@@ -465,9 +483,6 @@ export const genericTableParser = (reportArray) => {
     // Temporary data object. Will be used to generate the finalDataDict array
     let dataDict = {};
 
-    // Stores the column array, ready to be provided to react table
-    let columnsArray = [];
-
     // Stores the final processed data to display in the table, already
     // with the final components of the table cells
     let tableArray = [];
@@ -483,11 +498,21 @@ export const genericTableParser = (reportArray) => {
     const columnMaxVals = getColumnMax(reportArray);
 
     // Add ID to columns
-    columnsArray.push({
+    let columnsArray = [{
+        Header: <MarkerIcon/>,
+        accessor: "highlight",
+        sortMethod: sortColor,
+        minWidth: 40,
+        width: 40,
+        style: {
+            margin: "auto",
+            textAlign: "center"
+        }
+    }, {
         Header: <Typography>ID</Typography>,
         accessor: "rowId",
         minWidth: 150
-    });
+    }];
 
     // Add tableHeaders with typography and minWidth
     for (const h of tableHeaders) {
@@ -521,7 +546,7 @@ export const genericTableParser = (reportArray) => {
             // React-table
 
             let initialDataObject = {
-                "_id": String(cell.rowId)
+                "_id": String(cell.rowId),
             };
 
             // Add all cell values to row data object. They will then be
@@ -531,6 +556,8 @@ export const genericTableParser = (reportArray) => {
             for (const key of Object.keys(cell)){
                 if (key === "rowId"){
                     initialDataObject[key] = <Typography className={styles.tableCell}>{cell[key]}</Typography>
+                } else if (key === "highlight"){
+                    initialDataObject[key] = cell.highlight ? <ColorPaper idx={cell.highlight.idx} color={cell.highlight.color}/> : null
                 } else {
                     initialDataObject[key] = cell[key];
                 }

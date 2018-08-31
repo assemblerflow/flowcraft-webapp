@@ -250,6 +250,23 @@ export const getMetadataMapping = (reportInfo, selectedSamples) => {
 
 };
 
+/*
+Provided with the highlights array, a sample and a project, this function will
+return a highlight object, if a sample or project are in the highlights array
+ */
+export const getHighlight = (highlights, sample, project) => {
+
+    let highlight;
+
+    if (highlights.samples.some((v) => {return v.label === sample})){
+        highlight = highlights.samples.filter((v) => {return v.label === sample})
+    } else {
+        highlight = highlights.projects.filter((v) => {return v.label === project})
+    }
+
+    return highlight[0]
+};
+
 
 export const getSpeciesMapping = () => {
 
@@ -302,4 +319,12 @@ export const sortQcValues = (a, b) => {
 
 export const sortNumber = (a, b) => {
     return a - b
+};
+
+export const sortColor = (a, b) => {
+
+    let aValue = a ? a.props.idx : -1;
+    let bValue = b ? b.props.idx : -1;
+
+    return aValue - bValue
 };

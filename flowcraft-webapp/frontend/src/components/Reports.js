@@ -430,6 +430,11 @@ class ReportsApp extends React.Component {
     };
 
     updateHighlights = (highlights) => {
+
+        if (JSON.stringify(this.state.highlights) === JSON.stringify(highlights)){
+            return
+        }
+
         this.setState({
             highlights,
             filterAndHighlighting: true
@@ -514,6 +519,9 @@ class ReportsApp extends React.Component {
                 filterAndHighlighting: false
             }
         }
+
+        console.log(update)
+
         return null;
 
     }
@@ -532,31 +540,19 @@ class ReportsApp extends React.Component {
 
     }
 
-    /*shouldComponentUpdate(nextProps, nextState) {
-
-        console.log(nextProps.filters, nextState.filters, this.state.filters);
-        if (nextProps.reportData !== this.props.reportData) {
-            return true
-        } else if (nextState.filters === this.state.filters) {
-            return true
-        } else {
-            return false
-        }
-
-    }*/
-
     render() {
 
         const activeReports = this.filterReportArray(this.props.reportData, this.state.filters);
         const nfMetadata = findNfMetadata(this.props.reportData);
 
         // const activeReports = this.props.reportData;
-        const {tableData, tableSamples} = findTableSignatures(activeReports);
+        const {tableData, tableSamples} = findTableSignatures(activeReports, this.state.highlights);
         const {charts, chartSamples} = findChartSignatures(activeReports);
         const qcInfo = findQcWarnings(activeReports);
         const tables = [...tableData.keys()];
 
-        console.log(tableData);
+        console.log(this.props.reportData)
+        console.log(this.state.highlights)
 
         //
         // This is the main element where the Reports components will be added,
@@ -589,7 +585,9 @@ class ReportsApp extends React.Component {
                                 chartSamples={chartSamples}
                                 charts={charts}
                                 filters={this.state.filters}
+                                highlights={this.state.highlights}
                                 updateFilters={this.updateFilters}
+                                updateHighlights={this.updateHighlights}
                                 qcInfo={qcInfo}/>
                         </Element>
                         {
@@ -662,7 +660,9 @@ class ReportsApp extends React.Component {
                             charts.includes("base_n_content") &&
                             <Element name={"base_n_contentChart"}
                                      className={styles.scrollElement}>
-                                <FastQcCharts rawReports={activeReports}/>
+                                <FastQcCharts
+                                    highlights={this.state.highlights}
+                                    rawReports={activeReports}/>
                             </Element>
                         }
                         {
@@ -670,6 +670,7 @@ class ReportsApp extends React.Component {
                             <Element name={"size_distChart"}
                                      className={styles.scrollElement}>
                                 <AssemblySizeDistChart
+                                    highlights={this.state.highlights}
                                     rawReports={activeReports}/>
                             </Element>
                         }

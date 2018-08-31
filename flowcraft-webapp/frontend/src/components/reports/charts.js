@@ -20,6 +20,7 @@ Boost(ReactHighcharts.Highcharts);
 
 import {Chart, PreviewSnack} from "./chart_utils";
 import {LoadingComponent} from "../ReportsBase";
+import {getHighlight} from "./utils";
 
 import {ReportAppConsumer} from "./contexts";
 
@@ -30,8 +31,6 @@ export class FastQcCharts extends React.Component {
     constructor(props) {
         super(props);
 
-        const limit = 200;
-
         this.state = {
             chartData: props.rawReports,
             tabValue: 0,
@@ -41,14 +40,14 @@ export class FastQcCharts extends React.Component {
         this.updateChartLimit = this.updateChartLimit.bind(this);
     }
 
-    static getDerivedStateFromProps(props, state){
-
-        if (props.rawReports === state.chartData ){
-            return null
-        } else {
-            return {chartData: props.rawReports}
-        }
-    }
+    // static getDerivedStateFromProps(props, state){
+    //
+    //     if (props.rawReports === state.chartData ){
+    //         return null
+    //     } else {
+    //         return {chartData: props.rawReports}
+    //     }
+    // }
 
     updateChartLimit = (newLimit) => {
         this.setState({limit: newLimit})
@@ -97,16 +96,28 @@ export class FastQcCharts extends React.Component {
                                 return parseFloat(v)
                             });
 
+                            // Check if sample or project is in highlights
+                            const highlight = getHighlight(this.props.highlights, el.sample, r.projectid);
+                            // let highlight;
+                            // if (this.props.highlights.samples.some((v) => {return v.label === el.sample})){
+                            //     highlight = this.props.highlights.samples.filter((v) => {return v.label === el.sample})[0]
+                            // } else {
+                            //     highlight = this.props.highlights.projects.filter((v) => {return v.label === el.sample})[0]
+                            // }
+
                             qcCharts[plot].push({
                                 name: el.sample,
                                 data: parsedData,
-                                color: "#626262"
+                                color: highlight ? highlight.color : "#626262",
+                                zIndex: highlight ? 10 + highlight.idx : 1
                             })
                         }
                     }
                 }
             }
         }
+
+        console.log(qcCharts)
 
         return {
             qcCharts,
@@ -194,14 +205,6 @@ export class FastQcCharts extends React.Component {
 
 class FastqcBaseSequenceQuality extends React.Component {
 
-    shouldComponentUpdate(nextProps, nextState){
-
-        if (nextProps.plotData === this.props.plotData){
-            return false
-        } else {
-            return true
-        }
-    }
 
     render (){
         console.log("render base qual")
@@ -230,11 +233,6 @@ class FastqcBaseSequenceQuality extends React.Component {
             }]
         });
         config.extend("chart", {height: "550px"});
-        config.extend("plotOptions", {
-            "series": {
-                boostThreshold: 1
-            }
-        });
 
         return (
             <LoadingComponent>
@@ -448,6 +446,8 @@ export class AssemblySizeDistChart extends React.Component {
         let colorIndexMap = new Map();
         let colorIndex = 0;
 
+        let highlightsExist = (this.props.highlights.samples.length > 0 || this.props.highlights.projects.length > 0);
+
         for (const r of reportData){
             if(r.hasOwnProperty("reportJson")) {
                 if (!r.reportJson.hasOwnProperty("plotData")) {
@@ -487,6 +487,7 @@ export class AssemblySizeDistChart extends React.Component {
                                 id: r.processName,
                                 name: el.sample,
                                 data,
+                                project: r.projectid
 
                             });
                         }
@@ -494,6 +495,8 @@ export class AssemblySizeDistChart extends React.Component {
                 }
             }
         }
+
+        console.log(highlightsExist)
 
         for (const data of chartDataByProcess.values()){
 
@@ -508,12 +511,15 @@ export class AssemblySizeDistChart extends React.Component {
                     }
                 }
 
+                const highlight = getHighlight(this.props.highlights, point.name, point.project);
+
                 chartData.push({
                     linkedTo: point.linkedTo,
                     id: point.id,
                     name: point.name,
                     index: sampleCounter,
-                    colorIndex: colorIndexMap.get(point.id).colorIndex,
+                    colorIndex: !highlightsExist ? colorIndexMap.get(point.id).colorIndex : null,
+                    color: highlight ? highlight.color : highlightsExist ? "gray" : null,
                     data: this.spreadData(point.data, sampleCounter),
                     marker: {
                         symbol: "circle",
@@ -543,6 +549,7 @@ export class AssemblySizeDistChart extends React.Component {
         const previewThreshold = 200;
 
         const data = this.parsePlotData(this.props.rawReports, this.state.limit);
+        console.log(data)
 
         return (
             <div>

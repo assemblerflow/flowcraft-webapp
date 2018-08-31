@@ -246,6 +246,14 @@ export class FCTable extends React.Component {
 
         const hideSelectionToolbar = this.props.hideSelectionToolbar ? this.props.hideSelectionToolbar : false;
 
+        let defaultSort = [];
+        if (this.props.data.some((v) => {return v.highlight})){
+            defaultSort = [{
+                id: "highlight",
+                desc: true
+            }]
+        }
+
         return (
             <div>
                 <ReportAppConsumer>
@@ -290,6 +298,7 @@ export class FCTable extends React.Component {
                                     columns={this.props.columns}
                                     defaultPageSize={10}
                                     className={"-striped -highlight"}
+                                    defaultSorted={defaultSort}
                                     {...checkboxProps}
                                 />
                             </LoadingComponent>

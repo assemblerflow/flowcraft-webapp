@@ -13,11 +13,14 @@ import Tooltip from "@material-ui/core/Tooltip";
 import Popover from "@material-ui/core/Popover";
 import Divider from "@material-ui/core/Divider"
 import Button from "@material-ui/core/Button";
+import Paper from "@material-ui/core/Paper";
 import Grid from "@material-ui/core/Grid";
 
 import indigo from "@material-ui/core/colors/indigo";
 import {FCTable, TableButton} from "./tables";
 import matchSorter from "match-sorter";
+
+import BlockPicker from "react-color/lib/components/block/Block"
 
 import MarkerIcon from "mdi-react/MarkerIcon";
 import CloseIcon from "mdi-react/CloseIcon";
@@ -29,7 +32,7 @@ import MagnifyIcon from "mdi-react/MagnifyIcon";
 import {themes} from "./themes";
 import {theme} from "../../../config"
 
-import {sortByContent} from "./utils";
+import {sortByContent,sortColor} from "./utils";
 import {SampleDialog} from "../ReportsSample";
 
 
@@ -127,9 +130,19 @@ export class ReportOverview extends React.Component{
         let rawSamples = [];
         let samples = [];
         let columns = [{
-            Header: "",
+            Header: <FilterIcon/>,
             accessor: "visibility",
             sortMethod: sortByContent,
+            minWidth: 40,
+            width: 40,
+            style: {
+                margin: "auto",
+                textAlign: "center"
+            }
+        }, {
+            Header: <MarkerIcon/>,
+            accessor: "highlight",
+            sortMethod: sortColor,
             minWidth: 40,
             width: 40,
             style: {
@@ -165,10 +178,14 @@ export class ReportOverview extends React.Component{
         for (const sample of sampleList){
 
             sampleQcInfo = this._getSampleQcInfo(sample, qcInfo);
+            const sampleHighlight = this.props.highlights.samples.filter((v) => {
+                return v.label === sample
+            });
 
             rawSamples.push(sample);
             samples.push({
                 "visibility": this.props.filters.samples.includes(sample) ? <EyeOffIcon/> : <EyeIcon/>,
+                "highlight": sampleHighlight.length > 0 ? <ColorPaper idx={sampleHighlight[0].idx} color={sampleHighlight[0].color}/> : null,
                 "_id": sample,
                 "rowId": <Typography>{sample}</Typography>,
                 "warnings": <OverviewQcPopover content={sampleQcInfo.warnings}/>,
@@ -208,10 +225,14 @@ export class ReportOverview extends React.Component{
                 if (!_projects.has(el.projectid)){
 
                     projectQcInfo = this._getQcInfo("project", el.projectid, qcInfo);
+                    const projectHighlight = this.props.highlights.projects.filter((v) => {
+                        return v.label === el.projectid
+                    });
 
                     rawProjects.push(el.projectid);
                     _projects.set(el.projectid, {
                         "visibility": this.props.filters.projects.includes(el.projectid) ? <EyeOffIcon/> : <EyeIcon/>,
+                        "highlight": projectHighlight.length > 0 ? <ColorPaper color={projectHighlight[0].color}/> : null,
                         "_id": el.projectid,
                         "project": <Typography>{el.projectid}</Typography>,
                         "warnings": <OverviewQcPopover content={projectQcInfo.warnings}/>,
@@ -244,9 +265,19 @@ export class ReportOverview extends React.Component{
         };
 
         const projectColumns = [{
-            Header: "",
+            Header: <FilterIcon/>,
             accessor: "visibility",
             sortMethod: sortByContent,
+            minWidth: 40,
+            width: 40,
+            style: {
+                margin: "auto",
+                textAlign: "center"
+            }
+        }, {
+            Header: <MarkerIcon/>,
+            accessor: "highlight",
+            sortMethod: sortColor,
             minWidth: 40,
             width: 40,
             style: {
@@ -270,7 +301,7 @@ export class ReportOverview extends React.Component{
             sortMethod: sortByContent
         }];
         const componentColumns = [{
-            Header: "",
+            Header: <FilterIcon/>,
             accessor: "visibility",
             sortMethod: sortByContent,
             minWidth: 40,
@@ -324,6 +355,9 @@ export class ReportOverview extends React.Component{
         });
     };
 
+    /*
+    Clears all selected rows in a table
+     */
     clearIndividualSelection = (tableKey) => {
 
         let newSelection = {};
@@ -340,20 +374,12 @@ export class ReportOverview extends React.Component{
 
     };
 
-    /*
-    Updates the report filters with the provided selection
-     */
-    filterSelection = (samples, projects, components) => {
+    _updateSelectionArray = (arrayMap) => {
 
-        const arrayMap = {
-            "samples": samples,
-            "projects": projects,
-            "components": components,
-        };
         let activeArray;
         let activeSelection;
         let filterArray;
-        let newFilters = {};
+        let newSelection = {};
 
         for (const key of Object.keys(arrayMap)){
             filterArray = [];
@@ -366,10 +392,63 @@ export class ReportOverview extends React.Component{
                 }
             }
 
-            newFilters[key] = filterArray;
+            newSelection[key] = filterArray;
         }
 
-        this.props.updateFilters(newFilters);
+        return newSelection;
+
+    };
+
+    /*
+    Updates the report filters with the provided selection
+     */
+    filterSelection = (samples, projects, components) => {
+
+        const arrayMap = {
+            "samples": samples,
+            "projects": projects,
+            "components": components,
+        };
+
+        this.props.updateFilters(this._updateSelectionArray(arrayMap));
+    };
+
+    /*
+    Updates the report highlights with the provided selection
+     */
+    highlightSelection = (color) => {
+
+        let newHighlights = {
+            "samples": [],
+            "projects": []
+        };
+
+        for (const key of Object.keys(this.props.highlights)){
+
+            const keySelection = this.state.selected[key].keys;
+            let addedElements = [];
+
+
+            for (const el of keySelection){
+                newHighlights[key].push({
+                    label: el,
+                    color: color,
+                    idx: this.props.highlights[key].length + 1
+                });
+                addedElements.push(el)
+            }
+
+
+            for (const el of this.props.highlights[key]) {
+                if (!addedElements.includes(el.label)) {
+                    newHighlights[key].push(el)
+                }
+            }
+        }
+
+        console.log(newHighlights)
+
+        this.props.updateHighlights(newHighlights)
     };
 
     clearIndividualFilter = (tableKey) => {
@@ -385,6 +464,22 @@ export class ReportOverview extends React.Component{
         }
 
         this.props.updateFilters(newFilters);
+
+    };
+
+    clearIndividualHighlight = (tableKey) => {
+
+        let newHighlight = {};
+
+        for (const key of Object.keys(this.props.highlights)){
+            if (key === tableKey){
+                newHighlight[key] = [];
+            } else {
+                newHighlight[key] = this.props.highlights[key]
+            }
+        }
+
+        this.props.updateHighlights(newHighlight);
 
     };
 
@@ -435,7 +530,9 @@ export class ReportOverview extends React.Component{
                                           header={"Samples"}
                                           active={this.state.activeTable === "samples" && this.state.showTable}
                                           clearIndividualFilter={this.clearIndividualFilter}
+                                          clearIndividualHighlight={this.clearIndividualHighlight}
                                           value={samples.data.length}
+                                          highlights={this.props.highlights.samples.length}
                                           filtered={this.props.filters.samples.length}/>
                             <Collapse in={this.state.showTable}>
                                 <SelectedFootnote filtered={this.props.filters.samples.length}
@@ -450,6 +547,8 @@ export class ReportOverview extends React.Component{
                                           value={projects.data.length}
                                           active={this.state.activeTable === "projects" && this.state.showTable}
                                           clearIndividualFilter={this.clearIndividualFilter}
+                                          clearIndividualHighlight={this.clearIndividualHighlight}
+                                          highlights={this.props.highlights.projects.length}
                                           filtered={this.props.filters.projects.length}/>
                             <Collapse in={this.state.showTable}>
                                 <SelectedFootnote filtered={this.props.filters.projects.length}
@@ -482,6 +581,7 @@ export class ReportOverview extends React.Component{
                                 this.state.activeTable &&
                                 <OverviewTable closeTable={this.closeTable}
                                                data={tableData}
+                                               highlightSelection={(color) => {this.highlightSelection(color)}}
                                                filterSelection={() => {this.filterSelection(samples.rawSamples, projects.rawProjects, components.rawComponents)}}
                                                selection={this.state.selected[this.state.activeTable]}
                                                setSelection={this.setSelection}/>
@@ -557,18 +657,22 @@ class OverviewCard extends React.Component{
                                     </Tooltip>
                             }
                         </div>
-                        <div style={style.filterChild}>
-                            <Tooltip title={"Highlighted elements"} placement={"top"}>
-                                <MarkerIcon size={17} style={style.filterIcon}/>
-                            </Tooltip>
-                            <Typography style={style.filterText}>{this.props.filtered}</Typography>
-                            {
-                                this.props.filtered > 0 &&
-                                <Tooltip title={"Clear highlights"} placement={"bottom"}>
-                                    <CloseIcon size={19} style={style.clearIcon}/>
+                        {
+                            this.props.highlights !== null &&
+                            <div style={style.filterChild}>
+                                <Tooltip title={"Highlighted elements"} placement={"top"}>
+                                    <MarkerIcon size={17} style={style.filterIcon}/>
                                 </Tooltip>
-                            }
-                        </div>
+                                <Typography style={style.filterText}>{this.props.highlights}</Typography>
+                                {
+                                    this.props.highlights > 0 &&
+                                    <Tooltip title={"Clear highlights"} placement={"bottom"}>
+                                        <CloseIcon onClick={() => {this.props.clearIndividualHighlight(this.props.header.toLowerCase())}} size={19} style={style.clearIcon}/>
+                                    </Tooltip>
+                                }
+                            </div>
+                        }
+
                     </div>
                 <Button onClick={this.props.action} style={style.value}>{this.props.value}</Button>
             </div>
@@ -649,6 +753,7 @@ class OverviewTable extends React.Component{
                         <TableButton onClick={this.props.filterSelection} tooltip={"Filter and keep only selection"}>
                             <FilterIcon color={"#fff"}/>
                         </TableButton>
+                        <HighlightSelectionPopup action={this.props.highlightSelection}/>
                     </FCTable>
                 </div>
             </div>
@@ -781,6 +886,97 @@ class SampleOptions extends React.Component {
                     button={button}
                     sample={this.props.sample}/>
             </div>
+        )
+    }
+}
+
+
+class HighlightSelectionPopup extends React.Component{
+
+
+    state = {
+        anchorEl: null,
+        color: "#FF6900",
+    };
+
+    handleClick = event => {
+        this.setState({
+            anchorEl: event.currentTarget,
+        });
+    };
+
+    handleClose = () => {
+        this.setState({
+            anchorEl: null,
+        });
+    };
+
+    handleColorChange = (color) => {
+        this.setState({color: color.hex})
+    };
+
+    render(){
+
+        const style = {
+            root: {
+                padding: "10px"
+            },
+            button: {
+                marginTop: "20px",
+                textAlign: "center",
+                marginBottom: "10px"
+            }
+        };
+
+        const {anchorEl} = this.state;
+
+        return(
+            <span>
+                <TableButton onClick={this.handleClick} tooltip={"Highlight current selection"}>
+                    <MarkerIcon color={"#fff"}/>
+                </TableButton>
+                <Popover
+                    open={Boolean(anchorEl)}
+                    anchorEl={anchorEl}
+                    onClose={this.handleClose}
+                    anchorOrigin={{
+                        vertical: "center",
+                        horizontal: "right",
+                    }}
+                    transformOrigin={{
+                        vertical: "center",
+                        horizontal: "left",
+                    }}>
+                    <div style={style.root}>
+                        <BlockPicker
+                            color={this.state.color}
+                            colors={['#FF6900', '#FCB900', '#7BDCB5', '#00D084', '#8ED1FC', '#0693E3', '#ABB8C3', '#EB144C', '#F78DA7', '#9900EF']}
+                            onChangeComplete={this.handleColorChange}
+                            triangle={"hide"}/>
+                        <div style={style.button}>
+                            <Button onClick={() => {this.props.action(this.state.color)}} color={"primary"} variant={"contained"} >Highlight</Button>
+                        </div>
+                    </div>
+                </Popover>
+            </span>
+        )
+    }
+}
+
+
+export class ColorPaper extends React.Component{
+    render(){
+
+        const style = {
+            root: {
+                backgroundColor: this.props.color,
+                width: "28px",
+                height: "28px"
+            }
+        };
+
+        return(
+            <Paper style={style.root}> </Paper>
         )
     }
 }

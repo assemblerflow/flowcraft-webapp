@@ -41,6 +41,7 @@
     "mdi-react": "^3.4.0",
     "moment": "^2.22.1",
     "prismjs": "^1.14.0",
+    "react-color": "^2.14.1",
     "react-csv": "^1.0.14",
     "react-file-drop": "^0.2.6",
     "react-highcharts": "^16.0.2",
