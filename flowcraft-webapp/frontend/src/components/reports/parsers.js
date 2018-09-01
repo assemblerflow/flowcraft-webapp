@@ -406,9 +406,6 @@ export const getTableHeaders = (dataArray) => {
         }
     }
 
-    console.log(speciesMap)
-    console.log(duplicateAccessors)
-
     // Sort the column tableHeaders according to the processId
     const sortedColumns = [...columnsMap.entries()].sort((a, b) => {
         return a[1].num - b[1].num

@@ -68,8 +68,6 @@ export class PositionedSnackbar extends React.Component {
 
     render() {
 
-        console.log(this.state)
-
         // Different icons and colours are used depending on the selected
         // snackbar message type
         const variantIcon = {

@@ -945,8 +945,6 @@ export class ChewbbacaTable extends React.Component {
         const dataToUse = this.state.visibleData === null ?
             this.props.tableData : this.state.visibleData;
 
-        console.log(dataToUse);
-
         const tableData = genericTableParser(dataToUse);
         this.chewbbacaParser(tableData, this.props.reportData);
 

@@ -485,8 +485,6 @@ class ReportsApp extends React.Component {
             }
         }
 
-        console.log(update)
-
         return null;
 
     }

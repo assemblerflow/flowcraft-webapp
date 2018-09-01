@@ -117,8 +117,6 @@ export class FastQcCharts extends React.Component {
             }
         }
 
-        console.log(qcCharts)
-
         return {
             qcCharts,
             preview
@@ -496,8 +494,6 @@ export class AssemblySizeDistChart extends React.Component {
             }
         }
 
-        console.log(highlightsExist)
-
         for (const data of chartDataByProcess.values()){
 
             for (const point of data){
@@ -549,7 +545,6 @@ export class AssemblySizeDistChart extends React.Component {
         const previewThreshold = 200;
 
         const data = this.parsePlotData(this.props.rawReports, this.state.limit);
-        console.log(data)
 
         return (
             <div>
