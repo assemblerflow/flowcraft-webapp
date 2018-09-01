@@ -157,8 +157,11 @@ export class FCTable extends React.Component {
                 }
             }
         } else {
-            // Add the hidden column from the props.columns
-            newColumns = this.state.columns.concat(this.props.columns.filter((v) => {return v.accessor === colAcessor}))
+            for (const col of this.props.columns){
+                if (this.state.columns.some((v) => {return v.accessor === col.accessor}) || col.accessor === colAcessor){
+                    newColumns.push(col)
+                }
+            }
         }
 
         this.setState({columns: newColumns})
