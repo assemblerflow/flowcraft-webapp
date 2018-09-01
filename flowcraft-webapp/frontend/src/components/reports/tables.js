@@ -202,42 +202,6 @@ export class FCTable extends React.Component {
         this.setState({selection});
     };
 
-    componentDidUpdate = () => {
-
-        if (this.props.initialSelection && JSON.stringify(this.state.selection.keys) !== JSON.stringify(this.props.initialSelection.keys)) {
-            let selection = this.props.initialSelection;
-
-            if (Object.keys(this.props.initialSelection).length === 0 || this.props.initialSelection.keys !== undefined && this.props.initialSelection.keys.length === 0) {
-                selection = {rows: [], keys: []};
-            }
-            else if (this.props.initialSelection.keys !== undefined) {
-
-                selection = {rows: [], keys: this.props.initialSelection.keys};
-
-                // get data from checkbox table
-                const wrappedInstance = this.checkboxTable.getWrappedInstance();
-                // get the records from the table
-                const currentRecords = wrappedInstance.getResolvedState().sortedData;
-
-                // Pass the table records wto the selection rows if their
-                // keys are present in the initialSelection object
-                for (const key of this.props.initialSelection.keys) {
-                    currentRecords.forEach(item => {
-                        if (item._original._id === key) {
-                            selection.rows.push(item._original)
-                        }
-                    });
-                }
-
-            }
-            if (selection.rows !== undefined) {
-                this.setState({selection: selection});
-            }
-
-        }
-
-    };
-
     toggleAll = () => {
         const selectAll = !this.state.selectAll;
         const rows = [];
@@ -279,6 +243,48 @@ export class FCTable extends React.Component {
             return true;
         else
             return false;
+    };
+
+    componentDidUpdate = (nextProps, nextState) => {
+
+        // Update table columns when the props have been updated. This means
+        // that the original columns have changed.
+        if (this.props.columns !== nextProps.columns){
+            this.setState({columns: this.props.columns})
+        }
+
+        if (this.props.initialSelection && JSON.stringify(this.state.selection.keys) !== JSON.stringify(this.props.initialSelection.keys)) {
+            let selection = this.props.initialSelection;
+
+            if (Object.keys(this.props.initialSelection).length === 0 || this.props.initialSelection.keys !== undefined && this.props.initialSelection.keys.length === 0) {
+                selection = {rows: [], keys: []};
+            }
+            else if (this.props.initialSelection.keys !== undefined) {
+
+                selection = {rows: [], keys: this.props.initialSelection.keys};
+
+                // get data from checkbox table
+                const wrappedInstance = this.checkboxTable.getWrappedInstance();
+                // get the records from the table
+                const currentRecords = wrappedInstance.getResolvedState().sortedData;
+
+                // Pass the table records wto the selection rows if their
+                // keys are present in the initialSelection object
+                for (const key of this.props.initialSelection.keys) {
+                    currentRecords.forEach(item => {
+                        if (item._original._id === key) {
+                            selection.rows.push(item._original)
+                        }
+                    });
+                }
+
+            }
+            if (selection.rows !== undefined) {
+                this.setState({selection: selection});
+            }
+
+        }
+
     };
 
     render() {

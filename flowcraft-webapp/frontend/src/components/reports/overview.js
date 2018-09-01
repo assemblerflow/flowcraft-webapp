@@ -711,7 +711,6 @@ class OverviewTable extends React.Component{
                 paddingBottom: "20px"
             }
         };
-
         return(
             <div>
                 <div style={style.btnContainer}>
