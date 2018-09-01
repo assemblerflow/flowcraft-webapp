@@ -52,9 +52,9 @@ import {SampleDialog} from "../ReportsSample";
 
 
 const statusColor = {
-    "fail": red[300],
-    "pass": green[300],
-    "warning": yellow[300]
+    "fail": themes[theme].palette.error.main,
+    "pass":  themes[theme].palette.success.main,
+    "warning":  themes[theme].palette.warning.main
 };
 
 /**
@@ -765,7 +765,7 @@ export class ChewbbacaTable extends React.Component {
         const currentSpecie = {
             value: tabValue,
             label: specie
-        }
+        };
 
         this.setState({
             tabValue,
@@ -955,14 +955,31 @@ export class CellBar extends React.Component {
  */
 export class TableLabel extends React.Component {
     render() {
+
+        const style = {
+            centralCell: {
+                height: "100%",
+                alignItems: "center",
+                justifyContent: "center",
+                display: "flex",
+            },
+            cellLabel: {
+                paddingLeft: "10px",
+                paddingRight: "10px",
+                backgroundColor: this.props.color
+            },
+            cellLabelText: {
+                color: "#fff",
+                fontWeight: "bold"
+            }
+        };
+
         return (
-            <div className={styles.centralCell}>
+            <div style={style.centralCell}>
                 <Tooltip id="tooltip-icon" title={this.props.tooltip}
                          placement="right">
-                    <Paper className={styles.cellLabel}
-                           style={{backgroundColor: this.props.color}}>
-                        <Typography
-                            className={styles.cellLabelText}>{this.props.content}</Typography>
+                    <Paper style={style.cellLabel}>
+                        <Typography style={style.cellLabelText}>{this.props.content}</Typography>
                     </Paper>
                 </Tooltip>
             </div>
