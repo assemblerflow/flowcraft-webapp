@@ -715,14 +715,18 @@ class DataLossOverview extends React.Component{
 
         return(
             <LoadingComponent>
-                <Typography style={style.header}>Data loss chart</Typography>
-                {
-                    chartData.type === "sparkline" ?
-                        <SparkLine data={chartData.data}
-                                   sample={chartData.sample}
-                                   categories={chartData.categories}/> :
-                        <MultiSparkline chartData={chartData.chartData}/>
-                }
+
+                            <Typography style={style.header}>Data loss chart</Typography>
+                            {
+                                chartData.type === "sparkline" &&
+                                    <SparkLine data={chartData.data}
+                                               sample={chartData.sample}
+                                               categories={chartData.categories}/>
+                            }
+                            {
+                                (chartData.chartData !== undefined && chartData.chartData.length > 0) &&
+                                    <MultiSparkline chartData={chartData.chartData}/>
+                            }
             </LoadingComponent>
         )
     }
@@ -995,25 +999,30 @@ class ContigSizeDistribution extends React.Component{
         const currentPlotData = this.state.plotData.get(this.state.selectedProcess);
 
         return(
-            <ExpansionPanel defaultExpanded>
-                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
-                    <Typography variant={"headline"}>Contig size distribution</Typography>
-                </ExpansionPanelSummary>
-                <ExpansionPanelDetails>
-                    <div style={{flexGrow: 1}}>
-                        {
-                            this.state.processes.length > 1 &&
-                            <ProcessMenu
-                                selectedProcess={this.state.selectedProcess}
-                                handleProcessChange={this.handleProcessChange}
-                                processes={this.state.processes}/>
-                        }
-                        <LoadingComponent>
-                            <ContigSizeDistributionChart plotData={currentPlotData}/>
-                        </LoadingComponent>
-                    </div>
-                </ExpansionPanelDetails>
-            </ExpansionPanel>
+            <div>
+                {
+                   currentPlotData !== undefined &&
+                       <ExpansionPanel defaultExpanded>
+                            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
+                                <Typography variant={"headline"}>Contig size distribution</Typography>
+                            </ExpansionPanelSummary>
+                            <ExpansionPanelDetails>
+                                <div style={{flexGrow: 1}}>
+                                    {
+                                        this.state.processes.length > 1 &&
+                                        <ProcessMenu
+                                            selectedProcess={this.state.selectedProcess}
+                                            handleProcessChange={this.handleProcessChange}
+                                            processes={this.state.processes}/>
+                                    }
+                                    <LoadingComponent>
+                                        <ContigSizeDistributionChart plotData={currentPlotData}/>
+                                    </LoadingComponent>
+                                </div>
+                            </ExpansionPanelDetails>
+                        </ExpansionPanel>
+                }
+            </div>
         )
     }
 }
@@ -1230,25 +1239,30 @@ class SyncChartsContainer extends React.Component{
         const currentPlotData = this.state.plotData.get(this.state.selectedProcess);
 
         return(
-            <ExpansionPanel defaultExpanded>
-                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
-                    <Typography variant={"headline"}>Genome sliding window</Typography>
-                </ExpansionPanelSummary>
-                <ExpansionPanelDetails>
-                    <div style={{flexGrow: 1}}>
-                        {
-                            this.state.processes.length > 1 &&
-                            <ProcessMenu
-                                selectedProcess={this.state.selectedProcess}
-                                handleProcessChange={this.handleProcessChange}
-                                processes={this.state.processes}/>
-                        }
-                        <LoadingComponent>
-                            <SyncCharts plotData={currentPlotData}/>
-                        </LoadingComponent>
-                    </div>
-                </ExpansionPanelDetails>
-            </ExpansionPanel>
+            <div>
+                {
+                    currentPlotData !== undefined &&
+                        <ExpansionPanel defaultExpanded>
+                            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
+                                <Typography variant={"headline"}>Genome sliding window</Typography>
+                            </ExpansionPanelSummary>
+                            <ExpansionPanelDetails>
+                                <div style={{flexGrow: 1}}>
+                                    {
+                                        this.state.processes.length > 1 &&
+                                        <ProcessMenu
+                                            selectedProcess={this.state.selectedProcess}
+                                            handleProcessChange={this.handleProcessChange}
+                                            processes={this.state.processes}/>
+                                    }
+                                    <LoadingComponent>
+                                        <SyncCharts plotData={currentPlotData}/>
+                                    </LoadingComponent>
+                                </div>
+                            </ExpansionPanelDetails>
+                        </ExpansionPanel>
+                }
+            </div>
         )
     }
 }
