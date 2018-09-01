@@ -122,15 +122,21 @@ export class ReportOverview extends React.Component{
      */
     getSamplesOverview = (sampleList, qcInfo) => {
 
-        const headerStyle = {
-            fontSize: "15px",
-            fontWeight: "bold"
+        const style = {
+            headerStyle: {
+                fontSize: "15px",
+                fontWeight: "bold"
+            },
+            headerContainer: {
+                margin: "auto"
+            }
         };
 
         let rawSamples = [];
         let samples = [];
         let columns = [{
             Header: <FilterIcon/>,
+            headerStyle: style.headerContainer,
             accessor: "visibility",
             sortMethod: sortByContent,
             minWidth: 40,
@@ -141,6 +147,7 @@ export class ReportOverview extends React.Component{
             }
         }, {
             Header: <MarkerIcon/>,
+            headerStyle: style.headerContainer,
             accessor: "highlight",
             sortMethod: sortColor,
             minWidth: 40,
@@ -150,7 +157,8 @@ export class ReportOverview extends React.Component{
                 textAlign: "center"
             }
         }, {
-            Header: <Typography style={headerStyle}>Sample</Typography>,
+            Header: <Typography style={style.headerStyle}>Sample</Typography>,
+            headerStyle: style.headerContainer,
             accessor: "rowId",
             filterable: true,
             filterMethod: (filter, rows) =>
@@ -161,15 +169,18 @@ export class ReportOverview extends React.Component{
                 textAlign: "left"
             }
         }, {
-            Header: <Typography style={headerStyle}>Warnings</Typography>,
+            Header: <Typography style={style.headerStyle}>Warnings</Typography>,
+            headerStyle: style.headerContainer,
             accessor: "warnings",
             sortMethod: sortByContent
         }, {
-            Header: <Typography style={headerStyle}>Fails</Typography>,
+            Header: <Typography style={style.headerStyle}>Fails</Typography>,
+            headerStyle: style.headerContainer,
             accessor: "fail",
             sortMethod: sortByContent
         }, {
-            Header: <Typography style={headerStyle}>More options</Typography>,
+            Header: <Typography style={style.headerStyle}>More actions</Typography>,
+            headerStyle: style.headerContainer,
             accessor: "moreOptions",
             style: {textAlign: "center"}
         }];
@@ -259,13 +270,20 @@ export class ReportOverview extends React.Component{
             }
         }
 
-        const headerStyle = {
-            fontSize: "15px",
-            fontWeight: "bold"
+        const style = {
+            headerStyle: {
+                fontSize: "15px",
+                fontWeight: "bold"
+            },
+            headerContainer: {
+                margin: "auto"
+            }
         };
+
 
         const projectColumns = [{
             Header: <FilterIcon/>,
+            headerStyle: style.headerContainer,
             accessor: "visibility",
             sortMethod: sortByContent,
             minWidth: 40,
@@ -276,6 +294,7 @@ export class ReportOverview extends React.Component{
             }
         }, {
             Header: <MarkerIcon/>,
+            headerStyle: style.headerContainer,
             accessor: "highlight",
             sortMethod: sortColor,
             minWidth: 40,
@@ -285,23 +304,27 @@ export class ReportOverview extends React.Component{
                 textAlign: "center"
             }
         }, {
-            Header: <Typography style={headerStyle}>Project</Typography>,
+            Header: <Typography style={style.headerStyle}>Project</Typography>,
+            headerStyle: style.headerContainer,
             accessor: "project",
             style: {
                 margin: "auto",
                 textAlign: "left"
             }
         }, {
-            Header: <Typography style={headerStyle}>Warnings</Typography>,
+            Header: <Typography style={style.headerStyle}>Warnings</Typography>,
+            headerStyle: style.headerContainer,
             accessor: "warnings",
             sortMethod: sortByContent
         }, {
-            Header: <Typography style={headerStyle}>Fails</Typography>,
+            Header: <Typography style={style.headerStyle}>Fails</Typography>,
+            headerStyle: style.headerContainer,
             accessor: "fail",
             sortMethod: sortByContent
         }];
         const componentColumns = [{
             Header: <FilterIcon/>,
+            headerStyle: style.headerContainer,
             accessor: "visibility",
             sortMethod: sortByContent,
             minWidth: 40,
@@ -311,18 +334,21 @@ export class ReportOverview extends React.Component{
                 textAlign: "center"
             }
         }, {
-            Header: <Typography style={headerStyle}>Component</Typography>,
+            Header: <Typography style={style.headerStyle}>Component</Typography>,
+            headerStyle: style.headerContainer,
             accessor: "component",
             style: {
                 margin: "auto",
                 textAlign: "left"
             }
         }, {
-            Header: <Typography style={headerStyle}>Warnings</Typography>,
+            Header: <Typography style={style.headerStyle}>Warnings</Typography>,
+            headerStyle: style.headerContainer,
             accessor: "warnings",
             sortMethod: sortByContent
         }, {
-            Header: <Typography style={headerStyle}>Fails</Typography>,
+            Header: <Typography style={style.headerStyle}>Fails</Typography>,
+            headerStyle: style.headerContainer,
             accessor: "fail",
             sortMethod: sortByContent
         }];
