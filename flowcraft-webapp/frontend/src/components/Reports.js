@@ -23,11 +23,10 @@ import {
     TypingTable
 } from "./reports/tables";
 import {Innuendo} from "./reports/innuendo";
-import {ReportsSample} from "./ReportsSample";
 import {ReportsHeader} from "./reports/drawer";
 import {ReportOverview} from "./reports/overview";
+import {filterReportArray} from "./reports/filters_highlights";
 import {AssemblySizeDistChart, FastQcCharts} from "./reports/charts";
-import PositionedSnackbar from './reports/modals';
 import {
     ReportDataProvider,
     ReportAppProvider,
@@ -453,58 +452,6 @@ class ReportsApp extends React.Component {
         })
     };
 
-    filterReportArray = (reportArray, filters) => {
-
-        // Stores the JSON keys inside the reportJSON object that contain sample
-        // names. This method will check for the absence of sample names in the
-        // arrays corresponding to these keys and remove samples that are not
-        // selected
-        const sampleKeys = ["plotData", "tableRow", "warnings", "fails"];
-
-        let filteredReport = [];
-        let save = true;
-
-        for (const el of JSON.parse(JSON.stringify(reportArray))) {
-            // Skip entries not present in project selection
-            if (filters.projects.includes(el.projectid)) {
-                save = false
-            }
-
-            // Skip entries not present in component selection
-            if (filters.components.includes(el.processName)) {
-                save = false
-            }
-
-            if (!save) {
-                save = true;
-                continue
-            }
-
-            filteredReport.push(el);
-
-            // Filter samples from entries
-            if (el.hasOwnProperty("reportJson")) {
-                for (const key of sampleKeys) {
-                    let filteredSamples = [];
-                    if (el.reportJson.hasOwnProperty(key)) {
-                        for (const sample of el.reportJson[key]) {
-                            if (!filters.samples.includes(sample.sample)) {
-                                filteredSamples.push(sample);
-                            }
-                        }
-                    }
-                    el.reportJson[key] = filteredSamples;
-                }
-            }
-
-
-            save = true
-        }
-
-        return filteredReport
-
-    };
-
     static getDerivedStateFromProps(props, state) {
 
         let update = false;
@@ -554,7 +501,7 @@ class ReportsApp extends React.Component {
 
     render() {
 
-        const activeReports = this.filterReportArray(this.props.reportData, this.state.filters);
+        const activeReports = filterReportArray(this.props.reportData, this.state.filters);
         const nfMetadata = findNfMetadata(this.props.reportData);
 
         // const activeReports = this.props.reportData;
