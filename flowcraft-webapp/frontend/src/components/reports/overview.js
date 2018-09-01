@@ -33,6 +33,7 @@ import {themes} from "./themes";
 import {theme} from "../../../config"
 
 import {sortByContent,sortColor} from "./utils";
+import {updateSelectionArray} from "./filters_highlights";
 import {SampleDialog} from "../ReportsSample";
 
 
@@ -400,31 +401,6 @@ export class ReportOverview extends React.Component{
 
     };
 
-    _updateSelectionArray = (arrayMap) => {
-
-        let activeArray;
-        let activeSelection;
-        let filterArray;
-        let newSelection = {};
-
-        for (const key of Object.keys(arrayMap)){
-            filterArray = [];
-            activeArray = arrayMap[key].concat(this.props.filters[key]);
-            activeSelection = this.state.selected[key];
-
-            for (const el of activeArray){
-                if (activeSelection.keys.length > 0 && !activeSelection.keys.includes(el)){
-                    !filterArray.includes(el) && filterArray.push(el)
-                }
-            }
-
-            newSelection[key] = filterArray;
-        }
-
-        return newSelection;
-
-    };
-
     /*
     Updates the report filters with the provided selection
      */
@@ -436,7 +412,7 @@ export class ReportOverview extends React.Component{
             "components": components,
         };
 
-        this.props.updateFilters(this._updateSelectionArray(arrayMap));
+        this.props.updateFilters(updateSelectionArray(arrayMap, this.state.selected, this.props.filters));
     };
 
     /*
@@ -773,6 +749,7 @@ class OverviewTable extends React.Component{
                 </div>
                 <div style={style.tableContainer}>
                     <FCTable data={this.props.data.data}
+                             hideSelectionToolbar
                              columns={this.props.data.columns}
                              initialSelection={this.props.selection}
                              setSelection={this.props.setSelection}>

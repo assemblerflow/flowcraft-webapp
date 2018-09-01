@@ -49,6 +49,8 @@ import {
     getSpeciesMapping
 } from "./utils";
 import {SampleDialog} from "../ReportsSample";
+import {updateSelectionArray} from "./filters_highlights";
+import FilterIcon from "../../../../node_modules/mdi-react/FilterIcon";
 
 
 const statusColor = {
@@ -82,6 +84,28 @@ export class FCTable extends React.Component {
             selectAll: false
         }
     }
+
+
+    filterSelection = (filters, updateCallback) => {
+
+        const arrayMap = {
+            "samples": []
+        };
+        const selection = {
+            "samples": this.state.selection
+        };
+
+        const wrappedInstance = this.checkboxTable.getWrappedInstance();
+        // the 'sortedData' property contains the currently accessible records based on the filter and sort
+        const currentRecords = wrappedInstance.getResolvedState().sortedData;
+        // we just push all the IDs onto the selection array
+        currentRecords.forEach(item => {
+            arrayMap.samples.push(item._original._id);
+        });
+
+        updateCallback(updateSelectionArray(arrayMap, selection, filters))
+
+    };
 
 
     toggleSelection = (key, shift, row) => {
@@ -258,7 +282,7 @@ export class FCTable extends React.Component {
             <div>
                 <ReportAppConsumer>
                     {
-                        ({tableSamples}) => (
+                        ({tableSamples, filters, updateFilters}) => (
                             <LoadingComponent>
                                 <div style={style.toolbar}>
                                     {
@@ -289,6 +313,9 @@ export class FCTable extends React.Component {
                                                         tooltip={"Open sample specific report"}><Magnify
                                                         style={{fill: "#fff"}}/></TableButton>}/>
                                             }
+                                            <TableButton onClick={() => {this.filterSelection(filters, updateFilters)}} tooltip={"Filter and keep only selection"}>
+                                                <FilterIcon color={"#fff"}/>
+                                            </TableButton>
                                         </fieldset>
                                     }
                                 </div>

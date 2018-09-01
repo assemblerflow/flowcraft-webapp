@@ -85,6 +85,9 @@ export class SampleDialog extends React.Component{
             reportContainer: {
                 marginTop: "70px",
                 padding: "20px"
+            },
+            buttonContainer: {
+                display: "inline-block"
             }
         };
 
@@ -92,7 +95,7 @@ export class SampleDialog extends React.Component{
             <ReportAppConsumer>
                 {
                     ({charts, reportData}) => (
-                        <div>
+                        <div style={style.buttonContainer}>
                             <div onClick={this.handleClickOpen}>
                                 {this.props.button}
                             </div>

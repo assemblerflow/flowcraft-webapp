@@ -417,6 +417,12 @@ class ReportsApp extends React.Component {
 
     updateFilters = (filters) => {
 
+        for (const key of Object.keys(this.state.filters)){
+            if (!filters.hasOwnProperty(key)){
+                filters[key] = this.state.filters[key]
+            }
+        }
+
         if (JSON.stringify(this.state.filters) === JSON.stringify(filters)) {
             return
         }
