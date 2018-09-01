@@ -629,6 +629,14 @@ class ReportsApp extends React.Component {
                             </Element>
                         }
                         {
+                            tables.includes("abricate") &&
+                            <Element name={"abricateTable"}
+                                     className={styles.scrollElement}>
+                                <AbricateTable
+                                    tableData={tableData.get("abricate")}/>
+                            </Element>
+                        }
+                        {
                             tables.includes("chewbbaca") &&
                             <Element name={"chewbbacaTable"}
                                      className={styles.scrollElement}>
@@ -637,14 +645,6 @@ class ReportsApp extends React.Component {
                                     reportData={activeReports}
                                     additionalInfo={this.props.additionalInfo}
                                 />
-                            </Element>
-                        }
-                        {
-                            tables.includes("abricate") &&
-                            <Element name={"abricateTable"}
-                                     className={styles.scrollElement}>
-                                <AbricateTable
-                                    tableData={tableData.get("abricate")}/>
                             </Element>
                         }
                         {

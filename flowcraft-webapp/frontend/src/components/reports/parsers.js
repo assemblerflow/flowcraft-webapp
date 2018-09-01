@@ -1,6 +1,10 @@
 import _ from "lodash";
 import React from "react";
+
 import Typography from "@material-ui/core/Typography";
+import Tooltip from "@material-ui/core/Tooltip";
+
+import HeartPulseIcon from "mdi-react/HeartPulseIcon";
 
 import {CellBar} from "./tables";
 import {QcPopover} from "./tables";
@@ -500,6 +504,9 @@ export const genericTableParser = (reportArray) => {
     // Add ID to columns
     let columnsArray = [{
         Header: <MarkerIcon/>,
+        headerStyle: {
+            margin: "auto"
+        },
         accessor: "highlight",
         sortMethod: sortColor,
         minWidth: 40,
@@ -509,7 +516,10 @@ export const genericTableParser = (reportArray) => {
             textAlign: "center"
         }
     }, {
-        Header: <Typography>ID</Typography>,
+        Header: <Typography style={{fontWeight: "bold"}}>ID</Typography>,
+        headerStyle: {
+            margin: "auto",
+        },
         accessor: "rowId",
         minWidth: 150
     }];
@@ -612,11 +622,18 @@ export const qcParseAdditionalData = (tableData, originalData, qcInfo, signature
             marginBottom: "10px",
             marginTop: "5px",
         },
+        header: {
+            fontWeight: "bold"
+        },
+        headerContainer: {
+            margin: "auto"
+        }
     };
 
     // Add new column
     tableData.columnsArray.splice(1, 0, {
-        Header: <Typography>QC</Typography>,
+        Header: <Tooltip placement={"top"} title={"Quality control messages"}><HeartPulseIcon/></Tooltip>,
+        headerStyle: style.headerContainer,
         accessor: "qc",
         minWidth: 55,
         style: style.qcColumn,

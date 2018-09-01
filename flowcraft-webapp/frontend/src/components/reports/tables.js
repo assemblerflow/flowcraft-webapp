@@ -786,9 +786,19 @@ export class ChewbbacaTable extends React.Component {
 
     chewbbacaParser = (tableData, originalData) => {
 
+        const style = {
+            header: {
+                fontWeight: "bold"
+            },
+            headerContainer: {
+                margin: "auto"
+            }
+        };
+
         // Add status header to table columns
         tableData.columnsArray.splice(1, 0, {
-            Header: <Typography>Status</Typography>,
+            Header: <Typography style={style.header}>Status</Typography>,
+            headerStyle: style.headerContainer,
             accessor: "status",
             minWidth: 90
         });
