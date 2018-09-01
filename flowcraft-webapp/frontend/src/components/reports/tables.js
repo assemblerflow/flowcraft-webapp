@@ -4,17 +4,23 @@ import checkboxHOC from "react-table/lib/hoc/selectTable";
 
 import {CSVLink} from 'react-csv';
 
-import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary"
-import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails"
+import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
+import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
+import ListSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import ListItemText from "@material-ui/core/ListItemText";
 import Typography from "@material-ui/core/Typography";
 import TextField from "@material-ui/core/TextField";
+import ListItem from "@material-ui/core/ListItem";
+import Checkbox from "@material-ui/core/Checkbox";
 import Popover from "@material-ui/core/Popover";
 import Tooltip from "@material-ui/core/Tooltip";
+import Divider from "@material-ui/core/Divider";
+import Button from "@material-ui/core/Button";
 import Badge from "@material-ui/core/Badge";
 import Paper from "@material-ui/core/Paper";
-import Button from "@material-ui/core/Button";
+import List from "@material-ui/core/List";
 
 import styles from "../../styles/reports.css";
 import classNames from "classnames";
@@ -35,10 +41,11 @@ const CheckboxTable = checkboxHOC(ReactTable);
 import ApprovalIcon from "mdi-react/ApprovalIcon";
 import ExportIcon from "mdi-react/ExportIcon";
 import DownloadIcon from "mdi-react/DownloadIcon";
-import FileDelimitedIcon from "mdi-react/FileDelimitedIcon";
+import TableIcon from "mdi-react/TableIcon";
 import AlertOctagonIcon from "mdi-react/AlertOctagonIcon";
 import AlertIcon from "mdi-react/AlertIcon";
 import Magnify from "mdi-react/MagnifyIcon";
+import EyeIcon from "mdi-react/EyeIcon";
 
 import {LoadingComponent} from "../ReportsBase";
 import {PhylovizModal, PositionedSnackbar} from "./modals";
@@ -78,6 +85,7 @@ export class FCTable extends React.Component {
         super(props);
 
         this.state = {
+            columns: props.columns,
             // Selection has table data and only row keys
             selection: {
                 rows: [],
@@ -126,6 +134,34 @@ export class FCTable extends React.Component {
 
         updateCallback(updateHighlightArray(arrayMap, selection, highlights, color))
 
+    };
+
+    /*
+    Toggles the column visibility of a single column, given an accessor.
+    The currently shown columns are stored in state.columns, while the complete
+    original columns are in props.columns. When a column is to be hidden, that
+    column is removed from the state. Otherwise, the column is reestablished in
+    the state using the one in the props.
+     */
+    toggleColumnVisibility = (colAcessor) => {
+
+        // Array containing the new visible columns
+        let newColumns = [];
+
+        // Check if column is visible, that is, in the state columns
+        if (this.state.columns.some((v) => {return v.accessor === colAcessor})){
+            // Remove this column from state
+            for (const col of this.state.columns){
+                if (col.accessor !== colAcessor){
+                    newColumns.push(col)
+                }
+            }
+        } else {
+            // Add the hidden column from the props.columns
+            newColumns = this.state.columns.concat(this.props.columns.filter((v) => {return v.accessor === colAcessor}))
+        }
+
+        this.setState({columns: newColumns})
     };
 
 
@@ -325,6 +361,10 @@ export class FCTable extends React.Component {
                                                 <ExportTooltipButton
                                                     tableData={this.props.rawData}/>
                                             }
+                                            <ColumnVisibilityPopover
+                                                onToggleColumn={this.toggleColumnVisibility}
+                                                allColumns={this.props.columns}
+                                                stateColumns={this.state.columns}/>
                                             {this.props.children}
                                         </fieldset>
                                     }
@@ -360,7 +400,7 @@ export class FCTable extends React.Component {
                                 <CheckboxTable
                                     ref={r => (this.checkboxTable = r)}
                                     data={this.props.data}
-                                    columns={this.props.columns}
+                                    columns={this.state.columns}
                                     filtered={this.state.rowFilter ? [{"id": "rowId", "value": this.state.rowFilter}] : []}
                                     defaultPageSize={10}
                                     className={"-striped -highlight"}
@@ -1063,16 +1103,6 @@ export class TableLabel extends React.Component {
     }
 }
 
-export class TableButtons extends React.Component {
-    render() {
-        return (
-            <div className={styles.tableButtonsDiv}>
-                {this.props.children}
-            </div>
-        )
-    }
-}
-
 
 class ExportTooltipButton extends React.Component {
 
@@ -1083,7 +1113,7 @@ class ExportTooltipButton extends React.Component {
                      style={{"textDecoration": "none"}}>
                 <TableButton tooltip={"Export table as CSV"}
                              onClick={this.handleClickOpen}>
-                    <FileDelimitedIcon style={{fill: "#fff"}}/>
+                    <TableIcon style={{fill: "#fff"}}/>
                 </TableButton>
 
             </CSVLink>
@@ -1111,6 +1141,81 @@ export class TableButton extends React.Component {
                     {this.props.children}
                 </Button>
             </Tooltip>
+        )
+    }
+}
+
+
+class ColumnVisibilityPopover extends React.Component{
+
+    state = {
+        anchorEl: null,
+    };
+
+    handleClick = event => {
+        this.setState({
+            anchorEl: event.currentTarget,
+        });
+    };
+
+    handleClose = () => {
+        this.setState({
+            anchorEl: null,
+        });
+    };
+
+    render(){
+
+        const style = {
+            root: {
+                padding: "15px"
+            },
+            header: {
+                marginBottom: "10px"
+            }
+        };
+
+        const {anchorEl} = this.state;
+
+        return(
+            <div style={{display: "inline-block"}}>
+                <TableButton onClick={this.handleClick} tooltip={"Toggle column visibility"}>
+                    <EyeIcon color={"#fff"}/>
+                </TableButton>
+                <Popover open={Boolean(anchorEl)}
+                         anchorEl={anchorEl}
+                         onClose={this.handleClose}
+                         anchorOrigin={{
+                             vertical: "center",
+                             horizontal: "right"
+                         }}
+                         transformOrigin={{
+                             vertical: "center",
+                             horizontal: "left"
+                         }}>
+                    <div style={style.root}>
+                        <Typography style={style.header} variant={"subheading"}>Hide/show column</Typography>
+                        <Divider/>
+                        <List>
+                            {
+                                this.props.allColumns.map((col, i) => {
+                                    return(
+                                        <ListItem key={i}>
+                                            <ListItemText primary={col.Header}/>
+                                            <ListSecondaryAction>
+                                                <Checkbox
+                                                    color={"primary"}
+                                                    onChange={() => {this.props.onToggleColumn(col.accessor)}}
+                                                    checked={this.props.stateColumns.some((c) => {return c.accessor === col.accessor})}/>
+                                            </ListSecondaryAction>
+                                        </ListItem>
+                                    )
+                                })
+                            }
+                        </List>
+                    </div>
+                </Popover>
+            </div>
         )
     }
 }
