@@ -46,6 +46,7 @@ import {
 import styles from "../styles/reports.css";
 
 import {TaskButtons} from "./reports/task_buttons"
+import {PositionedSnackbar} from "./reports/modals";
 
 /**
  * This is the main wrapper of the reports app. The reports
@@ -426,12 +427,14 @@ class ReportsApp extends React.Component {
             return
         }
 
+        // Open loading snackbar
+        this.loadingSnackbar.handleOpen("Filtering report data...", "loading");
+
+        // Use SetTimeout to allow the loading snackbar to appear.
         // Set filterAndHighlighting to true prevents updating filters and
         // highlights from props in the getDerivedStateFromProps function
-        this.setState({
-            filters,
-            filterAndHighlighting: true
-        })
+        setTimeout(() => {this.setState({filters,filterAndHighlighting: true})}, 400);
+
     };
 
     updateHighlights = (highlights) => {
@@ -446,10 +449,13 @@ class ReportsApp extends React.Component {
             return
         }
 
-        this.setState({
-            highlights,
-            filterAndHighlighting: true
-        })
+        // Open loading snackbar
+        this.loadingSnackbar.handleOpen("Highlighting report data...", "loading");
+
+        // Use SetTimeout to allow the loading snackbar to appear.
+        // Set filterAndHighlighting to true prevents updating filters and
+        // highlights from props in the getDerivedStateFromProps function
+        setTimeout(() => {this.setState({highlights,filterAndHighlighting: true})}, 400);
     };
 
     static getDerivedStateFromProps(props, state) {
@@ -497,6 +503,8 @@ class ReportsApp extends React.Component {
             )
         }
 
+        this.loadingSnackbar.handleClose();
+
     }
 
     render() {
@@ -535,6 +543,10 @@ class ReportsApp extends React.Component {
                 }}>
                     <ReportsHeader tableHeaders={tables}
                                    chartHeaders={charts}>
+                        <PositionedSnackbar
+                            onRef={ref => (this.loadingSnackbar = ref)}
+                            horizontal={"left"}
+                            vertical={"bottom"}/>
                         <TaskButtons/>
                         <Element name={"reportOverview"}
                                  className={styles.scrollElement}>

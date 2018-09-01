@@ -11,6 +11,7 @@ import CloseCircleIcon from "mdi-react/CloseCircleIcon";
 import FileTreeIcon from "mdi-react/FileTreeIcon";
 import IconButton from "@material-ui/core/IconButton";
 import Button from "@material-ui/core/Button";
+import CircularProgress from "@material-ui/core/CircularProgress";
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import ErrorIcon from '@material-ui/icons/Error';
 import InfoIcon from '@material-ui/icons/Info';
@@ -23,6 +24,9 @@ import Checkbox from '@material-ui/core/Checkbox';
 import {TableButton} from "./tables";
 
 import Select from '../SelectPlusAll';
+
+import {themes} from "./themes";
+import {theme} from "../../../config";
 
 import styles from "../../styles/reports.css";
 
@@ -58,10 +62,13 @@ export class PositionedSnackbar extends React.Component {
 
     // USed on parent component to set the snackbar state
     handleOpen = (message, type) => {
+        console.log("ANNND OPEN!")
         this.setState({open: true, message, type});
     };
 
     render() {
+
+        console.log(this.state)
 
         // Different icons and colours are used depending on the selected
         // snackbar message type
@@ -74,16 +81,22 @@ export class PositionedSnackbar extends React.Component {
 
         const style = {
             success: {
-                backgroundColor: green[600],
+                backgroundColor: themes[theme].palette.success.main,
             },
             error: {
-                backgroundColor: red[600],
+                backgroundColor: themes[theme].palette.error.main,
             },
             info: {
-                backgroundColor: grey[600],
+                backgroundColor: themes[theme].palette.info.main,
             },
             warning: {
-                backgroundColor: orange[300],
+                backgroundColor: themes[theme].palette.warning.main,
+            },
+            loading: {
+                backgroundColor: themes[theme].palette.info.main
+            },
+            loadingCircle: {
+                color: themes[theme].palette.success.main
             },
             icon: {
                 fontSize: 20,
@@ -98,7 +111,7 @@ export class PositionedSnackbar extends React.Component {
                 display: "flex",
                 alignItems: "center",
                 marginLeft: "10px",
-                fontSize: "12px"
+                fontSize: "16px"
             }
         };
 
@@ -129,8 +142,11 @@ export class PositionedSnackbar extends React.Component {
                         ]}
                         message={
                             <span id="message-snackbar" style={style.message}>
-                                <Icon
-                                    className={classNames(style.icon, style.iconVariant)}/>
+                                {
+                                    type === "loading" ?
+                                        <CircularProgress size={30} style={style.loadingCircle}/> :
+                                         <Icon className={classNames(style.icon, style.iconVariant)}/>
+                                }
                                 <Typography
                                     style={style.message}>{message}</Typography>
                             </span>}
