@@ -10,7 +10,7 @@ import {CellBar} from "./tables";
 import {QcPopover} from "./tables";
 import {getHighlight} from "./utils";
 
-import {sortByContent, sortByPropsValue, sortQcValues, sortColor} from "./utils";
+import {sortByPropsValue, sortQcValues, sortColor} from "./utils";
 import {ColorPaper} from "./overview";
 
 import styles from "../../styles/reports.css"
@@ -519,6 +519,9 @@ export const genericTableParser = (reportArray) => {
         Header: <Typography style={{fontWeight: "bold"}}>ID</Typography>,
         headerStyle: {
             margin: "auto",
+        },
+        filterMethod: (filter, rows) => {
+            return rows.rowId.props.children.includes(filter.value)
         },
         accessor: "rowId",
         minWidth: 150

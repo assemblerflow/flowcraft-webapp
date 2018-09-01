@@ -161,7 +161,6 @@ export class ReportOverview extends React.Component{
             Header: <Typography style={style.headerStyle}>Sample</Typography>,
             headerStyle: style.headerContainer,
             accessor: "rowId",
-            filterable: true,
             filterMethod: (filter, rows) =>
                 matchSorter(rows, filter.value, {keys: ["rowId.props.children"]}),
             filterAll: true,

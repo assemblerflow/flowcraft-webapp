@@ -9,6 +9,7 @@ import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails"
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import Typography from "@material-ui/core/Typography";
+import TextField from "@material-ui/core/TextField";
 import Popover from "@material-ui/core/Popover";
 import Tooltip from "@material-ui/core/Tooltip";
 import Badge from "@material-ui/core/Badge";
@@ -82,10 +83,15 @@ export class FCTable extends React.Component {
                 rows: [],
                 keys: []
             },
-            selectAll: false
+            selectAll: false,
+            rowFilter: ""
         }
     }
 
+
+    handleSearchChange = (e) => {
+        this.setState({rowFilter: e.target.value})
+    };
 
     filterSelection = (filters, updateCallback) => {
 
@@ -258,6 +264,14 @@ export class FCTable extends React.Component {
             selectionContainer: {
                 marginLeft: "10px",
                 borderLeft: "1px solid #bababa"
+            },
+            searchContainer: {
+                flexGrow: "1",
+                margin: "auto"
+            },
+            searchField: {
+                minWidth: "250px",
+                float: "right",
             }
         };
 
@@ -334,11 +348,20 @@ export class FCTable extends React.Component {
                                             <HighlightSelectionPopup action={(color) =>{this.highlightSelection(highlights, updateHighlights, color)}} />
                                         </fieldset>
                                     }
+                                    <div style={style.searchContainer}>
+                                        <TextField
+                                            style={style.searchField}
+                                            id="name"
+                                            value={this.state.rowFilter}
+                                            onChange={this.handleSearchChange}
+                                            label="Search ID column"/>
+                                    </div>
                                 </div>
                                 <CheckboxTable
                                     ref={r => (this.checkboxTable = r)}
                                     data={this.props.data}
                                     columns={this.props.columns}
+                                    filtered={this.state.rowFilter ? [{"id": "rowId", "value": this.state.rowFilter}] : []}
                                     defaultPageSize={10}
                                     className={"-striped -highlight"}
                                     defaultSorted={defaultSort}
