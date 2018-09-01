@@ -49,7 +49,8 @@ import {
     getSpeciesMapping
 } from "./utils";
 import {SampleDialog} from "../ReportsSample";
-import {updateSelectionArray} from "./filters_highlights";
+import {HighlightSelectionPopup} from "./overview";
+import {updateFilterArray, updateHighlightArray} from "./filters_highlights";
 import FilterIcon from "../../../../node_modules/mdi-react/FilterIcon";
 
 
@@ -103,7 +104,21 @@ export class FCTable extends React.Component {
             arrayMap.samples.push(item._original._id);
         });
 
-        updateCallback(updateSelectionArray(arrayMap, selection, filters))
+        updateCallback(updateFilterArray(arrayMap, selection, filters))
+
+    };
+
+
+    highlightSelection = (highlights, updateCallback, color) => {
+
+        const arrayMap = {
+            "samples": []
+        };
+        const selection = {
+            "samples": this.state.selection
+        };
+
+        updateCallback(updateHighlightArray(arrayMap, selection, highlights, color))
 
     };
 
@@ -282,7 +297,7 @@ export class FCTable extends React.Component {
             <div>
                 <ReportAppConsumer>
                     {
-                        ({tableSamples, filters, updateFilters}) => (
+                        ({tableSamples, filters, updateFilters, highlights, updateHighlights}) => (
                             <LoadingComponent>
                                 <div style={style.toolbar}>
                                     {
@@ -316,6 +331,7 @@ export class FCTable extends React.Component {
                                             <TableButton onClick={() => {this.filterSelection(filters, updateFilters)}} tooltip={"Filter and keep only selection"}>
                                                 <FilterIcon color={"#fff"}/>
                                             </TableButton>
+                                            <HighlightSelectionPopup action={(color) =>{this.highlightSelection(highlights, updateHighlights, color)}} />
                                         </fieldset>
                                     }
                                 </div>

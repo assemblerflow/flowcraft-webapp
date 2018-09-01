@@ -1,4 +1,4 @@
-export const updateSelectionArray = (arrayMap, selected, filters) => {
+export const updateFilterArray = (arrayMap, selected, filters) => {
 
     let activeArray;
     let activeSelection;
@@ -23,4 +23,31 @@ export const updateSelectionArray = (arrayMap, selected, filters) => {
 
     return newSelection;
 
+};
+
+
+export const updateHighlightArray = (arrayMap, selected, highlights, color) => {
+
+    for (const key of Object.keys(arrayMap)){
+
+        const keySelection = selected[key].keys;
+        let addedElements = [];
+
+        for (const el of keySelection){
+            arrayMap[key].push({
+                label: el,
+                color: color,
+                idx: highlights[key].length + 1
+            });
+            addedElements.push(el)
+        }
+
+        for (const el of highlights[key]) {
+            if (!addedElements.includes(el.label)) {
+                arrayMap[key].push(el)
+            }
+        }
+    }
+
+    return arrayMap
 };

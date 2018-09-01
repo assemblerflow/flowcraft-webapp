@@ -437,6 +437,12 @@ class ReportsApp extends React.Component {
 
     updateHighlights = (highlights) => {
 
+        for (const key of Object.keys(this.state.highlights)){
+            if (!highlights.hasOwnProperty(key)){
+                highlights[key] = this.state.highlights[key]
+            }
+        }
+
         if (JSON.stringify(this.state.highlights) === JSON.stringify(highlights)){
             return
         }

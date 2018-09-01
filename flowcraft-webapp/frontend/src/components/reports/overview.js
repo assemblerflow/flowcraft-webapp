@@ -33,7 +33,7 @@ import {themes} from "./themes";
 import {theme} from "../../../config"
 
 import {sortByContent,sortColor} from "./utils";
-import {updateSelectionArray} from "./filters_highlights";
+import {updateFilterArray, updateHighlightArray} from "./filters_highlights";
 import {SampleDialog} from "../ReportsSample";
 
 
@@ -412,7 +412,7 @@ export class ReportOverview extends React.Component{
             "components": components,
         };
 
-        this.props.updateFilters(updateSelectionArray(arrayMap, this.state.selected, this.props.filters));
+        this.props.updateFilters(updateFilterArray(arrayMap, this.state.selected, this.props.filters));
     };
 
     /*
@@ -425,32 +425,7 @@ export class ReportOverview extends React.Component{
             "projects": []
         };
 
-        for (const key of Object.keys(this.props.highlights)){
-
-            const keySelection = this.state.selected[key].keys;
-            let addedElements = [];
-
-
-            for (const el of keySelection){
-                newHighlights[key].push({
-                    label: el,
-                    color: color,
-                    idx: this.props.highlights[key].length + 1
-                });
-                addedElements.push(el)
-            }
-
-
-            for (const el of this.props.highlights[key]) {
-                if (!addedElements.includes(el.label)) {
-                    newHighlights[key].push(el)
-                }
-            }
-        }
-
-        console.log(newHighlights)
-
-        this.props.updateHighlights(newHighlights)
+        this.props.updateHighlights(updateHighlightArray(newHighlights, this.state.selected, this.props.highlights, color))
     };
 
     clearIndividualFilter = (tableKey) => {
@@ -894,7 +869,7 @@ class SampleOptions extends React.Component {
 }
 
 
-class HighlightSelectionPopup extends React.Component{
+export class HighlightSelectionPopup extends React.Component{
 
 
     state = {
