@@ -406,6 +406,9 @@ export const getTableHeaders = (dataArray) => {
         }
     }
 
+    console.log(speciesMap)
+    console.log(duplicateAccessors)
+
     // Sort the column tableHeaders according to the processId
     const sortedColumns = [...columnsMap.entries()].sort((a, b) => {
         return a[1].num - b[1].num
@@ -434,13 +437,15 @@ export const getTableHeaders = (dataArray) => {
             // When there are no header duplications
         } else {
             tableHeaders.push({
-                accessor: v[0].split("___")[0],
+                accessor: `${v[0].split("___")[0]}_${v[1].processId}`,
                 Header: v[1].header,
                 processName: v[1].processName,
                 processId: v[1].processId
             })
         }
     }
+
+    // console.log(duplicateAccessors)
 
     return {
         tableHeaders,
@@ -551,7 +556,7 @@ export const genericTableParser = (reportArray) => {
         const header = `${cell.header.split(" ").join("")}___${cell.processName.replace(cell.processId, "").slice(0, -1)}`;
         const accessor = duplicateAccessors.includes(header) ?
             `${cell.header.split(" ").join("")}${cell.processName}` :
-            cell.header.split(" ").join("");
+            `${cell.header.split(" ").join("")}_${cell.processId}`;
 
         // Add values to dictionary by rowId
         if (!dataDict.hasOwnProperty(cell.rowId)) {
