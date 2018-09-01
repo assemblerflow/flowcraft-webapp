@@ -668,3 +668,51 @@ class PilonSizeDistChart extends React.Component{
     }
 
 }
+
+
+export class FindDistributionChart extends React.Component{
+
+    render(){
+
+        const config = {
+            chart: {
+                type: "scatter",
+                zoomType: "xy"
+            },
+            title: {
+                text: "Distribution of values for accessor"
+            },
+            legend: {
+                enabled: false
+            },
+            xAxis: {
+                title: {
+                    enabled: true,
+                    text: 'Samples'
+                },
+                startOnTick: true,
+                endOnTick: true,
+                showLastLabel: true
+            },
+            yAxis: {
+                title: {
+                    text: "Value",
+                },
+            },
+            series: this.props.data
+        };
+
+        const style =  {
+            root: {
+                marginTop: "60px",
+                padding: "20px"
+            }
+        };
+
+        return(
+            <div style={style.root}>
+                <ReactHighcharts config={config} ref="findDistribution"></ReactHighcharts>
+            </div>
+        )
+    }
+}

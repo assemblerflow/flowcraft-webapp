@@ -10,14 +10,20 @@ import ListSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import ListItemText from "@material-ui/core/ListItemText";
+import IconButton from "@material-ui/core/IconButton"
 import Typography from "@material-ui/core/Typography";
 import TextField from "@material-ui/core/TextField";
+import CloseIcon from "@material-ui/icons/Close";
 import ListItem from "@material-ui/core/ListItem";
 import Checkbox from "@material-ui/core/Checkbox";
+import Toolbar from "@material-ui/core/Toolbar";
 import Popover from "@material-ui/core/Popover";
 import Tooltip from "@material-ui/core/Tooltip";
 import Divider from "@material-ui/core/Divider";
+import AppBar from "@material-ui/core/AppBar"
 import Button from "@material-ui/core/Button";
+import Dialog from "@material-ui/core/Dialog";
+import Slide from "@material-ui/core/Slide";
 import Badge from "@material-ui/core/Badge";
 import Paper from "@material-ui/core/Paper";
 import List from "@material-ui/core/List";
@@ -46,6 +52,7 @@ import AlertOctagonIcon from "mdi-react/AlertOctagonIcon";
 import AlertIcon from "mdi-react/AlertIcon";
 import Magnify from "mdi-react/MagnifyIcon";
 import EyeIcon from "mdi-react/EyeIcon";
+import MapMarkerRadiusIcon from "mdi-react/MapMarkerRadiusIcon";
 
 import {LoadingComponent} from "../ReportsBase";
 import {PhylovizModal, PositionedSnackbar} from "./modals";
@@ -60,6 +67,7 @@ import {SampleDialog} from "../ReportsSample";
 import {HighlightSelectionPopup} from "./overview";
 import {updateFilterArray, updateHighlightArray} from "./filters_highlights";
 import FilterIcon from "../../../../node_modules/mdi-react/FilterIcon";
+import {FindDistributionChart} from "./charts";
 
 
 const statusColor = {
@@ -395,6 +403,9 @@ export class FCTable extends React.Component {
                                                 <FilterIcon color={"#fff"}/>
                                             </TableButton>
                                             <HighlightSelectionPopup action={(color) =>{this.highlightSelection(highlights, updateHighlights, color)}} />
+                                            <FindDistributionPopover columns={this.props.columns}
+                                                                     selection={this.state.selection.keys}
+                                                                     data={this.props.data}/>
                                         </fieldset>
                                     }
                                     <div style={style.searchContainer}>
@@ -1222,6 +1233,151 @@ class ColumnVisibilityPopover extends React.Component{
                         </List>
                     </div>
                 </Popover>
+            </div>
+        )
+    }
+}
+
+function Transition(props) {
+  return <Slide direction="up" {...props} />;
+}
+
+export class FindDistributionPopover extends React.Component{
+
+    state = {
+        anchorEl: null,
+        dialogOpen: false,
+        column: "",
+        data: []
+    };
+
+    handleClick = event => {
+        this.setState({
+            anchorEl: event.currentTarget,
+        });
+    };
+
+    openDialog = (data, column) => {
+        this.setState({
+            dialogOpen: true,
+            column: column,
+            data: data
+        })
+    };
+
+    handleClose = () => {
+        this.setState({
+            anchorEl: null,
+        });
+    };
+
+    closeDialog = () => {
+        this.setState({dialogOpen: false})
+    };
+
+    prepareData = (accessor, selection) => {
+
+        let unsortedData = [];
+        let c = 1;
+        this.props.data.forEach((v) => {
+
+            if (v.hasOwnProperty(accessor)){
+                if (v[accessor].props.hasOwnProperty("value")){
+                    unsortedData.push({
+                        name: v._id,
+                        data: [[ c, v[accessor].props.value]],
+                        marker: {
+                            symbol: "circle"
+                        },
+                        color: selection.includes(v._id) ? "red" : "gray"
+                    })
+                }
+            }
+        });
+
+        if (unsortedData.some((v) => {return isNaN(v.data[0][1])})){
+            this.snackBar.handleOpen("This operation can only be performed on numeric data", "error")
+        } else if (unsortedData.length === 0) {
+            this.snackBar.handleOpen("There is no data to perform this operation", "error")
+        } else {
+            const sortedData = unsortedData.sort((a, b) => {return a.data[0][1] - b.data[0][1]}).map((v, i) => {
+                v.data[0][0] = i;
+                return v
+            });
+            this.openDialog(sortedData, accessor)
+        }
+    };
+
+    render() {
+
+        const style = {
+            root: {
+                padding: "15px"
+            },
+            header: {
+                marginBottom: "10px"
+            }
+        };
+
+        const {anchorEl} = this.state;
+        const skipAccessors = ["highlight", "rowId", "qc"];
+
+        return(
+            <div style={{display: "inline-block"}}>
+                <TableButton onClick={this.handleClick} tooltip={"Identify sample values in column distribution"}>
+                    <MapMarkerRadiusIcon color={"#fff"}/>
+                </TableButton>
+                <PositionedSnackbar
+                    vertical="top"
+                    horizontal="right"
+                    onRef={ref => (this.snackBar = ref)}
+                />
+                <Popover open={Boolean(anchorEl)}
+                         anchorEl={anchorEl}
+                         onClose={this.handleClose}
+                         anchorOrigin={{
+                             vertical: "center",
+                             horizontal: "right"
+                         }}
+                         transformOrigin={{
+                             vertical: "center",
+                             horizontal: "left"
+                         }}>
+                    <div style={style.root}>
+                        <Typography style={style.header} variant={"subheading"}>Select column distribution</Typography>
+                        <Divider/>
+                        <List>
+                            {
+                                this.props.columns.map((col) => {
+                                    if (!skipAccessors.includes(col.accessor)){
+                                        return(
+                                            <ListItem onClick={() => {this.prepareData(col.accessor, this.props.selection)}} button key={col.accessor}>
+                                                <ListItemText primary={col.Header}/>
+                                            </ListItem>
+                                        )
+                                    }
+                                })
+                            }
+                        </List>
+                    </div>
+                </Popover>
+                <Dialog
+                    onClose={this.closeDialog}
+                    open={this.state.dialogOpen}
+                    TransitionComponent={Transition}
+                    fullScreen>
+                    <AppBar>
+                        <Toolbar>
+                            <IconButton color="inherit" onClick={this.closeDialog} aria-label="Close">
+                                <CloseIcon />
+                            </IconButton>
+                        </Toolbar>
+                    </AppBar>
+                    {
+                        this.state.data.length > 0 &&
+                            <FindDistributionChart data={this.state.data}/>
+                    }
+                </Dialog>
             </div>
         )
     }
