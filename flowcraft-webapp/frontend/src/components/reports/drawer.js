@@ -6,6 +6,7 @@ import classNames from "classnames";
 
 import ListItemText from "@material-ui/core/ListItemText";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
+import Typography from "@material-ui/core/Typography";
 import IconButton from "@material-ui/core/IconButton";
 import ListItem from "@material-ui/core/ListItem";
 import Divider from "@material-ui/core/Divider";
@@ -27,8 +28,9 @@ import ChartLineIcon from "mdi-react/ChartLineIcon";
 import FileDocumentBoxIcon from "mdi-react/FileDocumentBoxIcon";
 import InformationIcon from "mdi-react/InformationIcon";
 
-
 import {Header} from "../Header";
+import {themes} from "./themes";
+import {theme} from "../../../config.json";
 
 const styles = require("../../styles/drawer.css");
 
@@ -168,29 +170,36 @@ class TableDrawer extends React.Component {
 
     render () {
 
-        const headerMap =  {
-            "qc": {"icon": <HeartPulseIcon/>, "text": "Quality Control"},
-            "assembly": {"icon": <NotificationClearAllIcon/>, "text": "Assembly"},
-            "abricate": {"icon": <PillIcon/>, "text": "AMR"},
-            "chewbbaca": {"icon": <AlienIcon/>, "text": "chewBBACA"},
-            "typing": {"icon": <TagIcon/>, "text": "Typing"},
-            "metadata": {"icon": <FileDocumentIcon/>, "text": "Metadata"},
-            "phyloviz": {"icon": <SourceMergeIcon/>, "text": "PHYLOViZ"}
-        };
+        const headerMap =  [
+            {signature: "typing", icon: <TagIcon/>, label: "Typing"},
+            {signature: "qc", icon: <HeartPulseIcon/>, label: "Quality Control"},
+            {signature: "assembly", icon: <NotificationClearAllIcon/>, label: "Assembly"},
+            {signature: "abricate", icon: <PillIcon/>, label: "AMR"},
+            {signature: "chewbbaca", icon: <AlienIcon/>, label: "chewBBACA"},
+            {signature: "metadata", icon: <FileDocumentIcon/>, label: "Metadata"},
+            {signature: "phyloviz", icon: <SourceMergeIcon/>, label: "PHYLOViZ"},
+        ];
 
         return (
             <div>
                 <DrawerHeader onClick={this.toggleDrawer} icon={<TableLargeIcon/>} text={"Tables"}/>
                 <div className={classNames(this.state.expanded ? styles.subDrawerOpen : styles.subDrawerClose)}>
                     {
-                        this.props.tableHeaders.map((h) => {
-                            return (
-                                <Link activeClass={styles.activeSideButton} key={h} to={`${h}Table`} smooth={true} duration={500} offset={-70}>
-                                    <DrawerButtonEntry icon={headerMap[h].icon}
-                                                       text={headerMap[h].text} />
-                                </Link>
-                            )
-                        })
+                        headerMap.map((h) => {
+                                if (this.props.tableHeaders.includes(h.signature)) {
+                                    return (
+                                        <Link activeClass={styles.activeSideButton}
+                                              key={h.signature}
+                                              to={`${h.signature}Table`}
+                                              smooth={true} duration={500}
+                                              offset={-70}>
+                                            <DrawerButtonEntry icon={h.icon}
+                                                               text={h.label}/>
+                                        </Link>
+                                    )
+                                }
+                            }
+                        )
                     }
                 </div>
             </div>
@@ -202,12 +211,22 @@ class TableDrawer extends React.Component {
 class DrawerButtonEntry extends React.Component {
 
     render () {
+
+        const style = {
+            text: {
+                fontSize: "16px",
+                fontWeight: "bold",
+                color: themes[theme].palette.primary.main,
+                marginLeft: "10px"
+            }
+        };
+
         return(
                 <ListItem button>
                     <ListItemIcon>
                         {this.props.icon}
                     </ListItemIcon>
-                    <ListItemText primary={this.props.text}/>
+                    <Typography style={style.text}>{this.props.text}</Typography>
                 </ListItem>
         )
     }

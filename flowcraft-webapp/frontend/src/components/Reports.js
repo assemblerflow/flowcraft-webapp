@@ -600,6 +600,14 @@ class ReportsApp extends React.Component {
                             </Element>
                         }
                         {
+                            tables.includes("typing") &&
+                            <Element name={"typingTable"}
+                                     className={styles.scrollElement}>
+                                <TypingTable
+                                    tableData={tableData.get("typing")}/>
+                            </Element>
+                        }
+                        {
                             tables.includes("qc") &&
                             <Element name={"qcTable"}
                                      className={styles.scrollElement}>
@@ -618,14 +626,6 @@ class ReportsApp extends React.Component {
                                     additionalInfo={this.props.additionalInfo}
                                     reportData={this.props.reportData}
                                 />
-                            </Element>
-                        }
-                        {
-                            tables.includes("typing") &&
-                            <Element name={"typingTable"}
-                                     className={styles.scrollElement}>
-                                <TypingTable
-                                    tableData={tableData.get("typing")}/>
                             </Element>
                         }
                         {
