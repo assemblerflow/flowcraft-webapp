@@ -14,19 +14,18 @@ import Drawer from "@material-ui/core/Drawer";
 import Paper from "@material-ui/core/Paper";
 import List from "@material-ui/core/List";
 
-import ChevronLeftIcon from "mdi-react/ChevronLeftIcon";
-import SourceMergeIcon from "mdi-react/SourceMergeIcon";
 import ChartScatterplotHexbinIcon from "mdi-react/ChartScatterplotHexbinIcon";
-import HeartPulseIcon from "mdi-react/HeartPulseIcon";
-import TagIcon from "mdi-react/TagIcon";
 import NotificationClearAllIcon from "mdi-react/NotificationClearAllIcon";
 import FileDocumentIcon from "mdi-react/FileDocumentIcon";
-import PillIcon from "mdi-react/PillIcon";
-import AlienIcon from "mdi-react/AlienIcon";
+import ChevronLeftIcon from "mdi-react/ChevronLeftIcon";
+import InformationIcon from "mdi-react/InformationIcon";
+import SourceMergeIcon from "mdi-react/SourceMergeIcon";
+import HeartPulseIcon from "mdi-react/HeartPulseIcon";
 import TableLargeIcon from "mdi-react/TableLargeIcon";
 import ChartLineIcon from "mdi-react/ChartLineIcon";
-import FileDocumentBoxIcon from "mdi-react/FileDocumentBoxIcon";
-import InformationIcon from "mdi-react/InformationIcon";
+import AlienIcon from "mdi-react/AlienIcon";
+import PillIcon from "mdi-react/PillIcon";
+import TagIcon from "mdi-react/TagIcon";
 
 import {Header} from "../Header";
 import {themes} from "./themes";
