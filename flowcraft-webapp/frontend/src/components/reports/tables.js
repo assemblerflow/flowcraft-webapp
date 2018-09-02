@@ -764,16 +764,6 @@ export class AbricateTable extends React.Component {
         };
     }
 
-    shouldComponentUpdate(nextProps, nextState, nextContext) {
-        if (nextProps.tableData !== this.props.tableData) {
-            return true
-        } else if (nextState.selection !== this.state.selection) {
-            return true
-        }
-
-        return false
-    }
-
     setSelection = (selection) => {
         this.setState({selection});
     };
@@ -802,9 +792,26 @@ export class AbricateTable extends React.Component {
 
     };
 
+    handleCellClick = (e) => {
+        console.log(e)
+    };
+
+    shouldComponentUpdate(nextProps, nextState, nextContext) {
+        if (nextProps.tableData !== this.props.tableData) {
+            return true
+        } else if (nextState.selection !== this.state.selection) {
+            return true
+        }
+
+        return false
+    }
+
     render() {
-        const tableData = genericTableParser(this.props.tableData);
+        const tableData = genericTableParser(this.props.tableData, this.handleCellClick);
         console.log("render abricate table")
+
+        console.log(this.props.tableData)
+        console.log(tableData)
 
         return (
             <ExpansionPanel defaultExpanded>
