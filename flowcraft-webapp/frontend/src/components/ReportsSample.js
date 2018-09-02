@@ -1275,7 +1275,7 @@ class SyncCharts extends React.Component{
     constructor(props){
         super(props);
 
-        this._geneClick = this._geneClick.bind(this)
+        this._geneClick = this._geneClick.bind(this);
         this.prevPath = {};
     };
 

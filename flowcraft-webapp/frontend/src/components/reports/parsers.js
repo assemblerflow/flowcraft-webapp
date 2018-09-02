@@ -592,7 +592,7 @@ export const genericTableParser = (reportArray, action) => {
         // When an action is provided as argument, add the callback to a clic
         // event on the tabel cell.
         dataDict[cell.rowId][accessor] =
-            <CellBar action={action ? () => {action(cell)} : () => {}} value={cell.value} max={columnMaxVals.get(cell.header)}/>;
+            <CellBar action={action ? (e) => {action(e, cell)} : () => {}} value={cell.value} max={columnMaxVals.get(cell.header)}/>;
         rawDataDict[cell.rowId][accessor] = cell.value;
     }
 

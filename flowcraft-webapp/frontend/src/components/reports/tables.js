@@ -45,15 +45,16 @@ import {genericTableParser, qcParseAdditionalData} from "./parsers";
 
 const CheckboxTable = checkboxHOC(ReactTable);
 
-import ApprovalIcon from "mdi-react/ApprovalIcon";
-import ExportIcon from "mdi-react/ExportIcon";
-import DownloadIcon from "mdi-react/DownloadIcon";
-import TableIcon from "mdi-react/TableIcon";
+import MapMarkerRadiusIcon from "mdi-react/MapMarkerRadiusIcon";
+import CrosshairsGpsIcon from "mdi-react/CrosshairsGpsIcon"
 import AlertOctagonIcon from "mdi-react/AlertOctagonIcon";
+import ApprovalIcon from "mdi-react/ApprovalIcon";
+import DownloadIcon from "mdi-react/DownloadIcon";
+import ExportIcon from "mdi-react/ExportIcon";
+import TableIcon from "mdi-react/TableIcon";
 import AlertIcon from "mdi-react/AlertIcon";
 import Magnify from "mdi-react/MagnifyIcon";
 import EyeIcon from "mdi-react/EyeIcon";
-import MapMarkerRadiusIcon from "mdi-react/MapMarkerRadiusIcon";
 
 import {LoadingComponent} from "../ReportsBase";
 import {PhylovizModal, PositionedSnackbar} from "./modals";
@@ -770,6 +771,8 @@ export class AbricateTable extends React.Component {
         this.state = {
             selection: {keys: []}
         };
+
+        this.handleCellClick = this.handleCellClick.bind(this);
     }
 
     setSelection = (selection) => {
@@ -800,8 +803,18 @@ export class AbricateTable extends React.Component {
 
     };
 
-    handleCellClick = (cell) => {
+    handleCellClick = (e, cell) => {
+
         console.log(cell)
+
+        const content = {
+            sample: cell.rowId,
+            database: cell.header,
+            geneList: cell.geneList
+        };
+
+        this.genePopover.handleClick(e, content)
+
     };
 
     shouldComponentUpdate(nextProps, nextState, nextContext) {
@@ -841,6 +854,7 @@ export class AbricateTable extends React.Component {
                                     <DownloadIcon style={{fill: "#fff"}}/>
                                 </TableButton>
                             </CSVLink>
+                            <AmrGeneListPopover onRef={ref => (this.genePopover = ref)} />
                         </FCTable>
                     </div>
                 </ExpansionPanelDetails>
@@ -1510,6 +1524,142 @@ export class QcPopover extends React.Component {
                     </div>
                 </Popover>
             </div>
+        )
+    }
+}
+
+class AmrGeneListPopover extends React.Component{
+
+    state = {
+        anchorEl: null,
+        content: null,
+        geneFilter: ""
+    };
+
+    // Required to set reference on parent component to allow state change
+    componentDidMount() {
+        this.props.onRef(this);
+    }
+
+    componentWillUnmount() {
+        this.props.onRef(undefined);
+    }
+
+    handleClick = (event, content) => {
+        this.setState({
+            anchorEl: event.target,
+            content
+        });
+    };
+
+    handleClose = () => {
+        this.setState({
+            anchorEl: null,
+        });
+    };
+
+    handleSearchChange = (e) => {
+        this.setState({geneFilter: e.target.value})
+    };
+
+    componentDidUpdate(nextProps, nextState){
+
+        if (this.state.content && nextState.content){
+            if (JSON.stringify(this.state.content.geneList) !== JSON.stringify(nextState.content.geneList)){
+                this.setState({geneFilter: ""})
+            }
+        }
+    }
+
+    render(){
+
+        const style = {
+            container: {
+                padding: "15px"
+            },
+            headerPrimary: {
+                fontSize: "18px"
+            },
+            headerSecondary: {
+                fontSize: "15px"
+            },
+            searchContainer: {
+                marginTop: "10px",
+                marginBottom: "10px",
+                width: "100%"
+            },
+            listContainer: {
+                maxHeight: "70%",
+                overflowY: "auto"
+            },
+            listItemText: {
+                marginRight: "10px",
+                marginBottom: "10px"
+            },
+            listItemButton: {
+                padding: 0,
+                minHeight: "35px",
+                minWidth: "40px"
+            }
+        };
+
+        const {anchorEl} = this.state;
+
+        return(
+            <Popover open={Boolean(anchorEl)}
+                     anchorEl={anchorEl}
+                     onClose={this.handleClose}
+                     anchorOrigin={{
+                         vertical: "center",
+                         horizontal: "right"
+                     }}
+                     transformOrigin={{
+                         vertical: "center",
+                         horizontal: "left"
+                     }}>
+                <div style={style.container}>
+                    {
+                        this.state.content &&
+                        <div>
+                            <Typography style={style.header}><b>Sample:</b> {this.state.content.sample}</Typography>
+                            <Typography style={style.header}><b>Database:</b> {this.state.content.database}</Typography>
+                            <Divider/>
+                            <div style={style.searchContainer}>
+                                <TextField
+                                    value={this.state.geneFilter}
+                                    onChange={this.handleSearchChange}
+                                    label={"Search gene name"}
+                                    id={"name"}/>
+                            </div>
+                            <Divider/>
+                            <List style={style.listContainer}>
+                                {
+                                    this.state.content.geneList.map((v, i) => {
+
+                                        if (v.includes(this.state.geneFilter)){
+                                            return(
+                                                <ListItem dense key={i}>
+                                                    <ListItemText style={style.listItemText} primary={v}/>
+                                                    <ListSecondaryAction>
+                                                        <SampleDialog
+                                                            button={
+                                                                <Button style={style.listItemButton} color={"primary"} variant={"contained"}>
+                                                                    <CrosshairsGpsIcon color={"#fff"}/>
+                                                                </Button>}
+                                                            // zoomOnGene={}
+                                                            sample={this.state.content.sample}/>
+
+                                                    </ListSecondaryAction>
+                                                </ListItem>
+                                            )
+                                        }
+                                    })
+                                }
+                            </List>
+                        </div>
+                    }
+                </div>
+            </Popover>
         )
     }
 }
