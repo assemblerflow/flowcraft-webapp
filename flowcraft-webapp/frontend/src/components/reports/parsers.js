@@ -484,7 +484,11 @@ const getColumnMax = (reportArray) => {
  * @param reportArray
  * @returns {{tableArray: Array, columnsArray: Array, rawTableArray: Array}}
  */
-export const genericTableParser = (reportArray) => {
+export const genericTableParser = (reportArray, action) => {
+
+    if (!action){
+        action = undefined;
+    }
 
     // Temporary data object. Will be used to generate the finalDataDict array
     let dataDict = {};
@@ -585,8 +589,19 @@ export const genericTableParser = (reportArray) => {
             };
         }
 
-        dataDict[cell.rowId][accessor] =
-            <CellBar value={cell.value} max={columnMaxVals.get(cell.header)}/>;
+        // When an action is provided as argument, add the callback to a clic
+        // event on the tabel cell.
+        if (action){
+            dataDict[cell.rowId][accessor] = (
+                    <div onClick={() => {action(cell)}}>
+                        <CellBar action={action} value={cell.value} max={columnMaxVals.get(cell.header)}/>
+                    </div>
+                )
+
+        } else {
+            dataDict[cell.rowId][accessor] =
+                <CellBar action={action} value={cell.value} max={columnMaxVals.get(cell.header)}/>;
+        }
         rawDataDict[cell.rowId][accessor] = cell.value;
     }
 
