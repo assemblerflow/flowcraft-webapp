@@ -1083,10 +1083,23 @@ export class ChewbbacaTable extends React.Component {
  */
 export class CellBar extends React.Component {
     render() {
+
+        const style = {
+            columnCellContainer: {
+                position: "relative"
+            },
+            columnCell: {
+                position: "absolute",
+                background: "rgba(100, 100, 100, 0.2)",
+                height: "100%",
+                zIndex: "1",
+                width: `${(this.props.value / this.props.max) * 100}%`,
+            }
+        };
+
         return (
-            <div onClick={this.props.action} className={styles.columnCellContainer}>
-                <div className={styles.columnCell}
-                     style={{width: `${(this.props.value / this.props.max) * 100}%`}}>
+            <div onClick={this.props.action} style={style.columnCellContainer}>
+                <div style={style.columnCell}>
                 </div>
                 <Typography
                     className={styles.tableCell}>{this.props.value}</Typography>

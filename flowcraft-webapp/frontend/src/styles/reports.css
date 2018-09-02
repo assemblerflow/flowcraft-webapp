@@ -15,17 +15,6 @@
     vertical-align: middle!important;
 }
 
-:local(.columnCellContainer) {
-    position: relative;
-}
-
-:local(.columnCell) {
-    position: absolute;
-    background: rgba(100, 100, 100, 0.2);
-    height: 100%;
-    z-index: 1;
-}
-
 :local(.scrollElement) {
     margin-top: 40px;
 }
