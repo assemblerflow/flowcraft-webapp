@@ -383,8 +383,16 @@ export class FCTable extends React.Component {
                                                 onToggleColumn={this.toggleColumnVisibility}
                                                 allColumns={this.props.columns}
                                                 stateColumns={this.state.columns}/>
-                                            {this.props.children}
                                         </fieldset>
+                                    }
+                                    {
+                                        this.props.children &&
+                                            <fieldset style={style.fieldset}>
+                                                <legend><Typography
+                                                    style={style.toolbarHeader}>Contextual</Typography>
+                                                </legend>
+                                                {this.props.children}
+                                            </fieldset>
                                     }
                                     {
                                         (this.state.selection.keys.length > 0 && !hideSelectionToolbar ) &&
