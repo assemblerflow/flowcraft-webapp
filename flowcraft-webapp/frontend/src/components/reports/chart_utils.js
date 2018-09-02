@@ -67,7 +67,9 @@ export class Chart {
                 }
             },
             series: this.series,
-            credits: {},
+            credits: {
+                enabled: false,
+            },
             tooltip: {},
             pane: {}
         };

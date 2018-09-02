@@ -672,46 +672,39 @@ class PilonSizeDistChart extends React.Component{
 
 export class FindDistributionChart extends React.Component{
 
+    shouldComponentUpdate(nextProps, nextState){
+
+        return nextProps.plotData !== this.props.plotData;
+    }
+
     render(){
 
-        const config = {
-            chart: {
-                type: "scatter",
-                zoomType: "xy"
-            },
-            title: {
-                text: "Distribution of values for accessor"
-            },
-            legend: {
-                enabled: false
-            },
-            xAxis: {
-                title: {
-                    enabled: true,
-                    text: 'Samples'
-                },
-                startOnTick: true,
-                endOnTick: true,
-                showLastLabel: true
-            },
-            yAxis: {
-                title: {
-                    text: "Value",
-                },
-            },
+        const config = new Chart({
+            title: null,
+            axisLabels: {x: "Sample", y: "Value"},
             series: this.props.data
-        };
+        });
 
-        const style =  {
-            root: {
-                marginTop: "60px",
-                padding: "20px"
+        config.extend("chart", {
+            type: "scatter",
+            zoomType: "xy"
+        });
+        config.extend("legend", {
+            enabled: false
+        });
+        config.extend("xAxis", {
+            startOnTick: true,
+            endOnTick: true,
+            showLastLabel: true,
+            categories: this.props.data.map((v) => {return v.name}),
+            labels: {
+                rotation: -45
             }
-        };
+        });
 
         return(
-            <div style={style.root}>
-                <ReactHighcharts config={config} ref="findDistribution"></ReactHighcharts>
+            <div>
+                <ReactHighcharts config={config.layout} ref="findDistribution"></ReactHighcharts>
             </div>
         )
     }

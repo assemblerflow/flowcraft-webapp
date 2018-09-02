@@ -1257,10 +1257,10 @@ export class FindDistributionPopover extends React.Component{
         });
     };
 
-    openDialog = (data, column) => {
+    openDialog = (data, column, header) => {
         this.setState({
             dialogOpen: true,
-            column: column,
+            column: header,
             data: data
         })
     };
@@ -1275,7 +1275,7 @@ export class FindDistributionPopover extends React.Component{
         this.setState({dialogOpen: false})
     };
 
-    prepareData = (accessor, selection) => {
+    prepareData = (accessor, header, selection) => {
 
         let unsortedData = [];
         let c = 1;
@@ -1285,7 +1285,7 @@ export class FindDistributionPopover extends React.Component{
                 if (v[accessor].props.hasOwnProperty("value")){
                     unsortedData.push({
                         name: v._id,
-                        data: [[ c, v[accessor].props.value]],
+                        data: [[ c, parseFloat(v[accessor].props.value)]],
                         marker: {
                             symbol: "circle"
                         },
@@ -1304,7 +1304,7 @@ export class FindDistributionPopover extends React.Component{
                 v.data[0][0] = i;
                 return v
             });
-            this.openDialog(sortedData, accessor)
+            this.openDialog(sortedData, accessor, header)
         }
     };
 
@@ -1316,11 +1316,29 @@ export class FindDistributionPopover extends React.Component{
             },
             header: {
                 marginBottom: "10px"
+            },
+            dialogRoot: {
+                marginTop: "60px",
+                padding: "20px"
+            },
+            dialogHeaderContainer: {
+                display: "flex",
+                justifyContent: "center",
+                marginTop: "15px",
+                marginBottom: "15px"
+            },
+            dialogHeaderText: {
+                marginRight: "15px",
+                fontSize: "18px",
+                fontWeight: "bold",
+                lineHeight: "40px"
             }
         };
 
         const {anchorEl} = this.state;
         const skipAccessors = ["highlight", "rowId", "qc"];
+
+        console.log(this.state.data)
 
         return(
             <div style={{display: "inline-block"}}>
@@ -1351,7 +1369,7 @@ export class FindDistributionPopover extends React.Component{
                                 this.props.columns.map((col) => {
                                     if (!skipAccessors.includes(col.accessor)){
                                         return(
-                                            <ListItem onClick={() => {this.prepareData(col.accessor, this.props.selection)}} button key={col.accessor}>
+                                            <ListItem onClick={() => {this.prepareData(col.accessor, col.Header, this.props.selection)}} button key={col.accessor}>
                                                 <ListItemText primary={col.Header}/>
                                             </ListItem>
                                         )
@@ -1373,10 +1391,16 @@ export class FindDistributionPopover extends React.Component{
                             </IconButton>
                         </Toolbar>
                     </AppBar>
-                    {
-                        this.state.data.length > 0 &&
-                            <FindDistributionChart data={this.state.data}/>
-                    }
+                    <div style={style.dialogRoot}>
+                        <div style={style.dialogHeaderContainer}>
+                            <Typography style={style.dialogHeaderText}>Viewing distribution of values for header: </Typography>
+                            {this.state.column}
+                        </div>
+                        {
+                            this.state.data.length > 0 &&
+                                <FindDistributionChart data={this.state.data}/>
+                        }
+                    </div>
                 </Dialog>
             </div>
         )
