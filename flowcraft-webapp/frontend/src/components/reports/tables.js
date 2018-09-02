@@ -800,8 +800,8 @@ export class AbricateTable extends React.Component {
 
     };
 
-    handleCellClick = (e) => {
-        console.log(e)
+    handleCellClick = (cell) => {
+        console.log(cell)
     };
 
     shouldComponentUpdate(nextProps, nextState, nextContext) {
@@ -816,6 +816,7 @@ export class AbricateTable extends React.Component {
 
     render() {
         const tableData = genericTableParser(this.props.tableData, this.handleCellClick);
+        // this.getGenesModalData(this.props.tableData);
         console.log("render abricate table")
 
         console.log(this.props.tableData)
@@ -1083,7 +1084,7 @@ export class ChewbbacaTable extends React.Component {
 export class CellBar extends React.Component {
     render() {
         return (
-            <div className={styles.columnCellContainer}>
+            <div onClick={this.props.action} className={styles.columnCellContainer}>
                 <div className={styles.columnCell}
                      style={{width: `${(this.props.value / this.props.max) * 100}%`}}>
                 </div>
