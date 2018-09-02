@@ -26,6 +26,7 @@ import Dialog from "@material-ui/core/Dialog";
 import Slide from "@material-ui/core/Slide";
 import Badge from "@material-ui/core/Badge";
 import Paper from "@material-ui/core/Paper";
+import Grid from "@material-ui/core/Grid";
 import List from "@material-ui/core/List";
 
 import styles from "../../styles/reports.css";
@@ -307,7 +308,7 @@ export class FCTable extends React.Component {
                 padding: "4px",
                 borderRadius: "3%",
                 marginRight: "5px",
-                marginLeft: "5px"
+                marginLeft: "5px",
             },
             toolbarHeader: {
                 fontWeight: "bold",
@@ -323,7 +324,7 @@ export class FCTable extends React.Component {
                 margin: "auto"
             },
             searchField: {
-                minWidth: "250px",
+                width: "300px",
                 float: "right",
             }
         };
@@ -366,7 +367,7 @@ export class FCTable extends React.Component {
                     {
                         ({tableSamples, filters, updateFilters, highlights, updateHighlights}) => (
                             <LoadingComponent>
-                                <div style={style.toolbar}>
+                                <Grid container style={style.toolbar}>
                                     {
                                         (this.props.rawData || this.props.children) &&
                                         <fieldset style={style.fieldset}>
@@ -416,7 +417,7 @@ export class FCTable extends React.Component {
                                             onChange={this.handleSearchChange}
                                             label="Search ID column"/>
                                     </div>
-                                </div>
+                                </Grid>
                                 <CheckboxTable
                                     ref={r => (this.checkboxTable = r)}
                                     data={this.props.data}
