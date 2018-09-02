@@ -434,7 +434,7 @@ export const getTableHeaders = (dataArray) => {
             // When there are no header duplications
         } else {
             tableHeaders.push({
-                accessor: `${v[0].split("___")[0]}_${v[1].processId}`,
+                accessor: `${v[0].split("___")[0]}_${v[1].processName.replace(v[1].processId, "").slice(0, -1)}`,
                 Header: v[1].header,
                 processName: v[1].processName,
                 processId: v[1].processId
@@ -557,7 +557,7 @@ export const genericTableParser = (reportArray, action) => {
         const header = `${cell.header.split(" ").join("")}___${cell.processName.replace(cell.processId, "").slice(0, -1)}`;
         const accessor = duplicateAccessors.includes(header) ?
             `${cell.header.split(" ").join("")}${cell.processName}` :
-            `${cell.header.split(" ").join("")}_${cell.processId}`;
+            `${cell.header.split(" ").join("")}_${cell.processName.replace(cell.processId, "").slice(0, -1)}`;
 
         // Add values to dictionary by rowId
         if (!dataDict.hasOwnProperty(cell.rowId)) {
@@ -591,8 +591,8 @@ export const genericTableParser = (reportArray, action) => {
 
         // When an action is provided as argument, add the callback to a clic
         // event on the tabel cell.
-            dataDict[cell.rowId][accessor] =
-                <CellBar onClick={action ? () => {action(cell)} : () => {}} value={cell.value} max={columnMaxVals.get(cell.header)}/>;
+        dataDict[cell.rowId][accessor] =
+            <CellBar onClick={action ? () => {action(cell)} : () => {}} value={cell.value} max={columnMaxVals.get(cell.header)}/>;
         rawDataDict[cell.rowId][accessor] = cell.value;
     }
 
