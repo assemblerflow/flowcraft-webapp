@@ -2,23 +2,24 @@ import React from "react";
 
 import Select from 'react-select';
 
+import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
+import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
+import ExpansionPanel from "@material-ui/core/ExpansionPanel";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
 import CloseIcon from "@material-ui/icons/Close";
 import Toolbar from "@material-ui/core/Toolbar";
 import Divider from "@material-ui/core/Divider";
+import Popover from "@material-ui/core/Popover";
 import Dialog from "@material-ui/core/Dialog";
 import AppBar from "@material-ui/core/AppBar";
+import Button from "@material-ui/core/Button";
 import Slide from '@material-ui/core/Slide';
 import Paper from "@material-ui/core/Paper";
 import Grid from "@material-ui/core/Grid";
-import Popover from "@material-ui/core/Popover";
-import ExpansionPanel from "@material-ui/core/ExpansionPanel";
-import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
 
-import Crosshairs from "mdi-react/CrosshairsIcon"
+import CrosshairsGpsIcon from "mdi-react/CrosshairsGpsIcon"
 import {MuiThemeProvider} from "@material-ui/core/styles";
 
 import {themes} from "./reports/themes";
@@ -1134,6 +1135,7 @@ class SyncChartsContainer extends React.Component{
                                     x2: correctRange[1],
                                     y: counter,
                                     gene: v.gene,
+                                    database: db,
                                     accession: v.accession,
                                     coverage: v.coverage,
                                     identity: v.identity,
@@ -1423,7 +1425,7 @@ class SyncCharts extends React.Component{
 
     getxRangeLayout = (data, categories, xLabels, plotLines) => {
 
-        const seriesHeight = 20;
+        const seriesHeight = 30;
         const chartHeight = 90 + (seriesHeight * categories.length);
 
         let config = new Chart({
@@ -1540,6 +1542,7 @@ class SyncCharts extends React.Component{
             max: zoomRange[1],
             animation: true
         });
+        chartObj.showResetZoom();
 
         // Get index of series for the database
         const seriesIdx = chartObj.series.findIndex(
@@ -1551,7 +1554,20 @@ class SyncCharts extends React.Component{
 
         const point = chartObj.series[seriesIdx].data[pointIdx];
 
-        setTimeout(() => {point.firePointEvent("click");}, 500);
+        const pointData = {
+            point: {
+                gene: point.options.gene,
+                x: point.options.x,
+                x2: point.options.x2,
+                yCategory: point.options.database,
+                accession: point.options.accession,
+                coverage: point.options.coverage,
+                identity: point.options.identity,
+            },
+            target: point.graphicOriginal.element
+        };
+
+        setTimeout(() => {point.firePointEvent("click", pointData);}, 500);
 
     };
 
@@ -1857,8 +1873,8 @@ class AbricateSelect extends React.Component{
             },
             button: {
                 padding: 0,
-                width: "40px",
-                height: "40px",
+                minWidth: "45px",
+                height: "37px",
                 marginLeft: "10px"
             },
             badge: {
@@ -1896,9 +1912,9 @@ class AbricateSelect extends React.Component{
                                 onChange={(value) => {this.props.highlightAbrSelection(value); this.setState({selected: value})}}
                                 formatGroupLabel={formatGroupLabel}/>
                     </div>
-                    <IconButton onClick={() => {this.props.zoomAbrSelection(this.state.selected)}} variant={"container"} style={style.button} >
-                        <Crosshairs color={indigo[300]}/>
-                    </IconButton>
+                    <Button onClick={() => {this.props.zoomAbrSelection(this.state.selected)}} variant={"contained"} color={"primary"} style={style.button} >
+                        <CrosshairsGpsIcon color={"#fff"}/>
+                    </Button>
                 </div>
             </div>
         )
