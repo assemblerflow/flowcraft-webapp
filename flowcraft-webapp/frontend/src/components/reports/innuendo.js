@@ -346,7 +346,7 @@ export class HomeInnuendo extends React.Component {
 
         // Verify if message comes from INNUENDO platform
         if (e.origin === address.substring(0, address.length - 1)) {
-            if (typeof e.data === "object") {
+            if (typeof e.data === "object" && e.data.current_user_id !== undefined) {
                 try {
                     // Set userId on INNUENDO state
                     this.state.innuendo.setUserId(e.data.current_user_id);
