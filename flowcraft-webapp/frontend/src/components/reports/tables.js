@@ -805,12 +805,10 @@ export class AbricateTable extends React.Component {
 
     handleCellClick = (e, cell) => {
 
-        console.log(cell)
-
         const content = {
             sample: cell.rowId,
             database: cell.header,
-            geneList: cell.geneList
+            geneList: cell.geneList,
         };
 
         this.genePopover.handleClick(e, content)
@@ -829,11 +827,6 @@ export class AbricateTable extends React.Component {
 
     render() {
         const tableData = genericTableParser(this.props.tableData, this.handleCellClick);
-        // this.getGenesModalData(this.props.tableData);
-        console.log("render abricate table")
-
-        console.log(this.props.tableData)
-        console.log(tableData)
 
         return (
             <ExpansionPanel defaultExpanded>
@@ -1100,7 +1093,8 @@ export class CellBar extends React.Component {
 
         const style = {
             columnCellContainer: {
-                position: "relative"
+                position: "relative",
+                cursor: this.props.clickPointer ? "pointer" : "auto"
             },
             columnCell: {
                 position: "absolute",
@@ -1646,7 +1640,7 @@ class AmrGeneListPopover extends React.Component{
                                                                 <Button style={style.listItemButton} color={"primary"} variant={"contained"}>
                                                                     <CrosshairsGpsIcon color={"#fff"}/>
                                                                 </Button>}
-                                                            // zoomOnGene={}
+                                                            zoomInitialGene={{gene: v, database: this.state.content.database}}
                                                             sample={this.state.content.sample}/>
 
                                                     </ListSecondaryAction>

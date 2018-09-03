@@ -1,4 +1,5 @@
 import React from "react";
+import ReactDOM from "react-dom";
 
 import Select from 'react-select';
 
@@ -117,6 +118,7 @@ export class SampleDialog extends React.Component{
                                 <div style={style.reportContainer}>
                                     <SampleSpecificReport charts={charts}
                                                           sample={this.props.sample}
+                                                          zoomInitialGene={this.props.zoomInitialGene}
                                                           reportData={reportData}/>
                                 </div>
                             </Dialog>
@@ -163,9 +165,11 @@ class SampleSpecificReport extends React.Component{
                     <ReportAppConsumer>
                         {
                             ({charts}) => (
-                                <SyncChartsContainer sample={this.props.sample}
-                                            charts={charts}
-                                            reportData={this.props.reportData}/>
+                                <SyncChartsContainer
+                                    sample={this.props.sample}
+                                    charts={charts}
+                                    zoomInitialGene={this.props.zoomInitialGene}
+                                    reportData={this.props.reportData}/>
                             )
                         }
                     </ReportAppConsumer>}
@@ -246,7 +250,6 @@ class Overview extends React.Component{
         };
 
         const {data, dataExtremes} = this.getOverviewData(this.props.tableData, this.props.sample);
-        console.log(data)
 
         return(
             <ExpansionPanel defaultExpanded>
@@ -1258,7 +1261,9 @@ class SyncChartsContainer extends React.Component{
                                             processes={this.state.processes}/>
                                     }
                                     <LoadingComponent>
-                                        <SyncCharts plotData={currentPlotData}/>
+                                        <SyncCharts
+                                            zoomInitialGene={this.props.zoomInitialGene}
+                                            plotData={currentPlotData}/>
                                     </LoadingComponent>
                                 </div>
                             </ExpansionPanelDetails>
@@ -1358,7 +1363,7 @@ class SyncCharts extends React.Component{
         });
 
         config.extend("chart", {
-            marginLeft: 80,
+            marginLeft: 100,
             spacingTop: 30,
             spacingBottom: 10,
             zoomType: "x",
@@ -1425,7 +1430,7 @@ class SyncCharts extends React.Component{
 
     getxRangeLayout = (data, categories, xLabels, plotLines) => {
 
-        const seriesHeight = 30;
+        const seriesHeight = 25;
         const chartHeight = 90 + (seriesHeight * categories.length);
 
         let config = new Chart({
@@ -1435,7 +1440,7 @@ class SyncCharts extends React.Component{
         });
 
         config.extend("chart", {
-            marginLeft: 80,
+            marginLeft: 100,
             spacingTop: 30,
             spacingBottom: 10,
             zoomType: "x",
@@ -1572,7 +1577,7 @@ class SyncCharts extends React.Component{
     };
 
     componentDidMount(){
-        this.chartContainer.addEventListener("mousemove", this._syncCrosshair)
+        this.chartContainer.addEventListener("mousemove", this._syncCrosshair);
 
         ReactHighcharts.Highcharts.Point.prototype.highlight = function (event) {
             this.onMouseOver(); // Show the hover marker
@@ -1583,6 +1588,11 @@ class SyncCharts extends React.Component{
         ReactHighcharts.Highcharts.Pointer.prototype.reset = function () {
             return undefined;
         };
+
+        if (this.props.zoomInitialGene){
+            const domNode = ReactDOM.findDOMNode(this.amrChart);
+            domNode.scrollIntoView()
+        }
     }
 
     shouldComponentUpdate(nextProps, nextState){
@@ -1605,12 +1615,13 @@ class SyncCharts extends React.Component{
                 <ReactHighcharts config={covConfig.layout} ref={"slidingCov"}></ReactHighcharts>
                 {
                     xRangeConfig &&
-                        <div>
+                        <div ref={ref => (this.amrChart = ref)}>
                             <GenePopup onRef={ref => (this.genePopover = ref)}/>
                             <ReactHighcharts config={xRangeConfig.layout} ref={"slidingAbr"}></ReactHighcharts>
                             <AbricateSelect
                                 highlightAbrSelection={this.highlightAbrSelection}
                                 zoomAbrSelection={this.zoomAbrSelection}
+                                zoomInitialGene={this.props.zoomInitialGene}
                                 data={this.props.plotData.xrangeData}/>
                         </div>
                 }
@@ -1823,9 +1834,15 @@ class GeneGaugeChart extends React.Component{
 
 class AbricateSelect extends React.Component{
 
-    state = {
-        selected: null,
-    };
+    constructor(props){
+        super(props);
+
+        this.state = {
+            selected: null
+        };
+
+        this.initialGeneSelection = null;
+    }
 
     prepareOptions = (data) => {
 
@@ -1838,12 +1855,18 @@ class AbricateSelect extends React.Component{
                 options: []
             };
             for (const d of el.data) {
-                currentOpts.options.push({
+                const opt = {
                     value: `${d.gene}_${d.x}`,
                     label: d.gene,
                     pos: d.x,
                     database: el.name
-                });
+                };
+                currentOpts.options.push(opt);
+                if (this.props.zoomInitialGene){
+                    if (d.gene === this.props.zoomInitialGene.gene && el.name === this.props.zoomInitialGene.database){
+                        this.initialGeneSelection = opt
+                    }
+                }
             }
             options.push(currentOpts);
         }
@@ -1851,7 +1874,12 @@ class AbricateSelect extends React.Component{
         return options;
     };
 
+    componentDidMount(){
 
+        if (this.initialGeneSelection){
+            setTimeout(() => {this.props.zoomAbrSelection(this.initialGeneSelection)}, 500)
+        }
+    };
 
     render(){
 
