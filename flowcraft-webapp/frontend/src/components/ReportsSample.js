@@ -34,10 +34,11 @@ import {OverviewQcPopover} from "./reports/overview";
 import {sortNumber} from "./reports/utils";
 
 import {
-    updateLabels,
-    highLightScatter,
+    getContig,
     highlightHist,
-    getContig} from "./reports/sample_specific_utils";
+    highLightScatter,
+    updateLabels
+} from "./reports/sample_specific_utils";
 
 import {ReportAppConsumer} from "./reports/contexts";
 
@@ -105,7 +106,7 @@ export class SampleDialog extends React.Component{
                                     onClose={this.handleClose}
                                     open={this.state.open}
                                     TransitionComponent={Transition}>
-                                <AppBar>
+                                <AppBar position={"sticky"}>
                                     <Toolbar>
                                         <IconButton color="inherit" onClick={this.handleClose} aria-label="Close">
                                             <CloseIcon />
@@ -239,7 +240,6 @@ class Overview extends React.Component{
             },
             gridItems: {
                 minWidth: "300px",
-                // margin: "auto"
             }
         };
 
@@ -260,12 +260,17 @@ class Overview extends React.Component{
                     <MuiThemeProvider theme={themes[theme]}>
                         <div>
                             <Grid container spacing={40}>
-                                <Grid style={style.gridItems} item xs={6}>
+                                <Grid style={style.gridItems} item xs={4}>
+                                    <DataResources
+                                        reportData={this.props.reportData}
+                                        sample={this.props.sample}/>
+                                </Grid>
+                                <Grid style={style.gridItems} item xs={4}>
                                     <DataLossOverview sample={this.props.sample}
                                                       nfMetadata={this.props.nfMetadata}
                                                       reportData={this.props.reportData} />
                                 </Grid>
-                                <Grid style={style.gridItems} item xs={6}>
+                                <Grid style={style.gridItems} item xs={4}>
                                     <QualityCard qcInfo={this.props.qcInfo} sample={this.props.sample} />
                                 </Grid>
                             </Grid>
@@ -304,10 +309,10 @@ class Overview extends React.Component{
 }
 
 
-class Metadata extends React.Component{
-    render(){
+class DataResources extends React.Component{
 
-        console.log(this.props)
+
+    render(){
 
         return(
             <div>
@@ -709,9 +714,12 @@ class DataLossOverview extends React.Component{
 
         const style = {
             header: {
-                fontSize: "22px",
+                fontSize: "20px",
                 textAlign: "center",
                 marginBottom: "10px"
+            },
+            chartContainer: {
+                padding: "10px"
             }
         };
 
@@ -719,18 +727,19 @@ class DataLossOverview extends React.Component{
 
         return(
             <LoadingComponent>
-
-                            <Typography style={style.header}>Data loss chart</Typography>
-                            {
-                                chartData.type === "sparkline" &&
-                                    <SparkLine data={chartData.data}
-                                               sample={chartData.sample}
-                                               categories={chartData.categories}/>
-                            }
-                            {
-                                (chartData.chartData !== undefined && chartData.chartData.length > 0) &&
-                                    <MultiSparkline chartData={chartData.chartData}/>
-                            }
+                <Typography style={style.header}>Data loss chart</Typography>
+                <div style={style.chartContainer}>
+                    {
+                        chartData.type === "sparkline" &&
+                        <SparkLine data={chartData.data}
+                                   sample={chartData.sample}
+                                   categories={chartData.categories}/>
+                    }
+                    {
+                        (chartData.chartData !== undefined && chartData.chartData.length > 0) &&
+                        <MultiSparkline chartData={chartData.chartData}/>
+                    }
+                </div>
             </LoadingComponent>
         )
     }
@@ -814,7 +823,8 @@ class MultiSparkline extends React.Component{
 
         const style = {
             selectContainer: {
-                display: "flex"
+                display: "flex",
+                marginBottom: "10px"
             },
             selectText: {
                 width: "20%",
@@ -825,7 +835,7 @@ class MultiSparkline extends React.Component{
                 marginBottom: "5px"
             },
             select: {
-                flexGrow: "1"
+                flexGrow: "1",
             }
         };
 

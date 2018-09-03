@@ -1,30 +1,33 @@
 import React from "react";
 
+import Select from "react-select/";
+
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary"
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails"
-import CircularProgress from "@material-ui/core/CircularProgress";
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import Typography from "@material-ui/core/Typography";
-import AppBar from "@material-ui/core/AppBar";
 import Button from "@material-ui/core/Button";
-import Tabs from "@material-ui/core/Tabs";
-import Tab from "@material-ui/core/Tab";
+
+import MagnifyIcon from "mdi-react/MagnifyIcon";
+import CloseIcon from "mdi-react/CloseIcon";
 
 import classNames from "classnames";
-
-const ReactHighcharts = require("react-highcharts");
-import Highcharts from "highcharts";
-import Boost  from 'highcharts/modules/boost';
-Boost(ReactHighcharts.Highcharts);
-
+import Boost from 'highcharts/modules/boost';
 import {Chart, PreviewSnack} from "./chart_utils";
 import {LoadingComponent} from "../ReportsBase";
 import {getHighlight} from "./utils";
 
 import {ReportAppConsumer} from "./contexts";
+import {highlightChartSample} from "./filters_highlights";
 
 import styles from "../../styles/charts.css"
+// Theme imports
+import {themes} from "./themes";
+import {theme} from "../../../config.json";
+
+const ReactHighcharts = require("react-highcharts");
+Boost(ReactHighcharts.Highcharts);
 
 export class FastQcCharts extends React.Component {
 
@@ -39,15 +42,6 @@ export class FastQcCharts extends React.Component {
 
         this.updateChartLimit = this.updateChartLimit.bind(this);
     }
-
-    // static getDerivedStateFromProps(props, state){
-    //
-    //     if (props.rawReports === state.chartData ){
-    //         return null
-    //     } else {
-    //         return {chartData: props.rawReports}
-    //     }
-    // }
 
     updateChartLimit = (newLimit) => {
         this.setState({limit: newLimit})
@@ -128,6 +122,12 @@ export class FastQcCharts extends React.Component {
         this.setState({tabValue: value})
     };
 
+    componentDidUpdate(prevProps, prevState){
+        if (prevProps.rawReports !== this.props.rawReports){
+            this.setState({chartData: this.props.rawReports})
+        }
+    };
+
     render () {
 
         const style = {
@@ -203,9 +203,21 @@ export class FastQcCharts extends React.Component {
 
 class FastqcBaseSequenceQuality extends React.Component {
 
+    selectSample = (sample) => {
+        highlightChartSample(sample.label, this.refs.chart)
+    };
 
+    shouldComponentUpdate(nextProps, nextState){
+
+        if (nextProps.plotData === this.props.plotData){
+            return false
+        } else {
+            return true
+        }
+    }
     render (){
-        console.log("render base qual")
+
+       const samples = this.props.plotData.map((v) => {return v.name});
 
         let config = new Chart({
             title: "Per base sequence quality scores",
@@ -234,9 +246,8 @@ class FastqcBaseSequenceQuality extends React.Component {
 
         return (
             <LoadingComponent>
-                {
-                    <ReactHighcharts config={config.layout} ref="chart" ></ReactHighcharts>
-                }
+                <SearchChart samples={samples} selectSample={this.selectSample} />
+                <ReactHighcharts config={config.layout} ref="chart" ></ReactHighcharts>
             </LoadingComponent>
         )
     }
@@ -244,6 +255,10 @@ class FastqcBaseSequenceQuality extends React.Component {
 
 
 class FastqcSequenceQuality extends React.Component {
+
+    selectSample = (sample) => {
+        highlightChartSample(sample.label, this.refs.chart)
+    };
 
     shouldComponentUpdate(nextProps, nextState){
 
@@ -255,6 +270,8 @@ class FastqcSequenceQuality extends React.Component {
     }
 
     render (){
+
+        const samples = this.props.plotData.map((v) => {return v.name});
 
         let config = new Chart({
             title: "Per sequence quality scores",
@@ -281,9 +298,9 @@ class FastqcSequenceQuality extends React.Component {
         });
         config.extend("chart", {height: "550px"});
 
-        console.log("render seq qual")
         return (
             <LoadingComponent>
+                <SearchChart samples={samples} selectSample={this.selectSample} />
                 <ReactHighcharts config={config.layout} ref="chart"></ReactHighcharts>
             </LoadingComponent>
         )
@@ -292,6 +309,10 @@ class FastqcSequenceQuality extends React.Component {
 
 
 class FastqcGcContent extends React.Component {
+
+    selectSample = (sample) => {
+        highlightChartSample(sample.label, this.refs.chart)
+    };
 
     shouldComponentUpdate(nextProps, nextState){
 
@@ -315,6 +336,8 @@ class FastqcGcContent extends React.Component {
 
     render (){
 
+        const samples = this.props.plotData.map((v) => {return v.name});
+
         let config = new Chart({
             title: "GC percentage",
             axisLabels: {x: "GC percentage", y: "Normalized read count (%)"},
@@ -327,6 +350,7 @@ class FastqcGcContent extends React.Component {
 
         return (
             <LoadingComponent>
+                <SearchChart samples={samples} selectSample={this.selectSample} />
                 <ReactHighcharts config={config.layout} ref="chart"></ReactHighcharts>
             </LoadingComponent>
         )
@@ -335,6 +359,10 @@ class FastqcGcContent extends React.Component {
 
 
 class FastqcSequenceLength extends React.Component {
+
+    selectSample = (sample) => {
+        highlightChartSample(sample.label, this.refs.chart)
+    };
 
     shouldComponentUpdate(nextProps, nextState){
 
@@ -346,6 +374,8 @@ class FastqcSequenceLength extends React.Component {
     }
 
     render (){
+
+        const samples = this.props.plotData.map((v) => {return v.name});
 
         let config = new Chart({
             title: "Distribution of sequence length",
@@ -359,6 +389,7 @@ class FastqcSequenceLength extends React.Component {
 
         return (
             <LoadingComponent>
+                <SearchChart samples={samples} selectSample={this.selectSample} />
                 <ReactHighcharts config={config.layout} ref="chart"></ReactHighcharts>
             </LoadingComponent>
         )
@@ -368,15 +399,22 @@ class FastqcSequenceLength extends React.Component {
 
 class FastqcNContent extends React.Component {
 
-    constructor(props){
-        super(props);
+    selectSample = (sample) => {
+        highlightChartSample(sample.label, this.refs.chart)
+    };
 
-        this.state = {
-            plotData: props.plotData
+    shouldComponentUpdate(nextProps, nextState){
+
+        if (nextProps.plotData === this.props.plotData){
+            return false
+        } else {
+            return true
         }
     }
 
     render (){
+
+        const samples = this.props.plotData.map((v) => {return v.name});
 
         let config = new Chart({
             title: "Missing data content",
@@ -391,6 +429,7 @@ class FastqcNContent extends React.Component {
 
         return (
             <LoadingComponent>
+                <SearchChart samples={samples} selectSample={this.selectSample} />
                 <ReactHighcharts config={config.layout} ref="chart"></ReactHighcharts>
             </LoadingComponent>
         )
@@ -584,6 +623,10 @@ export class AssemblySizeDistChart extends React.Component {
 
 class PilonSizeDistChart extends React.Component{
 
+    selectSample = (sample) => {
+        highlightChartSample(sample.label, this.refs.assemblySizeDist)
+    };
+
     shouldComponentUpdate(nextProps, nextState){
 
         if (nextProps.plotData === this.props.plotData){
@@ -602,6 +645,8 @@ class PilonSizeDistChart extends React.Component{
             axisLabels: {x: "Sample", y: "Contig size"},
             series: this.props.plotData.chartData
         });
+
+        const samples = this.props.plotData.chartData.map((v) => {return v.name});
 
         config.extend("plotOptions", {
             "scatter": {
@@ -661,6 +706,7 @@ class PilonSizeDistChart extends React.Component{
 
         return(
             <LoadingComponent>
+                <SearchChart samples={samples} selectSample={this.selectSample} />
                 <ReactHighcharts config={config.layout} ref="assemblySizeDist"></ReactHighcharts>
             </LoadingComponent>
         )
@@ -673,7 +719,6 @@ class PilonSizeDistChart extends React.Component{
 export class FindDistributionChart extends React.Component{
 
     shouldComponentUpdate(nextProps, nextState){
-
         return nextProps.plotData !== this.props.plotData;
     }
 
@@ -705,6 +750,64 @@ export class FindDistributionChart extends React.Component{
         return(
             <div>
                 <ReactHighcharts config={config.layout} ref="findDistribution"></ReactHighcharts>
+            </div>
+        )
+    }
+}
+
+
+class SearchChart extends React.Component{
+
+    state = {
+        selection: null,
+    };
+
+    handleSelection = (e) => {
+        this.setState({selection: e})
+    };
+
+    render(){
+
+        const style = {
+            root: {
+                display: "flex",
+                float: "right",
+                width: "300px",
+                flexWrap: "wrap",
+                paddingRight: "10px"
+            },
+            select: {
+                flexGrow: 1,
+            },
+            button: {
+                padding: 0,
+                minWidth: "35px",
+                height: "35px",
+                marginLeft: "5px"
+            }
+        };
+
+        const options = this.props.samples.map((v) => {return {
+            label: v,
+            value: v
+        }});
+
+
+        return(
+            <div style={style.root}>
+                <div style={style.select}>
+                    <Select
+                        value={this.state.selection ? this.state.selection : 0}
+                        onChange={this.handleSelection}
+                        placeholder={"Search samples"}
+                        options={options}/>
+                </div>
+                <Button color={"primary"} variant={"outlined"} style={style.button} onClick={() => {this.props.selectSample(this.state.selection)}}>
+                    <MagnifyIcon color={themes[theme].palette.primary.main}/>
+                </Button>
+                <Button color={"primary"} variant={"outlined"} style={style.button} onClick={() => {this.props.selectSample(""); this.handleSelection(null)}}>
+                    <CloseIcon color={themes[theme].palette.error.main}/>
+                </Button>
             </div>
         )
     }

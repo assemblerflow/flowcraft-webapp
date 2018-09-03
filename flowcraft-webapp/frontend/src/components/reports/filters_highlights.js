@@ -103,3 +103,30 @@ export const updateHighlightArray = (arrayMap, selected, highlights, color) => {
 
     return arrayMap
 };
+
+
+/*
+This method takes a highcharts data array, which should have the 'name' attribute
+with the sample name information, and modified the array to highlight a given
+sample
+ */
+export const highlightChartSample = (sample, chartRef) => {
+
+    const chartObj = chartRef.getChart();
+
+    for (const series of chartObj.series){
+        if (series.name === sample){
+            series.userOptions.lastColor = series.color;
+            series.update({
+                color: "red",
+                zIndex: 100,
+            });
+        } else if (series.name !== sample && series.color === "red" ){
+            series.update({
+                color: series.userOptions.lastColor ? series.userOptions.lastColor : null,
+                zIndex: 1,
+            })
+        }
+    }
+
+};

@@ -125,7 +125,7 @@ class ChartDrawer extends React.Component {
 
         const headerMap =  {
             "base_n_content": {"icon": <HeartPulseIcon/>, "text": "FastQC"},
-            "size_dist": {"icon": <ChartScatterplotHexbinIcon/>, "text": "Contig size distribution"},
+            "size_dist": {"icon": <ChartScatterplotHexbinIcon/>, "text": "Contig size"},
         };
 
         return (
