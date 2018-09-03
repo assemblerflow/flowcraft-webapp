@@ -1376,8 +1376,6 @@ export class FindDistributionPopover extends React.Component{
         const {anchorEl} = this.state;
         const skipAccessors = ["highlight", "rowId", "qc"];
 
-        console.log(this.state.data)
-
         return(
             <div style={{display: "inline-block"}}>
                 <TableButton onClick={this.handleClick} tooltip={"Identify sample values in column distribution"}>

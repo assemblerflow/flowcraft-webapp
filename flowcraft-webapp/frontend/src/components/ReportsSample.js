@@ -41,7 +41,7 @@ import {
 } from "./reports/sample_specific_utils";
 
 import {ReportAppConsumer} from "./reports/contexts";
-import {ResourcesPieChart} from "./reports/charts";
+import {FindDistributionChart, ResourcesPieChart} from "./reports/charts";
 
 import {LoadingComponent} from "./ReportsBase";
 
@@ -385,16 +385,18 @@ class DataResources extends React.Component{
 
         return(
             <div>
-                <div style={style.headerContainer}>
-                    <Typography style={style.header}>Resource usage</Typography>
-                    <div style={style.headerSelect}>
-                        <Select
-                            value={{value: this.state.resource, label: this.state.resource}}
-                            onChange={this.handleChange}
-                            options={options}/>
+                <LoadingComponent>
+                    <div style={style.headerContainer}>
+                        <Typography style={style.header}>Resource usage</Typography>
+                        <div style={style.headerSelect}>
+                            <Select
+                                value={{value: this.state.resource, label: this.state.resource}}
+                                onChange={this.handleChange}
+                                options={options}/>
+                        </div>
                     </div>
-                </div>
-               <ResourcesPieChart name={this.state.resource} data={resources[this.state.resource]}/>
+                    <ResourcesPieChart name={this.state.resource} data={resources[this.state.resource]}/>
+                </LoadingComponent>
             </div>
         )
     }
