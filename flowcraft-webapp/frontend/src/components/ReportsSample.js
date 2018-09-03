@@ -41,6 +41,7 @@ import {
 } from "./reports/sample_specific_utils";
 
 import {ReportAppConsumer} from "./reports/contexts";
+import {ResourcesPieChart} from "./reports/charts";
 
 import {LoadingComponent} from "./ReportsBase";
 
@@ -86,7 +87,6 @@ export class SampleDialog extends React.Component{
 
         const style = {
             reportContainer: {
-                marginTop: "70px",
                 padding: "20px"
             },
             buttonContainer: {
@@ -311,13 +311,90 @@ class Overview extends React.Component{
 
 class DataResources extends React.Component{
 
+    state = {
+        resource: "time"
+    };
+
+    handleChange = (e) => {
+        this.setState({resource: e.label})
+    };
+
+    getResourceData = (reportArray, sample) => {
+
+        const resources = {
+            time: [],
+            memory: [],
+            rchar: [],
+            wchar: [],
+        };
+
+        for (const el of reportArray){
+            if (!el.hasOwnProperty("sampleName")){
+                continue
+            }
+            const resourceList = el.trace[1].split(" ");
+
+            if (el.sampleName === sample){
+                resources.time.push({
+                    name: el.processName,
+                    y: parseInt(el.trace[2].trim())
+                });
+                resources.memory.push({
+                    name: el.processName,
+                    y: parseInt(resourceList[5])
+                });
+                resources.rchar.push({
+                    name: el.processName,
+                    y: parseInt(resourceList[8])
+                });
+                resources.wchar.push({
+                    name: el.processName,
+                    y: parseInt(resourceList[9])
+                });
+            }
+        }
+
+        return resources
+    };
 
     render(){
 
+        const style = {
+            header: {
+                fontSize: "16px",
+                fontWeight: "bold",
+                textAlign: "center",
+                marginBottom: "10px",
+                lineHeight: "35px"
+            },
+            headerContainer: {
+                display: "flex",
+                justifyContent: "center"
+            },
+            headerSelect: {
+                flexBasis: 120,
+                marginLeft: "10px"
+            }
+        };
+
+        const resources = this.getResourceData(this.props.reportData, this.props.sample)
+        const options = Object.keys(resources).map((v) => {return {
+            value: v,
+            label: v
+        }});
+
         return(
             <div>
-                <Typography>Sample: {this.props.sample}</Typography>
-                <Typography>Sample: {this.props.sample}</Typography>
+                <div style={style.headerContainer}>
+                    <Typography style={style.header}>Resource usage</Typography>
+                    <div style={style.headerSelect}>
+                        <Select
+                            value={{value: this.state.resource, label: this.state.resource}}
+                            onChange={this.handleChange}
+                            options={options}/>
+                    </div>
+                </div>
+               <ResourcesPieChart name={this.state.resource} data={resources[this.state.resource]}/>
             </div>
         )
     }
@@ -485,7 +562,7 @@ class HeaderCard extends React.Component{
             <div>
                 <div style={style.root}>
                     {
-                        proportion &&
+                        proportion >= 0 &&
                             <GaugeChart value={proportion}/>
                     }
                     <div style={style.textContainer}>
@@ -714,7 +791,8 @@ class DataLossOverview extends React.Component{
 
         const style = {
             header: {
-                fontSize: "20px",
+                fontSize: "16px",
+                fontWeight: "bold",
                 textAlign: "center",
                 marginBottom: "10px"
             },
@@ -727,7 +805,7 @@ class DataLossOverview extends React.Component{
 
         return(
             <LoadingComponent>
-                <Typography style={style.header}>Data loss chart</Typography>
+                <Typography style={style.header}>Data loss trend</Typography>
                 <div style={style.chartContainer}>
                     {
                         chartData.type === "sparkline" &&

@@ -812,3 +812,49 @@ class SearchChart extends React.Component{
         )
     }
 }
+
+
+export class ResourcesPieChart extends React.Component{
+
+    render(){
+
+        const config = {
+            chart: {
+                plotBackgroundColor: null,
+                plotBorderWidth: null,
+                plotShadow: false,
+                type: "pie",
+                height: "170px"
+            },
+            tooltip: {
+                pointFormat: "<b>{point.name}</b>: {point.percentage:.1f} % ({point.y}))"
+            },
+            plotOptions: {
+                pie: {
+                    allowPointSelect: true,
+                    cursor: "pointer",
+                    dataLabels: {
+                        enabled: false,
+                    }
+                }
+            },
+            title: {
+                text: null
+            },
+            credits: {
+                enabled: false
+            },
+            series: [{
+                name: "Processes",
+                colorByPoint: true,
+                data: this.props.data.sort((a, b) => {return a.y - b.y})
+            }]
+        };
+
+        return(
+            <div>
+                <ReactHighcharts config={config} ref="resourcesChart"></ReactHighcharts>
+            </div>
+        )
+    }
+}
