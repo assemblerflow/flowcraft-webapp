@@ -150,6 +150,34 @@ export class DraggableView extends React.Component {
  * into the reports app.
  */
 export class DragAndDropModal extends React.Component {
+
+    state = {
+        openModal: false,
+        dropData: null
+    };
+
+    openModal = (reportData) => {
+        this.setState({
+            openModal: true,
+            dropData: reportData
+        })
+    };
+
+    closeModal = () => {
+        this.setState({
+            openModal: false
+        })
+    };
+
+    // Required to set reference on parent component to allow state change
+    componentDidMount() {
+        this.props.onRef(this);
+    }
+
+    componentWillUnmount() {
+        this.props.onRef(undefined);
+    }
+
     render() {
 
         const style = {
@@ -190,50 +218,52 @@ export class DragAndDropModal extends React.Component {
         };
 
         return (
-            <BasicModal openModal={this.props.openModal}
-                        setModalState={this.props.setModalState}
+            <BasicModal openModal={this.state.openModal}
+                        setModalState={this.closeModal}
                         title="">
-
-                <div style={style.modalBody}>
-                    {/* Prototype for modal content */}
-                    <Typography style={style.uploadedMessage}>
-                        Adding a new Report with {
-                        <span style={style.processesNumber}>
+                {
+                    this.state.dropData &&
+                    <div style={style.modalBody}>
+                        {/* Prototype for modal content */}
+                        <Typography style={style.uploadedMessage}>
+                            Adding a new Report with {
+                            <span style={style.processesNumber}>
                                 {
-                                    this.props.dropData.reportData === undefined ? 0 : this.props.dropData.reportData.length
+                                    this.state.dropData.reportData === undefined ? 0 : this.state.dropData.reportData.length
                                 }
                             </span>
-                    } processes!
-                    </Typography>
-                    <Typography style={style.text}>
-                        Choose one of the following options:
-                    </Typography>
-                    {/* dropData: is the current data uploaded using
+                        } processes!
+                        </Typography>
+                        <Typography style={style.text}>
+                            Choose one of the following options:
+                        </Typography>
+                        {/* dropData: is the current data uploaded using
                              dragNdrop */}
-                    <div style={style.centeredContent}>
-                        <Button color={"primary"} variant={"contained"}
-                                style={style.button}
-                                onClick={() => {
-                                    this.props.mergeReports(this.props.dropData)
-                                }}>
-                            Merge Reports
-                        </Button>
-                        <Button color={"primary"} variant={"contained"}
-                                style={style.button}
-                                onClick={() => {
-                                    // Gets the information of filters and
-                                    // highlights only from the drop file
-                                    // and not from the concatenated version.
-                                    this.props.loadReports({
-                                        reportData: this.props.dropData.reportData,
-                                        filters: this.props.dropData.dropFilters,
-                                        highlights: this.props.dropData.dropHighlights
-                                    })
-                                }}>
-                            Clean Previous
-                        </Button>
+                        <div style={style.centeredContent}>
+                            <Button color={"primary"} variant={"contained"}
+                                    style={style.button}
+                                    onClick={() => {
+                                        this.props.mergeReports(this.state.dropData)
+                                    }}>
+                                Merge Reports
+                            </Button>
+                            <Button color={"primary"} variant={"contained"}
+                                    style={style.button}
+                                    onClick={() => {
+                                        // Gets the information of filters and
+                                        // highlights only from the drop file
+                                        // and not from the concatenated version.
+                                        this.props.loadReports({
+                                            reportData: this.state.dropData.reportData,
+                                            filters: this.state.dropData.dropFilters,
+                                            highlights: this.state.dropData.dropHighlights
+                                        })
+                                    }}>
+                                Clean Previous
+                            </Button>
+                        </div>
                     </div>
-                </div>
+                }
             </BasicModal>
         )
     }

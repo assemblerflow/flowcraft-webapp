@@ -85,7 +85,6 @@ export class ReportsBroadcast extends React.Component{
     }
 
     render(){
-        console.log(this.state)
         return(
             <div>
                 {
@@ -228,7 +227,7 @@ export class ReportsRedirect extends React.Component {
             filters,
             highlights
         });
-        this.setModalState(false)
+        this.reportModal.closeModal()
     };
 
     /*
@@ -242,13 +241,6 @@ export class ReportsRedirect extends React.Component {
             filters,
             highlights
         });
-    };
-
-    /*
-    Set the state of the drag and drop modal. True shows the modal.
-     */
-    setModalState = (value) => {
-        this.setState({openModal: value})
     };
 
     /*
@@ -326,8 +318,7 @@ export class ReportsRedirect extends React.Component {
                 if (this.state.reportData === null) {
                     this.loadReports(jsonData);
                 } else {
-                    this.setState({dropData: jsonData});
-                    this.setModalState(true)
+                    this.reportModal.openModal(jsonData);
                 }
             } catch (e) {
                 console.log(e);
@@ -348,7 +339,7 @@ export class ReportsRedirect extends React.Component {
 
     shouldComponentUpdate(nextProps, nextState) {
 
-        if(JSON.stringify(this.state.reportData) !== JSON.stringify(nextState.reportData) && this.state.openModal !== nextState.openModal) {
+        if(JSON.stringify(this.state.reportData) !== JSON.stringify(nextState.reportData)) {
             return true
         }
         else if (this.state.loading !== nextState.loading) {
@@ -397,11 +388,10 @@ export class ReportsRedirect extends React.Component {
         return (
             <div>
                 <FileDrop onDrop={this.handleDrop}>
-                    <DragAndDropModal openModal={this.state.openModal}
-                                      setModalState={this.setModalState}
-                                      dropData={this.state.dropData}
-                                      mergeReports={this.mergeReports}
-                                      loadReports={this.loadReports}/>
+                    <DragAndDropModal
+                        onRef={ref => {this.reportModal = ref}}
+                        mergeReports={this.mergeReports}
+                        loadReports={this.loadReports}/>
                     {
 
                         this.state.loading ?
