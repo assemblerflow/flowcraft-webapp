@@ -60,9 +60,9 @@ import {LoadingComponent} from "../ReportsBase";
 import {PhylovizModal, PositionedSnackbar} from "./modals";
 import {ReportDataConsumer, ReportAppConsumer} from './contexts';
 import {
-    getAssemblies,
-    getFile,
-    downloadChewbbacaProfiles,
+getAssemblies,
+getFile,
+downloadChewbbacaProfiles,
     getSpeciesMapping
 } from "./utils";
 import {SampleDialog} from "../ReportsSample";
@@ -101,11 +101,11 @@ export class FCTable extends React.Component {
                 rows: [],
                 keys: []
             },
+            page: 0,
             selectAll: false,
             rowFilter: ""
         }
     }
-
 
     handleSearchChange = (e) => {
         this.setState({rowFilter: e.target.value})
@@ -131,7 +131,6 @@ export class FCTable extends React.Component {
         updateCallback(updateFilterArray(arrayMap, selection, filters))
 
     };
-
 
     highlightSelection = (highlights, updateCallback, color) => {
 
@@ -212,8 +211,13 @@ export class FCTable extends React.Component {
         this.setState({selection});
     };
 
-    toggleAll = () => {
-        const selectAll = !this.state.selectAll;
+    toggleAll = (selectVal) => {
+
+        if (!selectVal){
+            selectVal = this.state.selectAll
+        }
+
+        const selectAll = !selectVal;
         const rows = [];
         const keys = [];
 
@@ -246,7 +250,6 @@ export class FCTable extends React.Component {
             if (String(this.state.selection.rows[index]._id).indexOf(key) >= 0) {
                 keyIndex = index
             }
-            ;
         }
 
         if (keyIndex !== null)
@@ -299,6 +302,8 @@ export class FCTable extends React.Component {
 
     render() {
 
+        console.log("render fc table")
+
         const style = {
             toolbar: {
                 marginBottom: "20px",
@@ -327,6 +332,22 @@ export class FCTable extends React.Component {
             searchField: {
                 width: "300px",
                 float: "right",
+            },
+            tableFooter: {
+                display: "flex",
+                marginTop: "15px"
+            },
+            footerText: {
+                fontSize: "16px",
+                lineHeight: "40px",
+                marginRight: "15px"
+            },
+            footerButton: {
+                paddingTop: 0,
+                paddingBottom: 0,
+                height: "40px",
+                color: themes[theme].palette.error.main,
+                borderColor: themes[theme].palette.error.main
             }
         };
 
@@ -431,6 +452,9 @@ export class FCTable extends React.Component {
                                 <CheckboxTable
                                     ref={r => (this.checkboxTable = r)}
                                     data={this.props.data}
+                                    page={this.state.page}
+                                    onPageChange={page => this.setState({page})}
+                                    onFilteredChange={() => {console.log("here"); this.setState({page: 0})}}
                                     columns={this.state.columns}
                                     filtered={this.state.rowFilter ? [{"id": "rowId", "value": this.state.rowFilter}] : []}
                                     defaultPageSize={10}
@@ -438,6 +462,14 @@ export class FCTable extends React.Component {
                                     defaultSorted={defaultSort}
                                     {...checkboxProps}
                                 />
+                                <div style={style.tableFooter}>
+                                    <Typography style={style.footerText}>Current selection: <b>{this.state.selection.keys.length}</b></Typography>
+                                    {
+                                        this.state.selection.keys.length > 0 &&
+                                            <Button variant={"outlined"} onClick={() => {this.toggleAll(true)}} style={style.footerButton}>Clear selection</Button>
+                                    }
+
+                                </div>
                             </LoadingComponent>
                         )
                     }
@@ -659,7 +691,7 @@ export class QualityControlTable extends React.Component {
         if (nextProps.tableData !== this.props.tableData) {
             return true
         } else if (nextState.selection !== this.state.selection) {
-            return true
+            return false
         }
 
         return false
