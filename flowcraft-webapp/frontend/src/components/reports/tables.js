@@ -416,6 +416,7 @@ export class FCTable extends React.Component {
                                             <FindDistributionPopover columns={this.props.columns}
                                                                      selection={this.state.selection.keys}
                                                                      data={this.props.data}/>
+                                            {this.props.selectedActions}
                                         </fieldset>
                                     }
                                     <div style={style.searchContainer}>
@@ -565,18 +566,82 @@ export class PhylovizTable extends React.Component {
                             columns={tableData.columnsArray}
                             rawData={tableData.rawTableArray}
                             setSelection={this.setSelection}
+                            selectedActions={
+                                <TableButton tooltip={"Show Trees"}
+                                             onClick={this.showTree}>
+                                    <ExportIcon style={style.icon}/>
+                                </TableButton>
+                            }
                             hideSelectionToolbar
                         >
-                            <TableButton tooltip={"Show Trees"}
-                                         onClick={this.showTree}>
-                                <ExportIcon style={style.icon}/>
-                            </TableButton>
                         </FCTable>
                     </div>
                 </ExpansionPanelDetails>
             </ExpansionPanel>
         )
     }
+}
+
+export class PlasmidsTable extends React.Component {
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            selection: {keys: []}
+        };
+    }
+    setSelection = (selection) => {
+        this.setState({selection});
+    };
+
+    shouldComponentUpdate(nextProps, nextState, nextContext) {
+        if (nextProps.tableData !== this.props.tableData) {
+            return true
+        } else if (nextState.selection !== this.state.selection) {
+            return true
+        }
+
+        return false
+    };
+
+    render() {
+
+        const tableData = genericTableParser(this.props.tableData);
+
+        const style = {
+            icon: {
+                fill: "#fff"
+            }
+        }
+
+        return (
+            <ExpansionPanel defaultExpanded>
+                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
+                    <Typography variant={"headline"}>Plasmids</Typography>
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails>
+                    <div className={styles.mainPaper}>
+                        <FCTable
+                            data={tableData.tableArray}
+                            columns={tableData.columnsArray}
+                            rawData={tableData.rawTableArray}
+                            selectedActions={
+                                <TableButton tooltip={"Send to pATLAS"}
+                                             onClick={() => {}}>
+                                    <ExportIcon style={style.icon}/>
+                                </TableButton>
+                            }
+                            setSelection={this.setSelection}>
+
+
+                        </FCTable>
+                    </div>
+                </ExpansionPanelDetails>
+            </ExpansionPanel>
+        )
+    }
+
 }
 
 
@@ -823,7 +888,7 @@ export class AbricateTable extends React.Component {
         }
 
         return false
-    }
+    };
 
     render() {
         const tableData = genericTableParser(this.props.tableData, this.handleCellClick);
@@ -1040,37 +1105,43 @@ export class ChewbbacaTable extends React.Component {
                             columns={tableData.columnsArray}
                             rawData={tableData.rawTableArray}
                             setSelection={this.setSelection}
+                            selectedActions={
+                                <div style={{display: "inline-block"}}>
+                                    <ReportDataConsumer>
+                                        {/*Pass the context value (_updateState
+                                        function) from the ReportDataContext to
+                                        PhylovizModal as a prop to
+                                        allow reportData state update*/}
+                                        {
+                                            ({updateState, filters, highlights}) => (
+                                                <ReportAppConsumer>
+                                                    {
+                                                        ({tableData}) => (
+                                                            <PhylovizModal
+                                                                specie={this.getCurrentSpecie}
+                                                                selection={this.state.selection}
+                                                                additionalInfo={this.props.additionalInfo}
+                                                                reportData={this.props.reportData}
+                                                                filters={filters}
+                                                                highlights={highlights}
+                                                                updateState={updateState}
+                                                                tableData={tableData}
+                                                            />
+                                                        )
+                                                    }
+                                                </ReportAppConsumer>
+                                            )
+                                        }
+
+                                    </ReportDataConsumer>
+                                    <TableButton tooltip={"Download Profiles"}
+                                                 onClick={this.downloadProfiles}>
+                                        <DownloadIcon style={style.icon}/>
+                                    </TableButton>
+                                </div>
+
+                            }
                         >
-                            {/*Pass the context value (_updateState
-                             function) from the ReportDataContext to
-                              PhylovizModal as a prop to
-                              allow reportData state update*/}
-                            <ReportDataConsumer>
-                                {
-                                    ({updateState, filters, highlights}) => (
-                                        <ReportAppConsumer>
-                                            {
-                                                ({tableData}) => (
-                                                    <PhylovizModal
-                                                        specie={this.getCurrentSpecie}
-                                                        selection={this.state.selection}
-                                                        additionalInfo={this.props.additionalInfo}
-                                                        reportData={this.props.reportData}
-                                                        filters={filters}
-                                                        highlights={highlights}
-                                                        updateState={updateState}
-                                                        tableData={tableData}
-                                                    />
-                                                )
-                                            }
-                                        </ReportAppConsumer>
-                                    )
-                                }
-                            </ReportDataConsumer>
-                            <TableButton tooltip={"Download Profiles"}
-                                         onClick={this.downloadProfiles}>
-                                <DownloadIcon style={style.icon}/>
-                            </TableButton>
                         </FCTable>
                     </div>
                 </ExpansionPanelDetails>

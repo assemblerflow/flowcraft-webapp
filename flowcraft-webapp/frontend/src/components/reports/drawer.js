@@ -177,6 +177,7 @@ class TableDrawer extends React.Component {
             {signature: "chewbbaca", icon: <AlienIcon/>, label: "chewBBACA"},
             {signature: "metadata", icon: <FileDocumentIcon/>, label: "Metadata"},
             {signature: "phyloviz", icon: <SourceMergeIcon/>, label: "PHYLOViZ"},
+            {signature: "plasmids", icon: <SourceMergeIcon/>, label: "Plasmids"}
         ];
 
         return (

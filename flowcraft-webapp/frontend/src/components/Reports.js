@@ -22,7 +22,8 @@ import {
     ChewbbacaTable,
     MetadataTable,
     PhylovizTable,
-    TypingTable
+    TypingTable,
+    PlasmidsTable
 } from "./reports/tables";
 import {Innuendo} from "./reports/innuendo";
 import {ReportsHeader} from "./reports/drawer";
@@ -699,6 +700,14 @@ class ReportsApp extends React.Component {
                                 <PhylovizTable
                                     tableData={tableData.get("phyloviz")}
                                     reportData={activeReports}/>
+                            </Element>
+                        }
+                        {
+                            tables.includes("plasmids") &&
+                            <Element name={"plasmidsTable"}
+                                     className={styles.scrollElement}>
+                                <PlasmidsTable
+                                    tableData={tableData.get("plasmids")}/>
                             </Element>
                         }
                         {
