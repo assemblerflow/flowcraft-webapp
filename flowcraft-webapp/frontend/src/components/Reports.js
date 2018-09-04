@@ -347,13 +347,15 @@ export class ReportsRedirect extends React.Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        if (this.state.loading !== nextState.loading)
-            return true;
-        if (this.state.reportData === nextState.reportData &&
-            this.state.openModal === nextState.openModal) {
-            return false
-        } else {
+
+        if(JSON.stringify(this.state.reportData) !== JSON.stringify(nextState.reportData) && this.state.openModal !== nextState.openModal) {
             return true
+        }
+        else if (this.state.loading !== nextState.loading) {
+            return true;
+        }
+        else {
+            return false;
         }
     }
 
