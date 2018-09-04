@@ -7,7 +7,7 @@ import { Switch, Route } from "react-router-dom";
 import Home from "./Home";
 import {NotFound} from "./NotFound";
 import {Inspect, InspectHome} from "./Inspect";
-import {ReportsRedirect} from "./Reports";
+import {ReportsRedirect, ReportsBroadcast} from "./Reports";
 import {ReportsHome} from "./ReportsHome";
 
 import styles from "../styles/main.css"
@@ -22,6 +22,8 @@ export class Main extends React.Component {
                     <Route exact path="/reports" component={ReportsHome}/>
                     <Route exact path="/reports/innuendo" component={ReportsRedirect}/>
                     <Route exact path="/reports/app" component={ReportsRedirect}/>
+                    <Route exact path="/reports/app" component={ReportsRedirect}/>
+                    <Route exact path="/reports/broadcast/:runId" component={ReportsBroadcast}/>
                     <Route component={NotFound}/>
                 </Switch>
             </main>

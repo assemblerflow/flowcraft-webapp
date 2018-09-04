@@ -14,6 +14,7 @@ class Reports(View):
 
     def get(self, request):
 
+        print(request.GET.get("run_id"))
         f = models.Reports.objects.get(run_id=request.GET.get("run_id"))
 
         return JsonResponse({"data": f.report_json})

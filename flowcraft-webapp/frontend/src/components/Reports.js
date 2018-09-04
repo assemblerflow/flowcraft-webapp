@@ -1,6 +1,8 @@
 // React imports
 import React from "react"
 import FileDrop from 'react-file-drop';
+import axios from "axios";
+import {Redirect} from "react-router-dom";
 
 import {
     DraggableView,
@@ -47,6 +49,54 @@ import styles from "../styles/reports.css";
 
 import {TaskButtons} from "./reports/task_buttons"
 import {PositionedSnackbar} from "./reports/modals";
+
+
+export class ReportsBroadcast extends React.Component{
+
+    constructor(props){
+        super(props);
+
+        this.state = {
+            reportData: null,
+            runId: this.props.match.params.runId
+        }
+
+    }
+
+    fetchReports = () => {
+        axios.get(`api/reports?run_id=${this.state.runId}`)
+            .then(
+                (response) => {
+                    this.setState({
+                        reportData: response.data.data.data.results
+                    })
+                },
+                (error) => {
+                    console.log("bad")
+                    console.log(error)
+                }
+            )
+
+    };
+
+    componentDidMount(){
+
+        this.fetchReports();
+    }
+
+    render(){
+        console.log(this.state)
+        return(
+            <div>
+                {
+                    this.state.reportData &&
+                        <ReportsApp reportData={this.state.reportData}/>
+                }
+            </div>
+        )
+    }
+}
+
 
 /**
  * This is the main wrapper of the reports app. The reports

@@ -85,7 +85,7 @@ export class TaskButtons extends React.Component {
                                                 filters={filters}
                                             />
                                             {
-                                                additionalInfo.innuendo &&
+                                                ((additionalInfo || {}).innuendo) &&
                                                 <SaveInnuendoTask
                                                     active={this.state.active}
                                                     data={reportData}
