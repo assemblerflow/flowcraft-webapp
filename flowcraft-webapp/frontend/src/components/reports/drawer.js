@@ -16,6 +16,7 @@ import List from "@material-ui/core/List";
 
 import ChartScatterplotHexbinIcon from "mdi-react/ChartScatterplotHexbinIcon";
 import NotificationClearAllIcon from "mdi-react/NotificationClearAllIcon";
+import CircleOutlineIcon from "mdi-react/CircleOutlineIcon";
 import FileDocumentIcon from "mdi-react/FileDocumentIcon";
 import ChevronLeftIcon from "mdi-react/ChevronLeftIcon";
 import InformationIcon from "mdi-react/InformationIcon";
@@ -177,7 +178,7 @@ class TableDrawer extends React.Component {
             {signature: "chewbbaca", icon: <AlienIcon/>, label: "chewBBACA"},
             {signature: "metadata", icon: <FileDocumentIcon/>, label: "Metadata"},
             {signature: "phyloviz", icon: <SourceMergeIcon/>, label: "PHYLOViZ"},
-            {signature: "plasmids", icon: <SourceMergeIcon/>, label: "Plasmids"}
+            {signature: "plasmids", icon: <CircleOutlineIcon/>, label: "Plasmids"}
         ];
 
         return (
