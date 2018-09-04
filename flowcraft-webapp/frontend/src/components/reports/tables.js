@@ -178,6 +178,9 @@ export class FCTable extends React.Component {
 
 
     toggleSelection = (key, shift, row) => {
+
+        console.log(key, shift, row);
+
         // start off with the existing state
         let rows = [...this.state.selection.rows];
         let keys = [...this.state.selection.keys];
@@ -199,6 +202,36 @@ export class FCTable extends React.Component {
             // it does not exist so add it
             rows.push(row);
             keys.push(key);
+        }
+
+        let save = false;
+        if (shift && this.state.selection.keys.length > 0){
+            const lastRow = this.state.selection.keys[this.state.selection.keys.length - 1];
+            // we need to get at the internals of ReactTable
+            const wrappedInstance = this.checkboxTable.getWrappedInstance();
+            // the 'sortedData' property contains the currently accessible records based on the filter and sort
+            const currentRecords = wrappedInstance.getResolvedState().sortedData;
+            // Get the index of the last row and the current row
+            const lastRowIndex = currentRecords.findIndex((v) => {return v._original._id === lastRow});
+            const rowIndex = currentRecords.findIndex((v) => {return v._original._id === key});
+
+            // Determine the start and end of the seleciton. If the index of the last
+            // row is larger than the current row, the selection should be reversed
+            // if lastIndex = 5 and currentIndex = 2, the selection should be 2-5
+            const startId = lastRowIndex < rowIndex ? lastRow : key;
+            const stopId = lastRowIndex > rowIndex ? lastRow : key;
+
+            // Add rows according to the start and stop indexes
+            currentRecords.forEach((item) => {
+                if (item._original._id === startId){
+                    save = true
+                } else if (item._original._id === stopId){
+                    save = false
+                } else if (save === true){
+                    rows.push(item._original);
+                    keys.push(item._original._id);
+                }
+            })
         }
 
         const selection = {
@@ -301,8 +334,6 @@ export class FCTable extends React.Component {
     };
 
     render() {
-
-        console.log("render fc table")
 
         const style = {
             toolbar: {
