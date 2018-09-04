@@ -89,7 +89,7 @@ export class ReportsBroadcast extends React.Component{
             <div>
                 {
                     this.state.reportData &&
-                        <ReportsApp reportData={this.state.reportData}/>
+                        <ReportsWrapper reportData={this.state.reportData}/>
                 }
             </div>
         )
@@ -97,21 +97,15 @@ export class ReportsBroadcast extends React.Component{
 }
 
 
-/**
- * This is the main wrapper of the reports app. The reports
- * application should be mounted via Redirect to this component for two reasons:
- *
- *  1. It provides drag and drop functionality for more reports
- *  2. It allows the state of the reports to be saved and associated with the
- *  URL. In this way, refreshing the reports app will retain the last saved
- *  data set.
- */
-export class ReportsRedirect extends React.Component {
+export class ReportsRedirect extends React.Component{
 
-    constructor(props) {
+    constructor(props){
         super(props);
 
-        console.log("redirect start");
+        // Variables with history state
+        const rData = this.props.location.state.data;
+        const filters = this.props.location.state.filters;
+        const highlights = this.props.location.state.highlights;
 
         let additionalInfo = this.props.location.state.additionalInfo;
 
@@ -125,40 +119,21 @@ export class ReportsRedirect extends React.Component {
             innuendo.setUserId(userId);
             innuendo.setSpecies(species);
             innuendo.setUsername(username);
-
             additionalInfo = {innuendo: innuendo};
-
         }
         else {
             additionalInfo = {};
         }
 
-        // Variables with history state
-        const rData = this.props.location.state.data;
-        const filters = this.props.location.state.filters;
-        const highlights = this.props.location.state.highlights;
-
         this.state = {
-            // Retrieve the initial state of reportData from the URL state
-            "reportData": rData === undefined ? [] : rData,
-            // Additional info has additional information that can be passed
-            // by the reportsRedirect. In this case, it can be user
-            // information collected from INNUENDO
-            "additionalInfo": additionalInfo,
-            // Filters to be applied to the reports
-            "filters": filters === undefined ? null : filters,
-            // Highlights to be applied to the reports
-            "highlights": highlights === undefined ? null : highlights,
-            // Set to true to display a loading spinner while processing data
-            "loading": true,
-            // Property that controls the showing of the File drag and drop modal
-            "openModal": false,
-            // Stores the intermediate reportData before merging or removing
-            // reportData.
-            "dropData": []
+            reportData: rData,
+            additionalInfo: additionalInfo,
+            filters: filters,
+            highlights: highlights
         };
 
-        this.handleDrop = this.handleDrop.bind(this)
+        this._updateState = this._updateState.bind(this);
+
     }
 
     // URL STATE HANDLING
@@ -191,20 +166,6 @@ export class ReportsRedirect extends React.Component {
     }
 
     /*
-    Method that clears the state associated with the URL when the component
-    is mounted. This is done to prevent performance issues when scrolling the
-    app with very big reports.
-     */
-    _clearUrlState() {
-        this.props.history.replace("/reports/app", {data: []});
-        this.props.history.state = {data: [], additionalInfo: {}};
-    }
-
-    _cancelLoading() {
-        this.setState({loading: false})
-    }
-
-    /*
     Callback that can be passed to children components to update the reportData
     state.
      */
@@ -215,6 +176,83 @@ export class ReportsRedirect extends React.Component {
             filters,
             highlights
         })
+    }
+
+    /*
+    Method that clears the state associated with the URL when the component
+    is mounted. This is done to prevent performance issues when scrolling the
+    app with very big reports.
+     */
+    _clearUrlState() {
+        this.props.history.replace("/reports/app", {data: []});
+        this.props.history.state = {data: [], additionalInfo: {}};
+    }
+
+    componentDidMount(){
+        // Add method that restores URL state on page relog
+        window.addEventListener("beforeunload", this._restoreUrlState.bind(this));
+        // Clear the current URL state with setTimeout to prevent blocking
+        setTimeout(this._clearUrlState.bind(this), 100);
+    }
+
+    render(){
+
+        console.log(this.state)
+        return (
+            <div>
+                <ReportsWrapper
+                    highlights={this.state.highlights}
+                    filters={this.state.filters}
+                    updateState={this._updateState}
+                    reportData={this.state.reportData} />
+            </div>
+        )
+    }
+}
+
+
+/**
+ * This is the main wrapper of the reports app. The reports
+ * application should be mounted via Redirect to this component for two reasons:
+ *
+ *  1. It provides drag and drop functionality for more reports
+ *  2. It allows the state of the reports to be saved and associated with the
+ *  URL. In this way, refreshing the reports app will retain the last saved
+ *  data set.
+ */
+class ReportsWrapper extends React.Component {
+
+    constructor(props) {
+        super(props);
+
+        console.log("redirect start");
+
+        // Variables with history state
+        const reportData = props.reportData;
+        const filters = props.filters;
+        const highlights = props.highlights;
+        const additionalInfo = props.additionalInfo;
+
+        this.state = {
+            // Retrieve the initial state of reportData from the URL state
+            "reportData": reportData === undefined ? [] : reportData,
+            // Additional info has additional information that can be passed
+            // by the reportsRedirect. In this case, it can be user
+            // information collected from INNUENDO
+            "additionalInfo": additionalInfo === undefined ? {} : reportData,
+            // Filters to be applied to the reports
+            "filters": filters === undefined ? null : filters,
+            // Highlights to be applied to the reports
+            "highlights": highlights === undefined ? null : highlights,
+            // Set to true to display a loading spinner while processing data
+            "loading": true,
+        };
+
+        this.handleDrop = this.handleDrop.bind(this)
+    }
+
+    _cancelLoading() {
+        this.setState({loading: false})
     }
 
     // DRAG AND DROP METHODS
@@ -329,10 +367,6 @@ export class ReportsRedirect extends React.Component {
     }
 
     componentDidMount() {
-        // Add method that restores URL state on page relog
-        window.addEventListener("beforeunload", this._restoreUrlState.bind(this));
-        // Clear the current URL state with setTimeout to prevent blocking
-        setTimeout(this._clearUrlState.bind(this), 100);
         // Clear the loading component
         setTimeout(this._cancelLoading.bind(this), 1000);
     }
@@ -401,7 +435,7 @@ export class ReportsRedirect extends React.Component {
                                  use on child components without the need of
                                   passing it as prop*/}
                                 <ReportDataProvider value={{
-                                    updateState: this._updateState.bind(this),
+                                    updateState: this.updateState,
                                     reportData: this.state.reportData,
                                     additionalInfo: this.state.additionalInfo
                                 }}>
@@ -410,7 +444,7 @@ export class ReportsRedirect extends React.Component {
                                         filters={this.state.filters}
                                         highlights={this.state.highlights}
                                         additionalInfo={this.state.additionalInfo}
-                                        updateState={this._updateState.bind(this)}
+                                        updateState={this.props.updateState}
                                     />
                                 </ReportDataProvider>
                             </div>
