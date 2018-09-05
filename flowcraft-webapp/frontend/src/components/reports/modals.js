@@ -115,7 +115,7 @@ export class PositionedSnackbar extends React.Component {
 
         const {open, message, type} = this.state;
         const Icon = variantIcon[type];
-
+        
         return (
             <div>
                 <Snackbar
@@ -124,7 +124,10 @@ export class PositionedSnackbar extends React.Component {
                         horizontal: this.props.horizontal
                     }}
                     open={open}
-                    autoHideDuration={6000}
+                    autoHideDuration={
+                        (this.props.autoHideDuration) ?
+                            this.props.autoHideDuration : 6000
+                    }
                     onClose={this.handleClose}
                 >
                     <SnackbarContent

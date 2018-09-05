@@ -675,24 +675,34 @@ class SelectPatlasModePopover extends React.Component{
         const patlasType = (accessor.includes("MashDist")) ? "assembly":
             (accessor.includes("MashScreen")) ? "mash_screen": "mapping";
 
-        const patlasObjectToFetch = (accessor.includes("MashDist")) ? "patlas_mashdist":
-            (accessor.includes("MashScreen")) ? "patlas_mashscreen": "patlas_mapping";
+        // assign a type to the elements available in report data that is
+        // required to send to pATLAS
+        const patlasObjectToFetch = (accessor.includes("MashDist")) ?
+            "patlas_mashdist": (accessor.includes("MashScreen")) ?
+                "patlas_mashscreen": "patlas_mapping";
 
-        // construct dict that will be sent to patlas, which require
-        // to parse the results from all selected rows
-        const samplesDict = Object.assign(...Object.entries(rows).map( ([k,v]) => {
-            return v.raw[accessor][patlasObjectToFetch]
-        }));
+        // construct dict that will be sent to patlas, which require to parse
+        // the results from all selected rows
+        const samplesDict = Object.assign(
+            ...Object.entries(rows).map( ([k,v]) => {
+                return v.raw[accessor][patlasObjectToFetch]
+            })
+        );
 
+        // make the request to pATLAS API
         axios.post("http://www.patlas.site/results/", {
             "type": patlasType,
             "samples": samplesDict
         }).then( (result) => {
+            // open a new tab with patlas
             window.open(result.data, "_blank");
         }).catch( (error) => {
-            // TODO replace alert by positionSnackBar
-            // raises an error message in the console
-            console.log(`pATLAS request rejected. Error message: ${error}, ${error.response.data}`)
+            // if something went wrong with the request raise an error message
+            // stating the issue
+            this.snackBar.handleOpen(
+                `pATLAS request rejected. Error message: ${error}, 
+                ${error.response.data}`, "error"
+            );
         })
     };
 
@@ -731,6 +741,12 @@ class SelectPatlasModePopover extends React.Component{
 
         return(
             <div style={{display: "inline-block"}}>
+                <PositionedSnackbar
+                    vertical="top"
+                    horizontal="right"
+                    autoHideDuration={10000}
+                    onRef={ref => (this.snackBar = ref)}
+                />
                 <TableButton tooltip={"Send to pATLAS"}
                              onClick={this.handleClick}>
                     <GoogleCirclesExtendedIcon style={style.icon}/>
