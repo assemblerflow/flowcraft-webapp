@@ -212,7 +212,7 @@ export class ReportsRedirect extends React.Component{
         )
     }
 }
-
+x
 
 /**
  * This is the main wrapper of the reports app. The reports
@@ -235,6 +235,8 @@ class ReportsWrapper extends React.Component {
         const filters = props.filters;
         const highlights = props.highlights;
         const additionalInfo = props.additionalInfo;
+
+        console.log(additionalInfo);
 
         this.state = {
             // Retrieve the initial state of reportData from the URL state
@@ -440,7 +442,9 @@ class ReportsWrapper extends React.Component {
                                 <ReportDataProvider value={{
                                     updateState: this.updateState,
                                     reportData: this.state.reportData,
-                                    additionalInfo: this.state.additionalInfo
+                                    additionalInfo: this.state.additionalInfo,
+                                    updateState: this.props.updateState
+
                                 }}>
                                     <ReportsApp
                                         reportData={this.state.reportData}

@@ -1043,10 +1043,12 @@ class InnuendoSavedReports extends React.Component {
             selection: [],
             resultsReports: [],
             filters: undefined,
-            highlights: undefined
+            highlights: undefined,
+            species: {}
         };
 
         this._getSavedReports();
+        this._getSpecies();
 
     }
 
@@ -1059,6 +1061,19 @@ class InnuendoSavedReports extends React.Component {
             this.setState({
                 tableData: response.data
             });
+        });
+    };
+
+    _getSpecies = () => {
+        this.props.innuendo.getInnuendoSpecies().then((response) => {
+            let speciesObject = {};
+
+            response.data.map(r => {
+                speciesObject[r.id] = r.name;
+            });
+
+            this.setState({species: speciesObject});
+
         });
     };
 
@@ -1125,6 +1140,8 @@ class InnuendoSavedReports extends React.Component {
                 fill: "white"
             }
         };
+
+        console.log(this.props.innuendo.species);
 
         return (
             <div>
