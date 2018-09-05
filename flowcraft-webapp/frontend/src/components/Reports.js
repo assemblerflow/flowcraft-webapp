@@ -212,7 +212,7 @@ export class ReportsRedirect extends React.Component{
         )
     }
 }
-x
+
 
 /**
  * This is the main wrapper of the reports app. The reports
