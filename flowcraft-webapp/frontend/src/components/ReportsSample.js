@@ -261,6 +261,9 @@ class Overview extends React.Component{
                         <div>
                             <Grid container spacing={40}>
                                 <Grid style={style.gridItems} item xs={4}>
+                                    <QualityCard qcInfo={this.props.qcInfo} sample={this.props.sample} />
+                                </Grid>
+                                <Grid style={style.gridItems} item xs={4}>
                                     <DataResources
                                         reportData={this.props.reportData}
                                         sample={this.props.sample}/>
@@ -269,9 +272,6 @@ class Overview extends React.Component{
                                     <DataLossOverview sample={this.props.sample}
                                                       nfMetadata={this.props.nfMetadata}
                                                       reportData={this.props.reportData} />
-                                </Grid>
-                                <Grid style={style.gridItems} item xs={4}>
-                                    <QualityCard qcInfo={this.props.qcInfo} sample={this.props.sample} />
                                 </Grid>
                             </Grid>
                             <Grid container spacing={24}>
