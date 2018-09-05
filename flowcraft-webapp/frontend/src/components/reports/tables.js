@@ -188,16 +188,10 @@ export class FCTable extends React.Component {
         let rows = [...this.state.selection.rows];
         let keys = [...this.state.selection.keys];
 
-        let keyIndex = null;
-
-        for (const index in rows) {
-            if (String(rows[index]._id).indexOf(key) >= 0) {
-                keyIndex = index
-            }
-        }
+        const keyIndex = rows.findIndex((v) => {return v._id === key});
 
         // check to see if the key exists
-        if (keyIndex !== null) {
+        if (keyIndex !== -1) {
             // it does exist so we will remove it using destructing
             rows.splice(keyIndex, 1);
             keys.splice(keyIndex, 1);
@@ -280,15 +274,10 @@ export class FCTable extends React.Component {
 
     isSelected = key => {
         // Return if selection array includes the provided key
-        let keyIndex = null;
 
-        for (const index in this.state.selection.rows) {
-            if (String(this.state.selection.rows[index]._id).indexOf(key) >= 0) {
-                keyIndex = index
-            }
-        }
+        const keyIndex = this.state.selection.rows.findIndex((v) => {return v._id === key});
 
-        if (keyIndex !== null)
+        if (keyIndex !== -1)
             return true;
         else
             return false;
@@ -591,7 +580,8 @@ export class PhylovizTable extends React.Component {
 
     showTree = () => {
         if (this.state.selection.keys.length > 0) {
-            window.open(this.state.selection.rows[0].uri, "_blank");
+            const uri = this.state.selection.rows[0].raw.PHYLOViZUser_.uri;
+            window.open(uri, "_blank");
         }
         else {
             const message = "Please select an entry from the table first!";
@@ -638,7 +628,6 @@ export class PhylovizTable extends React.Component {
                                     <ExportIcon style={style.icon}/>
                                 </TableButton>
                             }
-                            hideSelectionToolbar
                         >
                         </FCTable>
                     </div>

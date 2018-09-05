@@ -205,7 +205,9 @@ export class ReportsRedirect extends React.Component{
                     highlights={this.state.highlights}
                     filters={this.state.filters}
                     updateState={this._updateState}
-                    reportData={this.state.reportData} />
+                    reportData={this.state.reportData}
+                    additionalInfo={this.state.additionalInfo}
+                />
             </div>
         )
     }
@@ -240,7 +242,7 @@ class ReportsWrapper extends React.Component {
             // Additional info has additional information that can be passed
             // by the reportsRedirect. In this case, it can be user
             // information collected from INNUENDO
-            "additionalInfo": additionalInfo === undefined ? {} : reportData,
+            "additionalInfo": additionalInfo === undefined ? {} : additionalInfo,
             // Filters to be applied to the reports
             "filters": filters === undefined ? null : filters,
             // Highlights to be applied to the reports
@@ -595,6 +597,7 @@ class ReportsApp extends React.Component {
 
         console.log(this.props.reportData)
         console.log(this.state.highlights)
+        console.log(this.props.additionalInfo);
 
         //
         // This is the main element where the Reports components will be added,

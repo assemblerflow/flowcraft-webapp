@@ -427,10 +427,17 @@ export class PhylovizModal extends React.Component {
 
         if (this.props.additionalInfo && this.props.additionalInfo.innuendo) {
 
+            let jobIds = [];
+
+            for (const row of this.state.selection.rows) {
+                let entry = row.raw["INF_chewbbaca"];
+                jobIds.push(`${entry.projectId}:${entry.pipelineId}:${entry.processId}`)
+            }
+
             // Get job identifier from selection data
-            const jobIds = this.state.selection.rows.map((s) => {
+            /*const jobIds = this.state.selection.rows.map((s) => {
                 return `${s.projectId}:${s.pipelineId}:${s.processId}`
-            });
+            });*/
 
             // Set data object to send to PHYLOViZ Online
             const data = {
