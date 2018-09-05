@@ -55,6 +55,7 @@ import TableIcon from "mdi-react/TableIcon";
 import AlertIcon from "mdi-react/AlertIcon";
 import Magnify from "mdi-react/MagnifyIcon";
 import EyeIcon from "mdi-react/EyeIcon";
+import GoogleCirclesExtendedIcon from "mdi-react/GoogleCirclesExtendedIcon";
 
 import {LoadingComponent} from "../ReportsBase";
 import {PhylovizModal, PositionedSnackbar} from "./modals";
@@ -70,6 +71,8 @@ import {HighlightSelectionPopup} from "./overview";
 import {updateFilterArray, updateHighlightArray} from "./filters_highlights";
 import FilterIcon from "../../../../node_modules/mdi-react/FilterIcon";
 import {FindDistributionChart} from "./charts";
+import axios from "axios";
+import {address} from "../../../config";
 
 
 const statusColor = {
@@ -645,7 +648,130 @@ export class PhylovizTable extends React.Component {
     }
 }
 
-export class PlasmidsTable extends React.Component {
+class SelectPatlasModePopover extends React.Component{
+
+    state = {
+        anchorEl: null
+    };
+
+    handleClick = event => {
+        this.setState({
+            anchorEl: event.currentTarget,
+        });
+    };
+
+    handleClose = () => {
+        this.setState({
+            anchorEl: null,
+        });
+    };
+
+    /**
+     * Function to parse and make pATLAS request
+     */
+    sendToPatlas = (accessor, header, rows) => {
+
+        // assign a type based on the entry selected from the modal
+        const patlasType = (accessor.includes("MashDist")) ? "assembly":
+            (accessor.includes("MashScreen")) ? "mash_screen": "mapping";
+
+        const patlasObjectToFetch = (accessor.includes("MashDist")) ? "patlas_mashdist":
+            (accessor.includes("MashScreen")) ? "patlas_mashscreen": "patlas_mapping";
+
+        // construct dict that will be sent to patlas, which require
+        // to parse the results from all selected rows
+        const samplesDict = Object.assign(...Object.entries(rows).map( ([k,v]) => {
+            return v.raw[accessor][patlasObjectToFetch]
+        }));
+
+        axios.post("http://www.patlas.site/results/", {
+            "type": patlasType,
+            "samples": samplesDict
+        }).then( (result) => {
+            window.open(result.data, "_blank");
+        }).catch( (error) => {
+            // TODO replace alert by positionSnackBar
+            // raises an error message in the console
+            console.log(`pATLAS request rejected. Error message: ${error}, ${error.response.data}`)
+        })
+    };
+
+    render() {
+
+        const style = {
+            icon: {
+                fill: "#fff"
+            },
+            root: {
+                padding: "15px"
+            },
+            header: {
+                marginBottom: "10px"
+            },
+            dialogRoot: {
+                marginTop: "60px",
+                padding: "20px"
+            },
+            dialogHeaderContainer: {
+                display: "flex",
+                justifyContent: "center",
+                marginTop: "15px",
+                marginBottom: "15px"
+            },
+            dialogHeaderText: {
+                marginRight: "15px",
+                fontSize: "18px",
+                fontWeight: "bold",
+                lineHeight: "40px"
+            }
+        };
+
+        const {anchorEl} = this.state;
+        const skipAccessors = ["highlight", "rowId", "qc"];
+
+        return(
+            <div style={{display: "inline-block"}}>
+                <TableButton tooltip={"Send to pATLAS"}
+                             onClick={this.handleClick}>
+                    <GoogleCirclesExtendedIcon style={style.icon}/>
+                </TableButton>
+                <Popover open={Boolean(anchorEl)}
+                         anchorEl={anchorEl}
+                         onClose={this.handleClose}
+                         anchorOrigin={{
+                             vertical: "center",
+                             horizontal: "right"
+                         }}
+                         transformOrigin={{
+                             vertical: "center",
+                             horizontal: "left"
+                         }}>
+                    <div style={style.root}>
+                        <Typography style={style.header} variant={"subheading"}>Select column</Typography>
+                        <Divider/>
+                        <List>
+                            {
+                                this.props.columns.map((col) => {
+                                    if (!skipAccessors.includes(col.accessor)){
+                                        return(
+                                            <ListItem onClick={() => {this.sendToPatlas(col.accessor, col.Header, this.props.rows)}} button key={col.accessor}>
+                                                <ListItemText primary={col.Header}/>
+                                            </ListItem>
+                                        )
+                                    }
+                                })
+                            }
+                        </List>
+                    </div>
+                </Popover>
+            </div>
+        )
+
+    }
+
+}
+
+export class PlasmidsTable extends React.Component{
 
     constructor(props) {
         super(props);
@@ -654,6 +780,7 @@ export class PlasmidsTable extends React.Component {
             selection: {keys: []}
         };
     }
+
     setSelection = (selection) => {
         this.setState({selection});
     };
@@ -672,12 +799,6 @@ export class PlasmidsTable extends React.Component {
 
         const tableData = genericTableParser(this.props.tableData);
 
-        const style = {
-            icon: {
-                fill: "#fff"
-            }
-        }
-
         return (
             <ExpansionPanel defaultExpanded>
                 <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
@@ -690,14 +811,10 @@ export class PlasmidsTable extends React.Component {
                             columns={tableData.columnsArray}
                             rawData={tableData.rawTableArray}
                             selectedActions={
-                                <TableButton tooltip={"Send to pATLAS"}
-                                             onClick={() => {}}>
-                                    <ExportIcon style={style.icon}/>
-                                </TableButton>
+                                <SelectPatlasModePopover columns={tableData.columnsArray}
+                                                         rows={this.state.selection.rows}/>
                             }
                             setSelection={this.setSelection}>
-
-
                         </FCTable>
                     </div>
                 </ExpansionPanelDetails>
