@@ -577,17 +577,18 @@ export const genericTableParser = (reportArray, action) => {
                     initialDataObject[key] = <Typography className={styles.tableCell}>{cell[key]}</Typography>
                 } else if (key === "highlight"){
                     initialDataObject[key] = cell.highlight ? <ColorPaper idx={cell.highlight.idx} color={cell.highlight.color}/> : null
-                } else {
-                    initialDataObject[key] = cell[key];
                 }
             }
 
             dataDict[cell.rowId] = initialDataObject;
+            dataDict[cell.rowId].raw = {};
 
             rawDataDict[cell.rowId] = {
                 "rowId": cell.rowId
             };
         }
+
+        dataDict[cell.rowId]["raw"][accessor] = cell;
 
         // When an action is provided as argument, add the callback to a clic
         // event on the tabel cell.

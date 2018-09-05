@@ -722,7 +722,7 @@ export class QualityControlTable extends React.Component {
         if (nextProps.tableData !== this.props.tableData) {
             return true
         } else if (nextState.selection !== this.state.selection) {
-            return false
+            return true
         }
 
         return false

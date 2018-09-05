@@ -634,6 +634,7 @@ class ReportsApp extends React.Component {
                                 highlights={this.state.highlights}
                                 updateFilters={this.updateFilters}
                                 updateHighlights={this.updateHighlights}
+                                nfMetadata={nfMetadata}
                                 qcInfo={qcInfo}/>
                         </Element>
                         {
