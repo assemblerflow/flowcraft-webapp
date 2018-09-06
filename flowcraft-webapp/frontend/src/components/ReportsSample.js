@@ -1274,7 +1274,8 @@ class SyncChartsContainer extends React.Component{
     };
 
     /**
-     * Function that searches for the best hit for one contig.
+     * Function that collects accessions and their respective id and
+     * shared hashes
      * @param tableData : Object object that has the table for the selected
      * sample
      * @param listAccessions : Array an array os accession number hits for a
@@ -1282,44 +1283,20 @@ class SyncChartsContainer extends React.Component{
      */
     _getPlasmidsResults = (tableData, listAccessions) => {
 
-        let currentBestHit = {};
+        let accessionsResults = {};
 
-        // searches all accessions in table data to fetch the respective best
-        // matching plasmid(s)
+        // searches all accessions in table data to fetch the respective ids
+        // and shared hashes
         for (const acc of listAccessions) {
             const id = tableData[0].patlas_mashdist[acc][0];
             const sharedHashes = tableData[0].patlas_mashdist[acc][1];
-            // calculates a score between the id and shared hashes
-            const hitValue = id * sharedHashes;
-
-            // checks if object is empty or not
-            if (Object.keys(currentBestHit).length > 0) {
-                // check if stored value is lower than the one being currently
-                // looked at.
-                if (currentBestHit[0].hitValue < hitValue) {
-                    currentBestHit = [{
-                        "hitValue": hitValue,
-                        "hitAccession": acc
-                    }]
-                } else if (currentBestHit[0].hitValue === hitValue) {
-                    // if stored accessions have a identical score, store both
-                    // entries
-                    currentBestHit.push({
-                        "hitValue": hitValue,
-                        "hitAccession": acc
-                    })
-                }
-            } else {
-                // for the first instance where currentBestHit is still false
-                currentBestHit = [{
-                    "hitValue": hitValue,
-                    "hitAccession": acc
-                }]
+            accessionsResults[acc] = {
+                id,
+                sharedHashes
             }
         }
 
-        return currentBestHit
-
+        return accessionsResults
     };
 
     complementPlasmidData = (reportData, sample, assemblyFile, xBars, window) => {
@@ -1343,17 +1320,19 @@ class SyncChartsContainer extends React.Component{
 
                         // get information from tableRow with the corresponding
                         // identity, shared sequences.
-                        const fetchPlasmidResults = this._getPlasmidsResults(
+                        const accessionsResults = this._getPlasmidsResults(
                             el.reportJson.tableRow[0].data,
                             plot.data.patlasMashDistXrange[contig]
                         );
+
+                        console.log(accessionsResults)
 
                         return {
                             x: correctRange[0],
                             x2: correctRange[1],
                             y: 0,
                             gene: contig,
-                            bestHit: fetchPlasmidResults
+                            accessionsResults
                         };
                     });
 
@@ -1632,7 +1611,7 @@ class SyncCharts extends React.Component{
             gene: e.point.gene,
             geneLength: parseInt((e.point.x2 - e.point.x) * 2000),
             genePosition: `${e.point.x * 2000} - ${e.point.x2 * 2000}`,
-            bestHit: e.point.bestHit
+            accessionsResults: e.point.accessionsResults
         }
 
         console.log(data)
