@@ -448,21 +448,30 @@ export class FCTable extends React.Component {
                                             {
                                                 (this.state.selection.keys.length === 1 && tableSamples.length > 0) &&
                                                 <div style={{display: "inline-block"}}>
-                                                    <SampleDialog
-                                                        sample={this.state.selection.keys[0]}
-                                                        button={<TableButton
-                                                            tooltip={"Open sample specific report"}><Magnify
-                                                            style={{fill: "#fff"}}/></TableButton>}/>
+                                                    {
+                                                        !this.props.hideGeneralButtons &&
+                                                        <SampleDialog
+                                                            sample={this.state.selection.keys[0]}
+                                                            button={<TableButton
+                                                                tooltip={"Open sample specific report"}><Magnify
+                                                                style={{fill: "#fff"}}/></TableButton>}/>
+                                                    }
                                                     {this.props.singleActions}
                                                 </div>
                                             }
-                                            <TableButton onClick={() => {this.filterSelection(filters, updateFilters)}} tooltip={"Filter and keep only selection"}>
-                                                <FilterIcon color={"#fff"}/>
-                                            </TableButton>
-                                            <HighlightSelectionPopup action={(color) =>{this.highlightSelection(highlights, updateHighlights, color)}} />
-                                            <FindDistributionPopover columns={this.props.columns}
-                                                                     selection={this.state.selection.keys}
-                                                                     data={this.props.data}/>
+                                            {
+                                                !this.props.hideGeneralButtons &&
+                                                <div style={{display: "inline-block"}}>
+                                                    <TableButton onClick={() => {this.filterSelection(filters, updateFilters)}} tooltip={"Filter and keep only selection"}>
+                                                        <FilterIcon color={"#fff"}/>
+                                                    </TableButton>
+                                                    <HighlightSelectionPopup action={(color) =>{this.highlightSelection(highlights, updateHighlights, color)}} />
+                                                    <FindDistributionPopover columns={this.props.columns}
+                                                                             selection={this.state.selection.keys}
+                                                                             data={this.props.data}/>
+                                                </div>
+                                            }
+
                                             {this.props.selectedActions}
                                         </fieldset>
                                     }
