@@ -732,6 +732,10 @@ export const qcParseAdditionalData = (tableData, originalData, qcInfo, signature
 };
 
 
+/*
+Parses a JSON report file and returns an array containing only the nfMetadata
+entries.
+ */
 export const findNfMetadata = (reportsArray) => {
 
     let nfMetadata = [];
@@ -739,11 +743,25 @@ export const findNfMetadata = (reportsArray) => {
     for (const el of reportsArray){
 
         if (el.hasOwnProperty("nfMetadata")){
-            nfMetadata.push(el);
+            nfMetadata.push(el.nfMetadata);
         }
     }
 
     return nfMetadata;
+};
+
+
+export const findProjectMetadata = (projectId, nfMetadata) => {
+
+    let projectPipelines = [];
+
+    for (const el of nfMetadata){
+        if (el.runName === projectId){
+            projectPipelines.push(el);
+        }
+    }
+
+    return projectPipelines;
 };
 
 

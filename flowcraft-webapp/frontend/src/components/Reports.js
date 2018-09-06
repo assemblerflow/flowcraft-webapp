@@ -440,7 +440,6 @@ class ReportsWrapper extends React.Component {
                                  use on child components without the need of
                                   passing it as prop*/}
                                 <ReportDataProvider value={{
-                                    updateState: this.updateState,
                                     reportData: this.state.reportData,
                                     additionalInfo: this.state.additionalInfo,
                                     updateState: this.props.updateState

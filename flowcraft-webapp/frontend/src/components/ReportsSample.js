@@ -665,8 +665,8 @@ class DataLossOverview extends React.Component{
     _findForkParent = (pipelineId, lane) => {
 
         for (const nf of this.props.nfMetadata){
-            if (nf.nfMetadata.runName === pipelineId){
-                const forkTree = nf.nfMetadata.forks;
+            if (nf.runName === pipelineId){
+                const forkTree = nf.forks;
 
                 for (const l of Object.keys(forkTree)){
                     if (forkTree[l].includes(parseInt(lane))){

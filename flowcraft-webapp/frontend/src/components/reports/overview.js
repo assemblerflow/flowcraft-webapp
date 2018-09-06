@@ -7,13 +7,18 @@ import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails"
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import ExpandLessIcon from "@material-ui/icons/ExpandLess";
+import ListItemText from "@material-ui/core/ListItemText";
 import Typography from "@material-ui/core/Typography";
+import IconButton from "@material-ui/core/IconButton";
 import Collapse from "@material-ui/core/Collapse";
+import ListItem from "@material-ui/core/ListItem";
 import Tooltip from "@material-ui/core/Tooltip";
 import Popover from "@material-ui/core/Popover";
 import Divider from "@material-ui/core/Divider"
+import Drawer from "@material-ui/core/Drawer";
 import Button from "@material-ui/core/Button";
 import Paper from "@material-ui/core/Paper";
+import List from "@material-ui/core/List";
 import Grid from "@material-ui/core/Grid";
 
 import indigo from "@material-ui/core/colors/indigo";
@@ -28,13 +33,18 @@ import FilterIcon from "mdi-react/FilterIcon";
 import EyeIcon from "mdi-react/EyeIcon";
 import EyeOffIcon from "mdi-react/EyeOffIcon";
 import MagnifyIcon from "mdi-react/MagnifyIcon";
+import ChevronRightIcon from "mdi-react/ChevronRightIcon";
+import InformationIcon from "mdi-react/InformationIcon";
 
 import {themes} from "./themes";
 import {theme} from "../../../config"
 
+import {findProjectMetadata} from "./parsers";
 import {sortByContent,sortColor} from "./utils";
 import {updateFilterArray, updateHighlightArray} from "./filters_highlights";
 import {SampleDialog} from "../ReportsSample";
+import styles from "../../styles/reports.css";
+import ExportIcon from "mdi-react/ExportIcon";
 
 
 export class ReportOverview extends React.Component{
@@ -235,6 +245,11 @@ export class ReportOverview extends React.Component{
             if (el.hasOwnProperty("projectid")){
                 if (!_projects.has(el.projectid)){
 
+                    // Retrieve the nfMetadata objects with the metadata information
+                    // relative to this project. A single proejct may contain one or
+                    // more pipelines
+                    const projectMetadata = findProjectMetadata(el.projectid, this.props.nfMetadata);
+
                     projectQcInfo = this._getQcInfo("project", el.projectid, qcInfo);
                     const projectHighlight = this.props.highlights.projects.filter((v) => {
                         return v.label === el.projectid
@@ -247,7 +262,12 @@ export class ReportOverview extends React.Component{
                         "_id": el.projectid,
                         "project": <Typography>{el.projectid}</Typography>,
                         "warnings": <OverviewQcPopover content={projectQcInfo.warnings}/>,
-                        "fail": <OverviewQcPopover content={projectQcInfo.fail}/>
+                        "fail": <OverviewQcPopover content={projectQcInfo.fail}/>,
+                        "moreActions": <div style={{textAlign: "center"}}>
+                            <ProjectInfoDrawer
+                            button={<ProjectInfoDrawerButton/>}
+                            projectInfo={projectMetadata} />
+                        </div>
                     })
                 }
             }
@@ -264,7 +284,9 @@ export class ReportOverview extends React.Component{
                         "_id": el.processName,
                         "component": <Typography>{el.processName}</Typography>,
                         "warnings": <OverviewQcPopover content={componentQcInfo.warnings}/>,
-                        "fail": <OverviewQcPopover content={componentQcInfo.fail}/>
+                        "fail": <OverviewQcPopover
+                            button={<ProjectInfoDrawerButton/>}
+                            content={componentQcInfo.fail}/>,
                     })
                 }
             }
@@ -321,6 +343,11 @@ export class ReportOverview extends React.Component{
             headerStyle: style.headerContainer,
             accessor: "fail",
             sortMethod: sortByContent
+        },
+        {
+            Header: <Typography style={style.headerStyle}>More actions</Typography>,
+            headerStyle: style.headerContainer,
+            accessor: "moreActions",
         }];
         const componentColumns = [{
             Header: <FilterIcon/>,
@@ -953,6 +980,125 @@ export class ColorPaper extends React.Component{
 
         return(
             <Paper style={style.root}> </Paper>
+        )
+    }
+}
+
+
+class ProjectInfoDrawerButton extends React.Component{
+
+    render(){
+
+        const style = {
+            button: {
+                padding: 0,
+                minWidth: "50px",
+                minHeight: "35px"
+            }
+        };
+
+        return(
+            <Tooltip title={"View project metadata"} placement={"top"}>
+                <Button style={style.button} variant={"outlined"} color={"primary"}>
+                    <InformationIcon style={{fill: themes[theme].palette.primary.main}}/>
+                </Button>
+            </Tooltip>
+        )
+    }
+}
+
+
+class ProjectInfoDrawer extends React.Component{
+
+    state = {
+        open: false
+    };
+
+    toggleDrawer = (open) => () => {
+        this.setState({
+            open
+        })
+    };
+
+    render() {
+
+        const style = {
+            drawerRoot: {
+                width: "350px"
+            },
+            itemText: {
+                wordWrap: "break-word"
+            },
+            header: {
+                fontSize: "16px",
+                fontWeight: "bold",
+                marginBottom: "10px",
+                marginTop: "10px",
+                paddingLeft: "10px",
+            },
+            itemPrimaryText: {
+                fontSize: "15px"
+            },
+            itemSecondaryText: {
+                fontWeight: "bold"
+            }
+        };
+
+        const headerMapping = [
+            {key: "commandLine", value: "Nextflow command"},
+            {key: "start_time", value: "Pipeline start time"},
+            {key: "launchDir", value: "Launch directory"},
+            {key: "projectDir", value: "Project directory"},
+            {key: "containerEngine", value: "Container engine"},
+            {key: "profile", value: "Nextflow profile"},
+            {key: "scriptId", value: "Nextflow script ID"},
+            {key: "sessionId", value: "Nextflow session ID"}
+        ];
+
+        return(
+            <div>
+                <div onClick={this.toggleDrawer(true)}>
+                    {this.props.button}
+                </div>
+                <Drawer anchor={"right"} open={this.state.open} onClose={this.toggleDrawer(false)}>
+                    <div
+                        role={"button"}
+                        onKeyDown={this.toggleDrawer(false)}
+                        tabIndex={0}>
+                        <div style={style.drawerRoot}>
+                            <div>
+                                <IconButton onClick={this.toggleDrawer(false)}>
+                                    <ChevronRightIcon fill={"#fff"}/>
+                                </IconButton>
+                            </div>
+                            <Divider/>
+                            <div style={style.container}>
+                                {
+                                    this.props.projectInfo.map((v) => {
+                                        return(
+                                            <div key={v.runName}>
+                                                <Typography style={style.header}>Project: {v.runName}</Typography>
+                                                <Divider/>
+                                                <List>
+                                                    {
+                                                        headerMapping.map((header) => {
+                                                            return (
+                                                                <ListItem key={header.key}>
+                                                                    <ListItemText style={style.itemText} primary={v[header.key]} primaryTypographyProps={{style: style.itemPrimaryText}} secondaryTypographyProps={{style: style.itemSecondaryText}} secondary={header.value}/>
+                                                                </ListItem>
+                                                            )
+                                                        })
+                                                    }
+                                                </List>
+                                            </div>
+                                        )
+                                    })
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </Drawer>
+            </div>
         )
     }
 }
