@@ -676,8 +676,11 @@ class SelectPatlasModePopover extends React.Component{
         // construct dict that will be sent to patlas, which require to parse
         // the results from all selected rows
         const samplesDict = Object.assign(
-            ...Object.entries(rows).map( ([k,v]) => {
-                return v.raw[accessor][patlasObjectToFetch]
+            ...Object.values(rows).map( (v) => {
+                // create temporary object for each sample
+                let tempObj = {};
+                tempObj[v._id] = v.raw[accessor][patlasObjectToFetch];
+                return tempObj
             })
         );
 
