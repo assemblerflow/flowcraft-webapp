@@ -447,11 +447,14 @@ export class FCTable extends React.Component {
                                             </legend>
                                             {
                                                 (this.state.selection.keys.length === 1 && tableSamples.length > 0) &&
-                                                <SampleDialog
-                                                    sample={this.state.selection.keys[0]}
-                                                    button={<TableButton
-                                                        tooltip={"Open sample specific report"}><Magnify
-                                                        style={{fill: "#fff"}}/></TableButton>}/>
+                                                <div style={{display: "inline-block"}}>
+                                                    <SampleDialog
+                                                        sample={this.state.selection.keys[0]}
+                                                        button={<TableButton
+                                                            tooltip={"Open sample specific report"}><Magnify
+                                                            style={{fill: "#fff"}}/></TableButton>}/>
+                                                    {this.props.singleActions}
+                                                </div>
                                             }
                                             <TableButton onClick={() => {this.filterSelection(filters, updateFilters)}} tooltip={"Filter and keep only selection"}>
                                                 <FilterIcon color={"#fff"}/>
