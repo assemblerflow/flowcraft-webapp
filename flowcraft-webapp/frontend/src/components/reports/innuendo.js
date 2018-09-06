@@ -365,11 +365,10 @@ export class HomeInnuendo extends React.Component {
                 }
             }
         }
-
     };
 
     componentDidMount() {
-        if (this.props.bypassLogin !== undefined && !this.state.showProjects){
+        if (this.props.bypassLogin !== undefined && !this.state.showProjects) {
             if (this.props.bypassLogin.additionalInfo !== undefined) {
 
                 const additionalInfo = JSON.parse(this.props.bypassLogin.additionalInfo);
@@ -383,8 +382,7 @@ export class HomeInnuendo extends React.Component {
                     })
                 }
             }
-        };
-
+        }
         // Event to receive message from iframe
         window.addEventListener('message', this.receiveMessage);
     }
@@ -899,6 +897,9 @@ class InnuendoProjects extends React.Component {
             metadataMap[1].push(strain);
         }
 
+        metadataMap[0] = metadataMap[0].join();
+        metadataMap[1] = metadataMap[1].join();
+
         const results = await this.props.innuendo.submissionRoutine(this.props.initialStrains, [this.props.initialProjects], metadataMap);
 
         this.setState({
@@ -1141,8 +1142,6 @@ class InnuendoSavedReports extends React.Component {
             }
         };
 
-        console.log(this.props.innuendo.species);
-
         return (
             <div>
                 <PositionedSnackbar
@@ -1177,16 +1176,21 @@ class InnuendoSavedReports extends React.Component {
                             columns={tableData.columnsArray}
                             rawData={tableData.rawTableArray}
                             setSelection={this.setSelection}
-                            hideSelectionToolbar
+                            withoutSamples
+                            hideGeneralButtons
+                            singleActions={
+                                <div>
+                                    <TableButton tooltip={"Show Report"}
+                                                 onClick={this.showReport}>
+                                        <ExportIcon style={style.icon}/>
+                                    </TableButton>
+                                    <TableButton tooltip={"Delete Report"}
+                                                 onClick={this.deleteReport}>
+                                        <DeleteForeverIcon style={style.icon}/>
+                                    </TableButton>
+                                </div>
+                            }
                         >
-                            <TableButton tooltip={"Show Report"}
-                                         onClick={this.showReport}>
-                                <ExportIcon style={style.icon}/>
-                            </TableButton>
-                            <TableButton tooltip={"Delete Report"}
-                                         onClick={this.deleteReport}>
-                                <DeleteForeverIcon style={style.icon}/>
-                            </TableButton>
                         </FCTable> :
                         <Typography>No saved reports available!</Typography>
                 }

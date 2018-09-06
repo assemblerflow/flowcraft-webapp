@@ -458,7 +458,7 @@ export class FCTable extends React.Component {
                                                 style={style.toolbarHeader}>Selection</Typography>
                                             </legend>
                                             {
-                                                (this.state.selection.keys.length === 1 && tableSamples.length > 0) &&
+                                                (this.state.selection.keys.length === 1 && (this.props.withoutSamples || tableSamples.length > 0)) &&
                                                 <div style={{display: "inline-block"}}>
                                                     {
                                                         !this.props.hideGeneralButtons &&
