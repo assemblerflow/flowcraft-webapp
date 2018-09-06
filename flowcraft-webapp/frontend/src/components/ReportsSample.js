@@ -1261,21 +1261,65 @@ class SyncChartsContainer extends React.Component{
 
     _convertPlasmidPosition = (xBars, contig, window) => {
 
-        console.log(xBars, contig, window)
-
         let c = 0;
         for (const val of xBars){
 
             if (val[1] === contig){
-                console.log(val[0])
-                console.log(xBars[c + 1][0] )
-                console.log(window)
                 return [val[0] / window,  xBars[c + 1][0] / window]
             }
             c += 1
         }
 
         return [0, 0]
+    };
+
+    /**
+     * Function that searches for the best hit for one contig.
+     * @param tableData : Object object that has the table for the selected
+     * sample
+     * @param listAccessions : Array an array os accession number hits for a
+     * contig
+     */
+    _getPlasmidsResults = (tableData, listAccessions) => {
+
+        let currentBestHit = {};
+
+        // searches all accessions in table data to fetch the respective best
+        // matching plasmid(s)
+        for (const acc of listAccessions) {
+            const id = tableData[0].patlas_mashdist[acc][0];
+            const sharedHashes = tableData[0].patlas_mashdist[acc][1];
+            // calculates a score between the id and shared hashes
+            const hitValue = id * sharedHashes;
+
+            // checks if object is empty or not
+            if (Object.keys(currentBestHit).length > 0) {
+                // check if stored value is lower than the one being currently
+                // looked at.
+                if (currentBestHit[0].hitValue < hitValue) {
+                    currentBestHit = [{
+                        "hitValue": hitValue,
+                        "hitAccession": acc
+                    }]
+                } else if (currentBestHit[0].hitValue === hitValue) {
+                    // if stored accessions have a identical score, store both
+                    // entries
+                    currentBestHit.push({
+                        "hitValue": hitValue,
+                        "hitAccession": acc
+                    })
+                }
+            } else {
+                // for the first instance where currentBestHit is still false
+                currentBestHit = [{
+                    "hitValue": hitValue,
+                    "hitAccession": acc
+                }]
+            }
+        }
+
+        return currentBestHit
+
     };
 
     complementPlasmidData = (reportData, sample, assemblyFile, xBars, window) => {
@@ -1294,20 +1338,27 @@ class SyncChartsContainer extends React.Component{
 
                     const tempData = Object.keys(plot.data.patlasMashDistXrange).map((contig) => {
 
-                        console.log(contig)
+                        const correctRange = this._convertPlasmidPosition(
+                            xBars, contig, window);
 
-                        const correctRange = this._convertPlasmidPosition(xBars, contig, window);
+                        // get information from tableRow with the corresponding
+                        // identity, shared sequences.
+                        const fetchPlasmidResults = this._getPlasmidsResults(
+                            el.reportJson.tableRow[0].data,
+                            plot.data.patlasMashDistXrange[contig]
+                        );
 
                         return {
                             x: correctRange[0],
                             x2: correctRange[1],
                             y: 0,
                             gene: contig,
+                            bestHit: fetchPlasmidResults
                         };
                     });
 
                     xrangeDataPlasmids.push({
-                        name: "palmadas",
+                        name: "plasmids",
                         data: tempData,
                         pointWidth: 12,
                         pointRange: 0,
@@ -1576,7 +1627,16 @@ class SyncCharts extends React.Component{
     };
 
     _plasmidClick = (e) => {
-        console.log("click plasmids: ", e)
+        console.log("click plasmids: ", e.point)
+        const data = {
+            gene: e.point.gene,
+            geneLength: parseInt((e.point.x2 - e.point.x) * 2000),
+            genePosition: `${e.point.x * 2000} - ${e.point.x2 * 2000}`,
+            bestHit: e.point.bestHit
+        }
+
+        console.log(data)
+        // this.plasmidPopover.handleClick(e.target, data)
     };
 
     getxRangeLayout = (data, categories, xLabels, plotLines, title,
