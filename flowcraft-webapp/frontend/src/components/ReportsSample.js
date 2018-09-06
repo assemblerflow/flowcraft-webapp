@@ -42,6 +42,7 @@ import {
 
 import {ReportAppConsumer} from "./reports/contexts";
 import {FindDistributionChart, ResourcesPieChart} from "./reports/charts";
+import {getSamplePlot} from "./reports/parsers";
 
 import {LoadingComponent} from "./ReportsBase";
 
@@ -246,7 +247,8 @@ class Overview extends React.Component{
         const headerMap = {
             "qc": "Quality Control",
             "assembly": "Assembly",
-            "abricate": "AMR"
+            "abricate": "AMR",
+            "plasmids": "Plasmids"
         };
 
         const {data, dataExtremes} = this.getOverviewData(this.props.tableData, this.props.sample);
@@ -1182,17 +1184,17 @@ class SyncChartsContainer extends React.Component{
 
     _convertContigPosition = (xrange, contig, xbars, window) => {
 
-        let contigId;
+        let contigId = 0;
         let prevRange = 0;
 
         for (const val of xbars){
-            contigId = xbars.indexOf(val) + 1;
+            contigId += 1;
 
             if (contigId === contig){
                 return [(xrange[0] + prevRange) / window, (xrange[1] + prevRange) / window]
             }
 
-            prevRange = val;
+            prevRange = val[0];
         }
 
         return [0, 0]
@@ -1233,7 +1235,7 @@ class SyncChartsContainer extends React.Component{
                                     coverage: v.coverage,
                                     identity: v.identity,
                                     contig: v.contig,
-                                    window: window
+                                    window
                                 }
                             });
                             xrangeCategories.push(db);
@@ -1257,71 +1259,126 @@ class SyncChartsContainer extends React.Component{
 
     };
 
+    _convertPlasmidPosition = (xBars, contig, window) => {
+
+        console.log(xBars, contig, window)
+
+        let c = 0;
+        for (const val of xBars){
+
+            if (val[1] === contig){
+                console.log(val[0])
+                console.log(xBars[c + 1][0] )
+                console.log(window)
+                return [val[0] / window,  xBars[c + 1][0] / window]
+            }
+            c += 1
+        }
+
+        return [0, 0]
+    };
+
+    complementPlasmidData = (reportData, sample, assemblyFile, xBars, window) => {
+
+        let xrangeCategoriesPlasmids = [],
+            xrangeDataPlasmids = [];
+
+        for (const el of getSamplePlot(reportData, sample)) {
+
+            for (const plot of el.reportJson.plotData){
+
+                if (plot.data.hasOwnProperty("patlasMashDistXrange") &&
+                    plot.assemblyFile === assemblyFile){
+
+                    xrangeCategoriesPlasmids.push("plasmids");
+
+                    const tempData = Object.keys(plot.data.patlasMashDistXrange).map((contig) => {
+
+                        console.log(contig)
+
+                        const correctRange = this._convertPlasmidPosition(xBars, contig, window);
+
+                        return {
+                            x: correctRange[0],
+                            x2: correctRange[1],
+                            y: 0,
+                            gene: contig,
+                        };
+                    });
+
+                    xrangeDataPlasmids.push({
+                        name: "palmadas",
+                        data: tempData,
+                        pointWidth: 12,
+                        pointRange: 0,
+                    })
+                }
+            }
+        }
+
+        return {xrangeCategoriesPlasmids, xrangeDataPlasmids}
+
+    };
+
     getSlidingData = (reportData, sample) => {
 
         let data = new Map();
         let processes = [];
 
-        let gcData;
-        let covData;
-        let xLabels;
-        let xBars;
-        let window;
-        let plotLines;
+        for (const el of getSamplePlot(reportData, sample)){
 
-        for (const el of reportData){
+            for (const plot of el.reportJson.plotData){
 
-            if ( ((el || {}).reportJson || {}).plotData ){
-
-                for (const plot of el.reportJson.plotData){
-
-                    if (plot.sample !== sample){
-                        continue
-                    }
-
-                    if (plot.data.hasOwnProperty("genomeSliding")){
-                        gcData = plot.data.genomeSliding.gcData;
-                        covData = plot.data.genomeSliding.covData;
-                        xLabels = plot.data.genomeSliding.gcData.map((v, i) => {
+                if (plot.data.hasOwnProperty("genomeSliding")){
+                    let currentData = {
+                        gcData: plot.data.genomeSliding.gcData,
+                        covData: plot.data.genomeSliding.covData,
+                        xLabels: plot.data.genomeSliding.gcData.map((v, i) => {
                             return i * plot.data.genomeSliding.window
-                        });
-                        xBars = Array.from(plot.data.genomeSliding.xbars, v => v[1]);
-                        window = plot.data.genomeSliding.window;
-                        plotLines = xBars.map((v) => {
-                            return {
-                                value: v / window,
-                                width: 0.15,
-                                color: "grey"
-                            }
-                        });
+                        }),
+                        xBars: Array.from(plot.data.genomeSliding.xbars, v => [v[1], v[2]]),
+                        window: plot.data.genomeSliding.window,
+                    };
 
-                        if (this.props.charts.includes("abricateXrange")){
-                            const {xrangeData, xrangeCategories} = this.complementAbricateData(reportData, sample, plot.data.genomeSliding.assemblyFile, xBars, window);
-                            data.set(el.processName, {
-                                gcData,
-                                covData,
-                                xLabels,
-                                plotLines,
-                                xBars,
-                                window,
-                                xrangeData,
-                                xrangeCategories
-                            });
-                        } else {
-                            data.set(el.processName, {
-                                gcData,
-                                covData,
-                                xLabels,
-                                xBars,
-                                plotLines,
-                                window
-                            });
+                    currentData.plotLines = currentData.xBars.map((v) => {
+                        return {
+                            value: v[0] / currentData.window,
+                            width: 0.15,
+                            color: "grey"
                         }
-                        processes.push(el.processName);
+                    });
+
+                    if (this.props.charts.includes("abricateXrange")){
+                        const {xrangeData, xrangeCategories} = this.complementAbricateData(
+                            reportData, sample,
+                            plot.data.genomeSliding.assemblyFile,
+                            currentData.xBars, currentData.window
+                        );
+
+                        currentData.xrangeData = xrangeData;
+                        currentData.xrangeCategories = xrangeCategories;
                     }
+
+                    if (this.props.charts.includes("patlasMashDistXrange")){
+                        const {xrangeCategoriesPlasmids, xrangeDataPlasmids} = this.complementPlasmidData(
+                            reportData, sample,
+                            plot.data.genomeSliding.assemblyFile,
+                            currentData.xBars,
+                            currentData.window
+                        );
+
+                        currentData.xrangeDataPlasmids = xrangeDataPlasmids;
+                        currentData.xrangeCategoriesPlasmids = xrangeCategoriesPlasmids;
+                    }
+
+                    processes.push(el.processName);
+                    data.set(el.processName, currentData);
                 }
             }
+
         }
+
+        console.log(data)
 
         return {
             data,
@@ -1518,10 +1575,15 @@ class SyncCharts extends React.Component{
         this.genePopover.handleClick(e.target, data)
     };
 
-    getxRangeLayout = (data, categories, xLabels, plotLines) => {
+    _plasmidClick = (e) => {
+        console.log("click plasmids: ", e)
+    };
 
-        const seriesHeight = 25;
-        const chartHeight = 90 + (seriesHeight * categories.length);
+    getxRangeLayout = (data, categories, xLabels, plotLines, title,
+                       clickFunction) => {
+
+        const seriesHeight = 10;
+        const chartHeight = 150 + (seriesHeight * categories.length);
 
         let config = new Chart({
             title: null,
@@ -1540,7 +1602,7 @@ class SyncCharts extends React.Component{
             type: "xrange",
         });
         config.extend("title", {
-            text: "Antimicrobial resistance and virulence annotation",
+            text: title,
         });
         config.extend("plotOptions", {
             series: {
@@ -1549,7 +1611,7 @@ class SyncCharts extends React.Component{
                 point: {
                     events: {
                         click: (e) => {
-                            this._geneClick(e)
+                            clickFunction(e)
                         }
                     }
                 }
@@ -1563,7 +1625,7 @@ class SyncCharts extends React.Component{
                 };
             },
             pointFormatter() {
-                return `<span>Gene: <b>${this.gene}</b> (Click for details)</span>`;
+                return `<span>Name: <b>${this.gene}</b> (Click for details)</span>`;
             },
             borderWidth: 0,
             backgroundColor: "none",
@@ -1696,7 +1758,26 @@ class SyncCharts extends React.Component{
 
         let xRangeConfig;
         if (this.props.plotData.hasOwnProperty("xrangeData")){
-            xRangeConfig = this.getxRangeLayout(this.props.plotData.xrangeData, this.props.plotData.xrangeCategories, this.props.plotData.xLabels, this.props.plotData.plotLines)
+            xRangeConfig = this.getxRangeLayout(
+                this.props.plotData.xrangeData,
+                this.props.plotData.xrangeCategories,
+                this.props.plotData.xLabels,
+                this.props.plotData.plotLines,
+                "Antimicrobial resistance and virulence annotations",
+                this._geneClick,
+            )
+        }
+
+        let xRangeConfigPlasmids;
+        if (this.props.plotData.hasOwnProperty("xrangeDataPlasmids")) {
+            xRangeConfigPlasmids = this.getxRangeLayout(
+                this.props.plotData.xrangeDataPlasmids,
+                this.props.plotData.xrangeCategoriesPlasmids,
+                this.props.plotData.xLabels,
+                this.props.plotData.plotLines,
+                "Plasmid hits",
+                this._plasmidClick,
+            );
         }
 
         return(
@@ -1714,6 +1795,18 @@ class SyncCharts extends React.Component{
                                 zoomInitialGene={this.props.zoomInitialGene}
                                 data={this.props.plotData.xrangeData}/>
                         </div>
+                }
+                {
+                    xRangeConfigPlasmids &&
+                    <div>
+                        {/*<GenePopup onRef={ref => (this.genePopover = ref)}/>*/}
+                        <ReactHighcharts config={xRangeConfigPlasmids.layout} ref={"slidingPlasmids"}></ReactHighcharts>
+                        {/*<AbricateSelect*/}
+                            {/*highlightAbrSelection={this.highlightAbrSelection}*/}
+                            {/*zoomAbrSelection={this.zoomAbrSelection}*/}
+                            {/*zoomInitialGene={this.props.zoomInitialGene}*/}
+                            {/*data={this.props.plotData.xrangeData}/>*/}
+                    </div>
                 }
             </div>
         )

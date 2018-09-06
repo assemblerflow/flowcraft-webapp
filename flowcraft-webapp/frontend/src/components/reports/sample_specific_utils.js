@@ -26,15 +26,15 @@ export const updateLabels = (el, fw, idx) => {
 
 export const getContig = (position, xBars) => {
 
-    let contig = 1;
+    let contig = xBars[0][1];
     let prevPosition = 0;
 
     for (const val of xBars){
-        if (position <= val && position >= prevPosition){
+        if (position <= val[0] && position >= prevPosition){
             return contig
         }
-        contig = xBars.indexOf(val) + 1;
-        prevPosition = val;
+        contig = val[1];
+        prevPosition = val[0];
     }
 
 };

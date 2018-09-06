@@ -799,3 +799,26 @@ export const InnuendoReportsTableParser = (reportsArray) => {
         rawTableArray: tableArray
     }
 };
+
+export const getSamplePlot = (reportData, sample) => {
+
+    let filteredData = [];
+
+    for (const el of reportData) {
+
+        if (((el || {}).reportJson || {}).plotData) {
+
+            for (const plot of el.reportJson.plotData) {
+
+                // Skip entries for different sample/ assembly file
+                if (plot.sample !== sample) {
+                    continue
+                }
+
+                filteredData.push(el)
+            }
+        }
+    }
+
+    return filteredData
+};

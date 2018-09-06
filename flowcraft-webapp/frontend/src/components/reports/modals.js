@@ -115,7 +115,7 @@ export class PositionedSnackbar extends React.Component {
 
         const {open, message, type} = this.state;
         const Icon = variantIcon[type];
-        
+
         return (
             <div>
                 <Snackbar
