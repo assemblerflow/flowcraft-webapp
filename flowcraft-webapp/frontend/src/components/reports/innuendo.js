@@ -803,12 +803,12 @@ class InnuendoProjects extends React.Component {
      */
     getSpecies = () => {
 
-        this.props.innuendo.getInnuendoSpecies().then((response) => {
+        return this.props.innuendo.getInnuendoSpecies().then((response) => {
             let speciesObject = {};
 
-            response.data.map(r => {
+            for (const r of response.data) {
                 speciesObject[r.id] = r.name;
-            });
+            }
 
             this.setState({species: speciesObject});
 
@@ -822,7 +822,7 @@ class InnuendoProjects extends React.Component {
      */
     getProjects = () => {
 
-        this.props.innuendo.getInnuendoProjects().then((response) => {
+        return this.props.innuendo.getInnuendoProjects().then((response) => {
             const species = this.state.species;
             let projects = [];
             let projectNamesToIds = {};

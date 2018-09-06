@@ -629,7 +629,8 @@ export class PhylovizModal extends React.Component {
                 width: "80%",
                 height: "80%",
                 top: "10%",
-                left: "10%"
+                left: "10%",
+                overflowX: "auto"
             },
             modalBody: {
                 margin: "2%"
