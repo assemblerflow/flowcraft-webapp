@@ -61,9 +61,9 @@ import {LoadingComponent} from "../ReportsBase";
 import {PhylovizModal, PositionedSnackbar} from "./modals";
 import {ReportDataConsumer, ReportAppConsumer} from './contexts';
 import {
-getAssemblies,
-getFile,
-downloadChewbbacaProfiles,
+    getAssemblies,
+    getFile,
+    downloadChewbbacaProfiles,
     getSpeciesMapping
 } from "./utils";
 import {SampleDialog} from "../ReportsSample";
@@ -77,8 +77,8 @@ import {address} from "../../../config";
 
 const statusColor = {
     "fail": themes[theme].palette.error.main,
-    "pass":  themes[theme].palette.success.main,
-    "warning":  themes[theme].palette.warning.main
+    "pass": themes[theme].palette.success.main,
+    "warning": themes[theme].palette.warning.main
 };
 
 /**
@@ -161,16 +161,20 @@ export class FCTable extends React.Component {
         let newColumns = [];
 
         // Check if column is visible, that is, in the state columns
-        if (this.state.columns.some((v) => {return v.accessor === colAcessor})){
+        if (this.state.columns.some((v) => {
+                return v.accessor === colAcessor
+            })) {
             // Remove this column from state
-            for (const col of this.state.columns){
-                if (col.accessor !== colAcessor){
+            for (const col of this.state.columns) {
+                if (col.accessor !== colAcessor) {
                     newColumns.push(col)
                 }
             }
         } else {
-            for (const col of this.props.columns){
-                if (this.state.columns.some((v) => {return v.accessor === col.accessor}) || col.accessor === colAcessor){
+            for (const col of this.props.columns) {
+                if (this.state.columns.some((v) => {
+                        return v.accessor === col.accessor
+                    }) || col.accessor === colAcessor) {
                     newColumns.push(col)
                 }
             }
@@ -182,13 +186,13 @@ export class FCTable extends React.Component {
 
     toggleSelection = (key, shift, row) => {
 
-        console.log(key, shift, row);
-
         // start off with the existing state
         let rows = [...this.state.selection.rows];
         let keys = [...this.state.selection.keys];
 
-        const keyIndex = rows.findIndex((v) => {return v._id === key});
+        const keyIndex = rows.findIndex((v) => {
+            return v._id === key
+        });
 
         // check to see if the key exists
         if (keyIndex !== -1) {
@@ -202,15 +206,19 @@ export class FCTable extends React.Component {
         }
 
         let save = false;
-        if (shift && this.state.selection.keys.length > 0){
+        if (shift && this.state.selection.keys.length > 0) {
             const lastRow = this.state.selection.keys[this.state.selection.keys.length - 1];
             // we need to get at the internals of ReactTable
             const wrappedInstance = this.checkboxTable.getWrappedInstance();
             // the 'sortedData' property contains the currently accessible records based on the filter and sort
             const currentRecords = wrappedInstance.getResolvedState().sortedData;
             // Get the index of the last row and the current row
-            const lastRowIndex = currentRecords.findIndex((v) => {return v._original._id === lastRow});
-            const rowIndex = currentRecords.findIndex((v) => {return v._original._id === key});
+            const lastRowIndex = currentRecords.findIndex((v) => {
+                return v._original._id === lastRow
+            });
+            const rowIndex = currentRecords.findIndex((v) => {
+                return v._original._id === key
+            });
 
             // Determine the start and end of the seleciton. If the index of the last
             // row is larger than the current row, the selection should be reversed
@@ -220,11 +228,11 @@ export class FCTable extends React.Component {
 
             // Add rows according to the start and stop indexes
             currentRecords.forEach((item) => {
-                if (item._original._id === startId){
+                if (item._original._id === startId) {
                     save = true
-                } else if (item._original._id === stopId){
+                } else if (item._original._id === stopId) {
                     save = false
-                } else if (save === true){
+                } else if (save === true) {
                     rows.push(item._original);
                     keys.push(item._original._id);
                 }
@@ -243,7 +251,7 @@ export class FCTable extends React.Component {
 
     toggleAll = (selectVal) => {
 
-        if (!selectVal){
+        if (!selectVal) {
             selectVal = this.state.selectAll
         }
 
@@ -275,7 +283,9 @@ export class FCTable extends React.Component {
     isSelected = key => {
         // Return if selection array includes the provided key
 
-        const keyIndex = this.state.selection.rows.findIndex((v) => {return v._id === key});
+        const keyIndex = this.state.selection.rows.findIndex((v) => {
+            return v._id === key
+        });
 
         if (keyIndex !== -1)
             return true;
@@ -287,7 +297,7 @@ export class FCTable extends React.Component {
 
         // Update table columns when the props have been updated. This means
         // that the original columns have changed.
-        if (this.props.columns !== nextProps.columns){
+        if (this.props.columns !== nextProps.columns) {
             this.setState({columns: this.props.columns})
         }
 
@@ -399,7 +409,9 @@ export class FCTable extends React.Component {
         const hideSelectionToolbar = this.props.hideSelectionToolbar ? this.props.hideSelectionToolbar : false;
 
         let defaultSort = [];
-        if (this.props.data.some((v) => {return v.highlight})){
+        if (this.props.data.some((v) => {
+                return v.highlight
+            })) {
             defaultSort = [{
                 id: "highlight",
                 desc: true
@@ -432,12 +444,12 @@ export class FCTable extends React.Component {
                                     }
                                     {
                                         this.props.children &&
-                                            <fieldset style={style.fieldset}>
-                                                <legend><Typography
-                                                    style={style.toolbarHeader}>Contextual</Typography>
-                                                </legend>
-                                                {this.props.children}
-                                            </fieldset>
+                                        <fieldset style={style.fieldset}>
+                                            <legend><Typography
+                                                style={style.toolbarHeader}>Contextual</Typography>
+                                            </legend>
+                                            {this.props.children}
+                                        </fieldset>
                                     }
                                     {
                                         (this.state.selection.keys.length > 0 && !hideSelectionToolbar ) &&
@@ -489,19 +501,31 @@ export class FCTable extends React.Component {
                                     data={this.props.data}
                                     page={this.state.page}
                                     onPageChange={page => this.setState({page})}
-                                    onFilteredChange={() => {console.log("here"); this.setState({page: 0})}}
+                                    onFilteredChange={() => {
+                                        console.log("here");
+                                        this.setState({page: 0})
+                                    }}
                                     columns={this.state.columns}
-                                    filtered={this.state.rowFilter ? [{"id": "rowId", "value": this.state.rowFilter}] : []}
+                                    filtered={this.state.rowFilter ? [{
+                                        "id": "rowId",
+                                        "value": this.state.rowFilter
+                                    }] : []}
                                     defaultPageSize={10}
                                     className={"-striped -highlight"}
                                     defaultSorted={defaultSort}
                                     {...checkboxProps}
                                 />
                                 <div style={style.tableFooter}>
-                                    <Typography style={style.footerText}>Current selection: <b>{this.state.selection.keys.length}</b></Typography>
+                                    <Typography style={style.footerText}>Current
+                                        selection:
+                                        <b>{this.state.selection.keys.length}</b></Typography>
                                     {
                                         this.state.selection.keys.length > 0 &&
-                                            <Button variant={"outlined"} onClick={() => {this.toggleAll(true)}} style={style.footerButton}>Clear selection</Button>
+                                        <Button variant={"outlined"}
+                                                onClick={() => {
+                                                    this.toggleAll(true)
+                                                }} style={style.footerButton}>Clear
+                                            selection</Button>
                                     }
 
                                 </div>
@@ -634,7 +658,8 @@ export class PhylovizTable extends React.Component {
                             columns={tableData.columnsArray}
                             rawData={tableData.rawTableArray}
                             setSelection={this.setSelection}
-                            selectedActions={
+                            hideGeneralButtons
+                            singleActions={
                                 <TableButton tooltip={"Show Trees"}
                                              onClick={this.showTree}>
                                     <ExportIcon style={style.icon}/>
@@ -649,7 +674,7 @@ export class PhylovizTable extends React.Component {
     }
 }
 
-class SelectPatlasModePopover extends React.Component{
+class SelectPatlasModePopover extends React.Component {
 
     state = {
         anchorEl: null
@@ -673,19 +698,19 @@ class SelectPatlasModePopover extends React.Component{
     sendToPatlas = (accessor, header, rows) => {
 
         // assign a type based on the entry selected from the modal
-        const patlasType = (accessor.includes("MashDist")) ? "assembly":
-            (accessor.includes("MashScreen")) ? "mash_screen": "mapping";
+        const patlasType = (accessor.includes("MashDist")) ? "assembly" :
+            (accessor.includes("MashScreen")) ? "mash_screen" : "mapping";
 
         // assign a type to the elements available in report data that is
         // required to send to pATLAS
         const patlasObjectToFetch = (accessor.includes("MashDist")) ?
-            "patlas_mashdist": (accessor.includes("MashScreen")) ?
-                "patlas_mashscreen": "patlas_mapping";
+            "patlas_mashdist" : (accessor.includes("MashScreen")) ?
+                "patlas_mashscreen" : "patlas_mapping";
 
         // construct dict that will be sent to patlas, which require to parse
         // the results from all selected rows
         const samplesDict = Object.assign(
-            ...Object.values(rows).map( (v) => {
+            ...Object.values(rows).map((v) => {
                 // create temporary object for each sample
                 let tempObj = {};
                 tempObj[v._id] = v.raw[accessor][patlasObjectToFetch];
@@ -697,10 +722,10 @@ class SelectPatlasModePopover extends React.Component{
         axios.post("http://www.patlas.site/results/", {
             "type": patlasType,
             "samples": samplesDict
-        }).then( (result) => {
+        }).then((result) => {
             // open a new tab with patlas
             window.open(result.data, "_blank");
-        }).catch( (error) => {
+        }).catch((error) => {
             // if something went wrong with the request raise an error message
             // stating the issue
             this.snackBar.handleOpen(
@@ -743,7 +768,7 @@ class SelectPatlasModePopover extends React.Component{
         const {anchorEl} = this.state;
         const skipAccessors = ["highlight", "rowId", "qc"];
 
-        return(
+        return (
             <div style={{display: "inline-block"}}>
                 <PositionedSnackbar
                     vertical="top"
@@ -767,15 +792,19 @@ class SelectPatlasModePopover extends React.Component{
                              horizontal: "left"
                          }}>
                     <div style={style.root}>
-                        <Typography style={style.header} variant={"subheading"}>Select column</Typography>
+                        <Typography style={style.header} variant={"subheading"}>Select
+                            column</Typography>
                         <Divider/>
                         <List>
                             {
                                 this.props.columns.map((col) => {
-                                    if (!skipAccessors.includes(col.accessor)){
-                                        return(
-                                            <ListItem onClick={() => {this.sendToPatlas(col.accessor, col.Header, this.props.rows)}} button key={col.accessor}>
-                                                <ListItemText primary={col.Header}/>
+                                    if (!skipAccessors.includes(col.accessor)) {
+                                        return (
+                                            <ListItem onClick={() => {
+                                                this.sendToPatlas(col.accessor, col.Header, this.props.rows)
+                                            }} button key={col.accessor}>
+                                                <ListItemText
+                                                    primary={col.Header}/>
                                             </ListItem>
                                         )
                                     }
@@ -791,7 +820,7 @@ class SelectPatlasModePopover extends React.Component{
 
 }
 
-export class PlasmidsTable extends React.Component{
+export class PlasmidsTable extends React.Component {
 
     constructor(props) {
         super(props);
@@ -831,8 +860,9 @@ export class PlasmidsTable extends React.Component{
                             columns={tableData.columnsArray}
                             rawData={tableData.rawTableArray}
                             selectedActions={
-                                <SelectPatlasModePopover columns={tableData.columnsArray}
-                                                         rows={this.state.selection.rows}/>
+                                <SelectPatlasModePopover
+                                    columns={tableData.columnsArray}
+                                    rows={this.state.selection.rows}/>
                             }
                             setSelection={this.setSelection}>
                         </FCTable>
@@ -1011,7 +1041,8 @@ export class TypingTable extends React.Component {
         return (
             <ExpansionPanel defaultExpanded>
                 <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
-                    <Typography variant={"headline"}>In silico Typing</Typography>
+                    <Typography variant={"headline"}>In silico
+                        Typing</Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails>
                     <div className={styles.mainPaper}>
@@ -1112,7 +1143,8 @@ export class AbricateTable extends React.Component {
                                     <DownloadIcon style={{fill: "#fff"}}/>
                                 </TableButton>
                             </CSVLink>
-                            <AmrGeneListPopover onRef={ref => (this.genePopover = ref)} />
+                            <AmrGeneListPopover
+                                onRef={ref => (this.genePopover = ref)}/>
                         </FCTable>
                     </div>
                 </ExpansionPanelDetails>
@@ -1332,14 +1364,12 @@ export class ChewbbacaTable extends React.Component {
                                                 </ReportAppConsumer>
                                             )
                                         }
-
                                     </ReportDataConsumer>
                                     <TableButton tooltip={"Download Profiles"}
                                                  onClick={this.downloadProfiles}>
                                         <DownloadIcon style={style.icon}/>
                                     </TableButton>
                                 </div>
-
                             }
                         >
                         </FCTable>
@@ -1422,7 +1452,8 @@ export class TableLabel extends React.Component {
                 <Tooltip id="tooltip-icon" title={this.props.tooltip}
                          placement="right">
                     <Paper style={style.cellLabel}>
-                        <Typography style={style.cellLabelText}>{this.props.content}</Typography>
+                        <Typography
+                            style={style.cellLabelText}>{this.props.content}</Typography>
                     </Paper>
                 </Tooltip>
             </div>
@@ -1473,7 +1504,7 @@ export class TableButton extends React.Component {
 }
 
 
-class ColumnVisibilityPopover extends React.Component{
+class ColumnVisibilityPopover extends React.Component {
 
     state = {
         anchorEl: null,
@@ -1491,7 +1522,7 @@ class ColumnVisibilityPopover extends React.Component{
         });
     };
 
-    render(){
+    render() {
 
         const style = {
             root: {
@@ -1504,9 +1535,10 @@ class ColumnVisibilityPopover extends React.Component{
 
         const {anchorEl} = this.state;
 
-        return(
+        return (
             <div style={{display: "inline-block"}}>
-                <TableButton onClick={this.handleClick} tooltip={"Toggle column visibility"}>
+                <TableButton onClick={this.handleClick}
+                             tooltip={"Toggle column visibility"}>
                     <EyeIcon color={"#fff"}/>
                 </TableButton>
                 <Popover open={Boolean(anchorEl)}
@@ -1521,19 +1553,24 @@ class ColumnVisibilityPopover extends React.Component{
                              horizontal: "left"
                          }}>
                     <div style={style.root}>
-                        <Typography style={style.header} variant={"subheading"}>Hide/show column</Typography>
+                        <Typography style={style.header} variant={"subheading"}>Hide/show
+                            column</Typography>
                         <Divider/>
                         <List>
                             {
                                 this.props.allColumns.map((col, i) => {
-                                    return(
+                                    return (
                                         <ListItem key={i}>
                                             <ListItemText primary={col.Header}/>
                                             <ListSecondaryAction>
                                                 <Checkbox
                                                     color={"primary"}
-                                                    onChange={() => {this.props.onToggleColumn(col.accessor)}}
-                                                    checked={this.props.stateColumns.some((c) => {return c.accessor === col.accessor})}/>
+                                                    onChange={() => {
+                                                        this.props.onToggleColumn(col.accessor)
+                                                    }}
+                                                    checked={this.props.stateColumns.some((c) => {
+                                                        return c.accessor === col.accessor
+                                                    })}/>
                                             </ListSecondaryAction>
                                         </ListItem>
                                     )
@@ -1548,10 +1585,10 @@ class ColumnVisibilityPopover extends React.Component{
 }
 
 function Transition(props) {
-  return <Slide direction="up" {...props} />;
+    return <Slide direction="up" {...props} />;
 }
 
-export class FindDistributionPopover extends React.Component{
+export class FindDistributionPopover extends React.Component {
 
     state = {
         anchorEl: null,
@@ -1590,11 +1627,11 @@ export class FindDistributionPopover extends React.Component{
         let c = 1;
         this.props.data.forEach((v) => {
 
-            if (v.hasOwnProperty(accessor)){
-                if (v[accessor].props.hasOwnProperty("value")){
+            if (v.hasOwnProperty(accessor)) {
+                if (v[accessor].props.hasOwnProperty("value")) {
                     unsortedData.push({
                         name: v._id,
-                        data: [[ c, parseFloat(v[accessor].props.value)]],
+                        data: [[c, parseFloat(v[accessor].props.value)]],
                         marker: {
                             symbol: "circle"
                         },
@@ -1604,12 +1641,16 @@ export class FindDistributionPopover extends React.Component{
             }
         });
 
-        if (unsortedData.some((v) => {return isNaN(v.data[0][1])})){
+        if (unsortedData.some((v) => {
+                return isNaN(v.data[0][1])
+            })) {
             this.snackBar.handleOpen("This operation can only be performed on numeric data", "error")
         } else if (unsortedData.length === 0) {
             this.snackBar.handleOpen("There is no data to perform this operation", "error")
         } else {
-            const sortedData = unsortedData.sort((a, b) => {return a.data[0][1] - b.data[0][1]}).map((v, i) => {
+            const sortedData = unsortedData.sort((a, b) => {
+                return a.data[0][1] - b.data[0][1]
+            }).map((v, i) => {
                 v.data[0][0] = i;
                 return v
             });
@@ -1647,9 +1688,10 @@ export class FindDistributionPopover extends React.Component{
         const {anchorEl} = this.state;
         const skipAccessors = ["highlight", "rowId", "qc"];
 
-        return(
+        return (
             <div style={{display: "inline-block"}}>
-                <TableButton onClick={this.handleClick} tooltip={"Identify sample values in column distribution"}>
+                <TableButton onClick={this.handleClick}
+                             tooltip={"Identify sample values in column distribution"}>
                     <MapMarkerRadiusIcon color={"#fff"}/>
                 </TableButton>
                 <PositionedSnackbar
@@ -1669,15 +1711,19 @@ export class FindDistributionPopover extends React.Component{
                              horizontal: "left"
                          }}>
                     <div style={style.root}>
-                        <Typography style={style.header} variant={"subheading"}>Select column distribution</Typography>
+                        <Typography style={style.header} variant={"subheading"}>Select
+                            column distribution</Typography>
                         <Divider/>
                         <List>
                             {
                                 this.props.columns.map((col) => {
-                                    if (!skipAccessors.includes(col.accessor)){
-                                        return(
-                                            <ListItem onClick={() => {this.prepareData(col.accessor, col.Header, this.props.selection)}} button key={col.accessor}>
-                                                <ListItemText primary={col.Header}/>
+                                    if (!skipAccessors.includes(col.accessor)) {
+                                        return (
+                                            <ListItem onClick={() => {
+                                                this.prepareData(col.accessor, col.Header, this.props.selection)
+                                            }} button key={col.accessor}>
+                                                <ListItemText
+                                                    primary={col.Header}/>
                                             </ListItem>
                                         )
                                     }
@@ -1693,19 +1739,22 @@ export class FindDistributionPopover extends React.Component{
                     fullScreen>
                     <AppBar>
                         <Toolbar>
-                            <IconButton color="inherit" onClick={this.closeDialog} aria-label="Close">
-                                <CloseIcon />
+                            <IconButton color="inherit"
+                                        onClick={this.closeDialog}
+                                        aria-label="Close">
+                                <CloseIcon/>
                             </IconButton>
                         </Toolbar>
                     </AppBar>
                     <div style={style.dialogRoot}>
                         <div style={style.dialogHeaderContainer}>
-                            <Typography style={style.dialogHeaderText}>Viewing distribution of values for header: </Typography>
+                            <Typography style={style.dialogHeaderText}>Viewing
+                                distribution of values for header: </Typography>
                             {this.state.column}
                         </div>
                         {
                             this.state.data.length > 0 &&
-                                <FindDistributionChart data={this.state.data}/>
+                            <FindDistributionChart data={this.state.data}/>
                         }
                     </div>
                 </Dialog>
@@ -1791,7 +1840,7 @@ export class QcPopover extends React.Component {
     }
 }
 
-class AmrGeneListPopover extends React.Component{
+class AmrGeneListPopover extends React.Component {
 
     state = {
         anchorEl: null,
@@ -1825,16 +1874,16 @@ class AmrGeneListPopover extends React.Component{
         this.setState({geneFilter: e.target.value})
     };
 
-    componentDidUpdate(nextProps, nextState){
+    componentDidUpdate(nextProps, nextState) {
 
-        if (this.state.content && nextState.content){
-            if (JSON.stringify(this.state.content.geneList) !== JSON.stringify(nextState.content.geneList)){
+        if (this.state.content && nextState.content) {
+            if (JSON.stringify(this.state.content.geneList) !== JSON.stringify(nextState.content.geneList)) {
                 this.setState({geneFilter: ""})
             }
         }
     }
 
-    render(){
+    render() {
 
         const style = {
             container: {
@@ -1868,7 +1917,7 @@ class AmrGeneListPopover extends React.Component{
 
         const {anchorEl} = this.state;
 
-        return(
+        return (
             <Popover open={Boolean(anchorEl)}
                      anchorEl={anchorEl}
                      onClose={this.handleClose}
@@ -1884,8 +1933,12 @@ class AmrGeneListPopover extends React.Component{
                     {
                         this.state.content &&
                         <div>
-                            <Typography style={style.header}><b>Sample:</b> {this.state.content.sample}</Typography>
-                            <Typography style={style.header}><b>Database:</b> {this.state.content.database}</Typography>
+                            <Typography
+                                style={style.header}><b>Sample:</b> {this.state.content.sample}
+                            </Typography>
+                            <Typography
+                                style={style.header}><b>Database:</b> {this.state.content.database}
+                            </Typography>
                             <Divider/>
                             <div style={style.searchContainer}>
                                 <TextField
@@ -1899,17 +1952,26 @@ class AmrGeneListPopover extends React.Component{
                                 {
                                     this.state.content.geneList.map((v, i) => {
 
-                                        if (v.includes(this.state.geneFilter)){
-                                            return(
+                                        if (v.includes(this.state.geneFilter)) {
+                                            return (
                                                 <ListItem dense key={i}>
-                                                    <ListItemText style={style.listItemText} primary={v}/>
+                                                    <ListItemText
+                                                        style={style.listItemText}
+                                                        primary={v}/>
                                                     <ListSecondaryAction>
                                                         <SampleDialog
                                                             button={
-                                                                <Button style={style.listItemButton} color={"primary"} variant={"contained"}>
-                                                                    <CrosshairsGpsIcon color={"#fff"}/>
+                                                                <Button
+                                                                    style={style.listItemButton}
+                                                                    color={"primary"}
+                                                                    variant={"contained"}>
+                                                                    <CrosshairsGpsIcon
+                                                                        color={"#fff"}/>
                                                                 </Button>}
-                                                            zoomInitialGene={{gene: v, database: this.state.content.database}}
+                                                            zoomInitialGene={{
+                                                                gene: v,
+                                                                database: this.state.content.database
+                                                            }}
                                                             sample={this.state.content.sample}/>
 
                                                     </ListSecondaryAction>

@@ -3,25 +3,24 @@ import React from "react"
 
 import Select from "react-select";
 
+import FormControlLabel from '@material-ui/core/FormControlLabel';
 import DialogActions from "@material-ui/core/DialogActions";
-import DialogContent from "@material-ui/core/DialogContent";
 import DialogTitle from "@material-ui/core/DialogTitle";
-import Tooltip from "@material-ui/core/Tooltip";
-import Divider from "@material-ui/core/Divider";
-import Button from '@material-ui/core/Button';
-import Dialog from "@material-ui/core/Dialog";
-import {InfoDrawer} from "../ReportsInformation";
+import ContentSaveIcon from "mdi-react/ContentSaveIcon";
+import FileExportIcon from "mdi-react/FileExportIcon";
+import Typography from '@material-ui/core/Typography';
 import TextField from '@material-ui/core/TextField';
 import FormGroup from '@material-ui/core/FormGroup';
-import Typography from '@material-ui/core/Typography';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
-
-import PlusIcon from "mdi-react/PlusIcon";
-import ContentSaveIcon from "mdi-react/ContentSaveIcon";
+import {InfoDrawer} from "../ReportsInformation";
 import MagnifyIcon from "mdi-react/MagnifyIcon";
+import Tooltip from "@material-ui/core/Tooltip";
+import Button from '@material-ui/core/Button';
+import Dialog from "@material-ui/core/Dialog";
 import FilterIcon from "mdi-react/FilterIcon";
-import FileExportIcon from "mdi-react/FileExportIcon";
+import {PositionedSnackbar} from "./modals";
+import PlusIcon from "mdi-react/PlusIcon";
+
 
 
 import {
@@ -342,12 +341,20 @@ class SaveInnuendoTask extends React.Component {
                 is_public: this.state.public
             };
 
-            console.log(data);
-
             this.props.additionalInfo.innuendo.saveReport(data).then((response) => {
-                console.log(response);
+                let message = "";
+                if (response.data[0].message){
+                    message = response.data[0].message;
+                    this.snackbar.handleOpen(message, "warning");
+                }
+                else {
+                    message = "The Report was saved!";
+                    this.snackbar.handleOpen(message, "success");
+                }
+                this.handleClose();
             }).catch((response) => {
-                console.log(response);
+                this.handleClose();
+                this.snackbar.handleOpen("There was an error when saving the report...", "error");
             });
 
         }
@@ -376,6 +383,10 @@ class SaveInnuendoTask extends React.Component {
 
         return (
             <div>
+                <PositionedSnackbar
+                    onRef={ref => (this.snackbar = ref)}
+                    horizontal={"right"}
+                    vertical={"top"}/>
                 <div className={styles.taskButton} style={{
                     "opacity": this.props.active ? 1 : 0,
                     "marginBottom": this.props.active ? "15px" : "0"
