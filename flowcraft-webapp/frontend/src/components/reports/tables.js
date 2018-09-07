@@ -1227,6 +1227,18 @@ export class ChewbbacaTable extends React.Component {
 
     };
 
+    getSchemaVersions = () => {
+        const versions = [];
+        for (const [key, value] of Object.entries(this.props.additionalInfo.innuendo.species)) {
+            if (value.name === this.state.specie.label) {
+                for (const version of value.schemaVersions) {
+                    versions.push({label: version, value: version});
+                }
+                return versions;
+            }
+        }
+    };
+
     downloadProfiles = () => {
         downloadChewbbacaProfiles(this.state.selection, this.props.reportData);
     };
@@ -1323,10 +1335,10 @@ export class ChewbbacaTable extends React.Component {
                                                    style={style.button}
                                                    className={classNames(this.state.tabValue === index && styles.tabButton)}
                                                    onClick={() => {
-                                                       this.handleClickSpecies(species[item], index);
+                                                       this.handleClickSpecies(species[item].name, index);
                                                    }}>
                                         {
-                                            speciesMapping[this.props.additionalInfo.innuendo.species[item]]
+                                            speciesMapping[this.props.additionalInfo.innuendo.species[item].name]
                                         }
                                     </Button>
                                 })
@@ -1351,6 +1363,7 @@ export class ChewbbacaTable extends React.Component {
                                                         ({tableData}) => (
                                                             <PhylovizModal
                                                                 specie={this.getCurrentSpecie}
+                                                                schemaVersions={this.getSchemaVersions}
                                                                 selection={this.state.selection}
                                                                 additionalInfo={this.props.additionalInfo}
                                                                 reportData={this.props.reportData}

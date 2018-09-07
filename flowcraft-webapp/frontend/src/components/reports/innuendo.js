@@ -135,6 +135,17 @@ export class Innuendo {
     }
 
     /*
+    Resource to get all the available versions of chewbbaca schemas
+     */
+    getInnuendoSchemasVersions() {
+        return axios({
+            method: "get",
+            url: address + "app/api/v1.0/species/chewbbaca/versions/",
+
+        })
+    }
+
+    /*
     Get all the available projects. Those are then mapped to their specific
     species.
     */
@@ -784,8 +795,7 @@ class InnuendoProjects extends React.Component {
         };
 
         if (props.initialStrains.length > 0) {
-            this.getSpecies();
-            this.submitInitialStrains();
+            this.loadInitialStrains();
         }
         else {
             this.loadInnuendoData();
@@ -793,8 +803,15 @@ class InnuendoProjects extends React.Component {
 
     }
 
+    async loadInitialStrains () {
+        await this.getSpecies();
+        await this.getSchemasVersions();
+        await this.submitInitialStrains();
+    }
+
     async loadInnuendoData() {
         await this.getSpecies();
+        await this.getSchemasVersions();
         await this.getProjects();
     };
 
@@ -804,15 +821,41 @@ class InnuendoProjects extends React.Component {
     getSpecies = () => {
 
         return this.props.innuendo.getInnuendoSpecies().then((response) => {
+
             let speciesObject = {};
 
             for (const r of response.data) {
-                speciesObject[r.id] = r.name;
+                speciesObject[r.id] = {
+                    name: r.name
+                };
             }
 
             this.setState({species: speciesObject});
 
         });
+    };
+
+    /*
+    Get innuendo schemas
+     */
+    getSchemasVersions = () => {
+
+        this.props.innuendo.getInnuendoSchemasVersions().then((versions) => {
+
+            let speciesObject = this.state.species;
+            let intermediate = {};
+
+            for (const r in speciesObject) {
+                intermediate[r] = {
+                    name: speciesObject[r].name,
+                    schemaVersions: versions.data[speciesObject[r].name]
+                }
+            }
+
+            this.setState({species: intermediate});
+
+        });
+
     };
 
 
@@ -828,8 +871,8 @@ class InnuendoProjects extends React.Component {
             let projectNamesToIds = {};
 
             for (const r of response.data) {
-                projects.push(`${species[r.species_id]}: ${r.name}`);
-                projectNamesToIds[`${species[r.species_id]}: ${r.name}`] = r.id;
+                projects.push(`${species[r.species_id].name}: ${r.name}`);
+                projectNamesToIds[`${species[r.species_id].name}: ${r.name}`] = r.id;
             }
 
             this.setState({

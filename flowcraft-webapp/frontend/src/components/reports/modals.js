@@ -246,8 +246,8 @@ export class PhylovizModal extends React.Component {
             intervalCheckTree: {},
             intervalCheckPhylovizTrees: {},
             additionalInfoValues: [],
-            additionalData: {}
-
+            additionalData: {},
+            versions: []
         };
     }
 
@@ -399,8 +399,14 @@ export class PhylovizModal extends React.Component {
      */
     handleSelectChange(speciesValues) {
         this.setState({speciesValues});
-    }
-    ;
+    };
+
+    /*
+    Handle value selection on Select element
+     */
+    handleVersionChange(versions) {
+        this.setState({versions});
+    };
 
     /*
     Set additional information values
@@ -415,6 +421,13 @@ export class PhylovizModal extends React.Component {
      */
     setSpeciesOptions = () => {
         return [this.props.specie()];
+    };
+
+    /*
+    Set version options
+     */
+    setVersionOptions = () => {
+        return this.props.schemaVersions();
     };
 
     /*
@@ -447,6 +460,7 @@ export class PhylovizModal extends React.Component {
                 additional_data: JSON.stringify(this.setAdditionaData()),
                 max_closest: this.state.closestStrains,
                 database_to_include: this.state.speciesValues[0].label,
+                database_version: this.state.versions[0].label,
                 species_id: this.state.speciesValues[0].value,
                 missing_data: this.state.missings,
                 missing_char: this.state.missingsCharacter,
@@ -602,6 +616,10 @@ export class PhylovizModal extends React.Component {
             groupRow: {
                 width: "100%"
             },
+            databaseRow: {
+                width: "100%",
+                display: "inline-block"
+            },
             rowComponent: {
                 marginBottom: "2%"
 
@@ -645,8 +663,10 @@ export class PhylovizModal extends React.Component {
                 flexGrow: "1",
                 fontWeight: "bold",
             },
-            groupCount: {
-
+            databaseDiv: {
+                width: "45%",
+                display: "inline-block",
+                marginRight: "5%"
             }
         };
 
@@ -743,24 +763,46 @@ export class PhylovizModal extends React.Component {
                                             />
                                         }
                                     </FormGroup>
+                                    <div style={style.groupRow}>
+                                        <div style={style.databaseDiv}>
+                                            <label
+                                                htmlFor="speciesDatabase">
+                                                <Typography>Species
+                                                    Database</Typography>
+                                            </label>
+                                            <Select
+                                                id="speciesDatabase"
+                                                closeMenuOnSelect={false}
+                                                isMulti
+                                                value={this.state.speciesValues}
+                                                onChange={(values) => {
+                                                    this.handleSelectChange(values);
+                                                }}
+                                                options={this.setSpeciesOptions()}
+                                                style={style.rowComponent}
+                                                required
+                                            />
+                                        </div>
+                                        <div style={style.databaseDiv}>
+                                            <label
+                                                htmlFor="versionDatabase">
+                                                <Typography>Database Version</Typography>
+                                            </label>
+                                            <Select
+                                                id="versionDatabase"
+                                                closeMenuOnSelect={false}
+                                                isMulti
+                                                value={this.state.versions}
+                                                onChange={(values) => {
+                                                    this.handleVersionChange(values);
+                                                }}
+                                                options={this.setVersionOptions()}
+                                                style={style.rowComponent}
+                                                required
+                                            />
+                                        </div>
+                                    </div>
                                     <FormGroup style={style.groupRow}>
-                                        <label
-                                            htmlFor="speciesDatabase">
-                                            <Typography>Species
-                                                Database</Typography>
-                                        </label>
-                                        <Select
-                                            id="speciesDatabase"
-                                            closeMenuOnSelect={false}
-                                            isMulti
-                                            value={this.state.speciesValues}
-                                            onChange={(values) => {
-                                                this.handleSelectChange(values);
-                                            }}
-                                            options={this.setSpeciesOptions()}
-                                            style={style.rowComponent}
-                                            required
-                                        />
                                         <label
                                             htmlFor="speciesDatabase">
                                             <Typography>Additional
