@@ -171,12 +171,12 @@ class TableDrawer extends React.Component {
     render () {
 
         const headerMap =  [
+            {signature: "metadata", icon: <FileDocumentIcon/>, label: "Metadata"},
             {signature: "typing", icon: <TagIcon/>, label: "Typing"},
             {signature: "qc", icon: <HeartPulseIcon/>, label: "Quality Control"},
             {signature: "assembly", icon: <NotificationClearAllIcon/>, label: "Assembly"},
             {signature: "abricate", icon: <PillIcon/>, label: "AMR"},
             {signature: "chewbbaca", icon: <AlienIcon/>, label: "chewBBACA"},
-            {signature: "metadata", icon: <FileDocumentIcon/>, label: "Metadata"},
             {signature: "phyloviz", icon: <SourceMergeIcon/>, label: "PHYLOViZ"},
             {signature: "plasmids", icon: <CircleOutlineIcon/>, label: "Plasmids"}
         ];
