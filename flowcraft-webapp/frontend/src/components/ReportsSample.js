@@ -2183,8 +2183,7 @@ class PlasmidPopup extends React.Component{
 
         const style = {
             root: {
-                overflow: "hidden",
-                padding: "10px"
+                padding: "10px",
             },
             grid: {
                 padding: "10px",
@@ -2401,13 +2400,13 @@ class PatlasSend extends React.Component{
 
     sendPatlas = (tableData, sample) => {
 
-        let sampleDict = {}
+        let sampleDict = {};
 
         const listOfSamples = tableData.get("plasmids").filter( (el) => {
             return (el.rowId === sample && el.header === "Mash Dist")
         })[0].patlas_mashdist;
 
-        sampleDict[sample] = listOfSamples
+        sampleDict[sample] = listOfSamples;
 
         // make the request to pATLAS API
         axios.post("http://www.patlas.site/results/", {
