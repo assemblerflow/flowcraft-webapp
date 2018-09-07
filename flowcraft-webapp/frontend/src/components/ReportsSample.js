@@ -52,6 +52,8 @@ import {FindDistributionChart, ResourcesPieChart} from "./reports/charts";
 import {getSamplePlot} from "./reports/parsers";
 
 import {LoadingComponent} from "./ReportsBase";
+import {PositionedSnackbar} from "./reports/modals";
+import axios from "axios";
 
 const ReactHighcharts = require("react-highcharts");
 const HighchartsMore = require("highcharts/highcharts-more");
@@ -1441,9 +1443,18 @@ class SyncChartsContainer extends React.Component{
                                             processes={this.state.processes}/>
                                     }
                                     <LoadingComponent>
-                                        <SyncCharts
-                                            zoomInitialGene={this.props.zoomInitialGene}
-                                            plotData={currentPlotData}/>
+                                        <ReportAppConsumer>
+                                            {
+                                                ({tableData}) => (
+                                                    <SyncCharts
+                                                        zoomInitialGene={this.props.zoomInitialGene}
+                                                        plotData={currentPlotData}
+                                                        tableData={tableData}
+                                                        sample={this.props.sample}
+                                                    />
+                                                )
+                                            }
+                                        </ReportAppConsumer>
                                     </LoadingComponent>
                                 </div>
                             </ExpansionPanelDetails>
@@ -1840,11 +1851,8 @@ class SyncCharts extends React.Component{
                     <div>
                         <PlasmidPopup onRef={ref => (this.plasmidPopover = ref)}/>
                         <ReactHighcharts config={xRangeConfigPlasmids.layout} ref={"slidingPlasmids"}></ReactHighcharts>
-                        {/*<AbricateSelect*/}
-                            {/*highlightAbrSelection={this.highlightAbrSelection}*/}
-                            {/*zoomAbrSelection={this.zoomAbrSelection}*/}
-                            {/*zoomInitialGene={this.props.zoomInitialGene}*/}
-                            {/*data={this.props.plotData.xrangeData}/>*/}
+                        <PatlasSend sample={this.props.sample}
+                                    tableData={this.props.tableData}/>
                     </div>
                 }
             </div>
@@ -2383,6 +2391,80 @@ class AbricateSelect extends React.Component{
                         <CrosshairsGpsIcon color={"#fff"}/>
                     </Button>
                 </div>
+            </div>
+        )
+    }
+}
+
+
+class PatlasSend extends React.Component{
+
+    sendPatlas = (tableData, sample) => {
+
+        let sampleDict = {}
+
+        const listOfSamples = tableData.get("plasmids").filter( (el) => {
+            return (el.rowId === sample && el.header === "Mash Dist")
+        })[0].patlas_mashdist;
+
+        sampleDict[sample] = listOfSamples
+
+        // make the request to pATLAS API
+        axios.post("http://www.patlas.site/results/", {
+            "type": "assembly",
+            "samples": sampleDict
+        }).then((result) => {
+            // open a new tab with patlas
+            window.open(result.data, "_blank");
+        }).catch((error) => {
+            // if something went wrong with the request raise an error message
+            // stating the issue
+            this.snackBar.handleOpen(
+                `pATLAS request rejected. Error message: ${error},
+                ${error.response.data}`, "error"
+            );
+        })
+
+    };
+
+    render() {
+
+        const style = {
+            text: {
+                fontSize: "16px",
+                margin: "auto",
+                marginRight: "10px"
+            },
+            root: {
+                display: "flex",
+                justifyContent: "center"
+            },
+            button: {
+                minWidth: "45px",
+                height: "37px",
+            }
+        };
+
+        return(
+            <div style={style.root}>
+                <PositionedSnackbar
+                    vertical="top"
+                    horizontal="right"
+                    autoHideDuration={10000}
+                    onRef={ref => (this.snackBar = ref)}
+                />
+                <Button tooltip={"Send to pATLAS"}
+                        onClick={ () => {
+                                this.sendPatlas(
+                                    this.props.tableData,
+                                    this.props.sample
+                                )
+                            }
+                        }
+                        style={style.button}
+                        variant={"contained"} color={"primary"}>
+                    Send sample to pATLAS
+                </Button>
             </div>
         )
     }
