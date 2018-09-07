@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 
 import Select from 'react-select';
+import { Link } from 'react-router-dom'
 
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
@@ -19,6 +20,12 @@ import Button from "@material-ui/core/Button";
 import Slide from '@material-ui/core/Slide';
 import Paper from "@material-ui/core/Paper";
 import Grid from "@material-ui/core/Grid";
+// import material ui tables
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
+import Table from '@material-ui/core/Table';
 
 import CrosshairsGpsIcon from "mdi-react/CrosshairsGpsIcon"
 import {MuiThemeProvider} from "@material-ui/core/styles";
@@ -1325,8 +1332,6 @@ class SyncChartsContainer extends React.Component{
                             plot.data.patlasMashDistXrange[contig]
                         );
 
-                        console.log(accessionsResults)
-
                         return {
                             x: correctRange[0],
                             x2: correctRange[1],
@@ -1408,8 +1413,6 @@ class SyncChartsContainer extends React.Component{
 
         }
 
-        console.log(data)
-
         return {
             data,
             processes
@@ -1457,7 +1460,6 @@ class SyncCharts extends React.Component{
     constructor(props){
         super(props);
 
-        this._geneClick = this._geneClick.bind(this);
         this.prevPath = {};
     };
 
@@ -1606,16 +1608,14 @@ class SyncCharts extends React.Component{
     };
 
     _plasmidClick = (e) => {
-        console.log("click plasmids: ", e.point)
         const data = {
             gene: e.point.gene,
             geneLength: parseInt((e.point.x2 - e.point.x) * 2000),
             genePosition: `${e.point.x * 2000} - ${e.point.x2 * 2000}`,
             accessionsResults: e.point.accessionsResults
-        }
+        };
 
-        console.log(data)
-        // this.plasmidPopover.handleClick(e.target, data)
+        this.plasmidPopover.handleClick(e.target, data)
     };
 
     getxRangeLayout = (data, categories, xLabels, plotLines, title,
@@ -1838,7 +1838,7 @@ class SyncCharts extends React.Component{
                 {
                     xRangeConfigPlasmids &&
                     <div>
-                        {/*<GenePopup onRef={ref => (this.genePopover = ref)}/>*/}
+                        <PlasmidPopup onRef={ref => (this.plasmidPopover = ref)}/>
                         <ReactHighcharts config={xRangeConfigPlasmids.layout} ref={"slidingPlasmids"}></ReactHighcharts>
                         {/*<AbricateSelect*/}
                             {/*highlightAbrSelection={this.highlightAbrSelection}*/}
@@ -2050,6 +2050,223 @@ class GeneGaugeChart extends React.Component{
             <div>
                 <ReactHighcharts config={config.layout} ref={"slidingAbr"}></ReactHighcharts>
             </div>
+        )
+    }
+}
+
+
+/**
+ * Component that makes a table to display with the accession numbers that
+ * matched that contig
+ */
+class PlasmidPopupTable extends React.Component{
+
+    // prevents component update for every accession number hit available
+    shouldComponentUpdate(nextProps, nextState){
+        return nextProps.data !== this.props.data;
+    }
+
+    /**
+     * Function that parses the accessions hits dict so that the table can be
+     * built with the data
+     * @param accessionsDict : Object stores a dictionary with all accession
+     * numbers as keys and its respective perc id and shared hashes as values
+     * in an array.
+     */
+    _parseData = (accessionsDict) => {
+        // i is a counter
+        let index = 0;
+        // the actual array of rows that will generate the table
+        let rows = [];
+
+        // iterates through dict, converting values to perc and strings
+        for (const accession of Object.keys(accessionsDict)){
+            index += 1;
+            rows.push({
+                index,
+                accession,
+                id: (accessionsDict[accession].id * 100).toString(),
+                sharedHashes: (accessionsDict[accession].sharedHashes * 100).toString()
+            })
+        }
+
+        return rows
+    };
+
+    render() {
+
+        // first fetch the rows to construct the table
+        const rows = this._parseData(this.props.data);
+
+        return(
+            <div>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Acession number</TableCell>
+                            <TableCell numeric>Identity (%)</TableCell>
+                            <TableCell numeric>Shared hashes (%)</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {
+                            rows.map(row => {
+                                return (
+                                    <TableRow key={row.index}>
+                                        <TableCell>
+                                            <Link to="route" target="_blank"
+                                                  onClick={(event) => {
+                                                      event.preventDefault();
+                                                      window.open("https://www.ncbi.nlm.nih.gov/nuccore/" + row.accession)
+                                                  }
+                                                  }
+                                            >{row.accession}
+                                            </Link>
+                                        </TableCell>
+                                        <TableCell numeric>{row.id}</TableCell>
+                                        <TableCell numeric>{row.sharedHashes}</TableCell>
+                                    </TableRow>
+                            )
+                            })
+                            }
+                    </TableBody>
+                </Table>
+            </div>
+        )
+    }
+}
+
+/**
+ * Component that makes a popup when a contig that is target as a plasmids is
+ * detected
+ */
+class PlasmidPopup extends React.Component{
+
+    state = {
+        anchorEl: null,
+        data: {},
+        show: false
+    };
+
+    // Required to set reference on parent component to allow state change
+    componentDidMount() {
+        this.props.onRef(this);
+    }
+
+    componentWillUnmount() {
+        this.props.onRef(undefined);
+    }
+
+    handleClick = (pos, data) => {
+        this.setState({
+            anchorEl: pos,
+            data: data,
+            show: true
+        });
+    };
+
+    handleClose = () => {
+        this.setState({
+            show: false,
+        });
+    };
+
+    render(){
+
+        const style = {
+            root: {
+                overflow: "hidden",
+                padding: "10px"
+            },
+            grid: {
+                padding: "10px",
+                minWidth: "400px"
+            },
+            button: {
+                padding: 0,
+                width: "40px",
+                height: "40px",
+                color: red[400],
+            },
+            header: {
+                display: "flex"
+            },
+            headerTitle: {
+                flexGrow: "1",
+                margin: "auto"
+            },
+            textItems: {
+                fontSize: "15px",
+                marginBottom: "7px"
+            },
+            hitsHeader: {
+                color: "#000",
+                textAlign: "center"
+            }
+        };
+
+        const { anchorEl, show, data } = this.state;
+
+        const infoObject = {
+            "gene": "Contig",
+            "geneLength": "Contig length",
+            "genePosition": "Contig position",
+        };
+
+        return(
+            <Popover
+                open={show}
+                anchorEl={anchorEl}
+                onClose={this.handleClose}
+                anchorOrigin={{
+                    vertical: 'top',
+                    horizontal: 'center',
+                }}
+                transformOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'center',
+                }}
+            >
+                <div style={style.root}>
+                    <div style={style.header}>
+                        <Typography variant={"subheading"}
+                                    style={style.headerTitle}>
+                            Plasmid contig details
+                        </Typography>
+                        <IconButton style={style.button} size={"small"}>
+                            <CloseIcon onClick={this.handleClose}/>
+                        </IconButton>
+                    </div>
+                    <Divider/>
+                    <Grid style={style.grid} container spacing={16}>
+                        <Grid item style={{margin: "auto"}}>
+                            {
+                                Object.keys(infoObject).map((key) => {
+                                    return(
+                                        <Typography style={style.textItems}
+                                                    key={key}>
+                                            <b>{infoObject[key]}</b>: {data[key]}
+                                        </Typography>
+                                    )
+                                })
+                            }
+                            <Divider/>
+                            <Grid style={style.grid} container spacing={16}>
+                                <Grid item style={{margin: "auto"}}>
+                                    <Typography variant={"subheading"}
+                                                style={style.hitsHeader}>
+                                        Hits
+                                    </Typography>
+                                    <PlasmidPopupTable
+                                        data={this.state.data.accessionsResults}
+                                    >
+                                    </PlasmidPopupTable>
+                                </Grid>
+                            </Grid>
+                        </Grid>
+                    </Grid>
+                </div>
+            </Popover>
         )
     }
 }
