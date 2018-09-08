@@ -26,6 +26,8 @@ import styles from "../../styles/charts.css"
 import {themes} from "./themes";
 import {theme} from "../../../config.json";
 
+import SortAlphabeticalIcon from "mdi-react/SortAlphabeticalIcon";
+
 const ReactHighcharts = require("react-highcharts");
 Boost(ReactHighcharts.Highcharts);
 
@@ -246,7 +248,7 @@ class FastqcBaseSequenceQuality extends React.Component {
 
         return (
             <LoadingComponent>
-                <SearchChart samples={samples} selectSample={this.selectSample} />
+                <ChartToolbar samples={samples} selectSample={this.selectSample} />
                 <ReactHighcharts config={config.layout} ref="chart" ></ReactHighcharts>
             </LoadingComponent>
         )
@@ -300,7 +302,7 @@ class FastqcSequenceQuality extends React.Component {
 
         return (
             <LoadingComponent>
-                <SearchChart samples={samples} selectSample={this.selectSample} />
+                <ChartToolbar samples={samples} selectSample={this.selectSample} />
                 <ReactHighcharts config={config.layout} ref="chart"></ReactHighcharts>
             </LoadingComponent>
         )
@@ -350,7 +352,7 @@ class FastqcGcContent extends React.Component {
 
         return (
             <LoadingComponent>
-                <SearchChart samples={samples} selectSample={this.selectSample} />
+                <ChartToolbar samples={samples} selectSample={this.selectSample} />
                 <ReactHighcharts config={config.layout} ref="chart"></ReactHighcharts>
             </LoadingComponent>
         )
@@ -389,7 +391,7 @@ class FastqcSequenceLength extends React.Component {
 
         return (
             <LoadingComponent>
-                <SearchChart samples={samples} selectSample={this.selectSample} />
+                <ChartToolbar samples={samples} selectSample={this.selectSample} />
                 <ReactHighcharts config={config.layout} ref="chart"></ReactHighcharts>
             </LoadingComponent>
         )
@@ -429,7 +431,7 @@ class FastqcNContent extends React.Component {
 
         return (
             <LoadingComponent>
-                <SearchChart samples={samples} selectSample={this.selectSample} />
+                <ChartToolbar samples={samples} selectSample={this.selectSample} />
                 <ReactHighcharts config={config.layout} ref="chart"></ReactHighcharts>
             </LoadingComponent>
         )
@@ -623,16 +625,22 @@ export class AssemblySizeDistChart extends React.Component {
 
 class PilonSizeDistChart extends React.Component{
 
+    state = {
+        alphaSort: false
+    };
+
     selectSample = (sample) => {
         highlightChartSample(sample.label, this.refs.assemblySizeDist)
     };
 
     shouldComponentUpdate(nextProps, nextState){
 
-        if (nextProps.plotData === this.props.plotData){
-            return false
-        } else {
+        if (nextProps.plotData !== this.props.plotData){
             return true
+        } else if (nextState.alphaSort !== this.state.alphaSort){
+            return true
+        } else {
+            return false
         }
     }
 
@@ -704,9 +712,27 @@ class PilonSizeDistChart extends React.Component{
             }
         });
 
+        const style = {
+            button: {
+                padding: 0,
+                minWidth: "35px",
+                height: "35px",
+                marginLeft: "5px",
+                backgroundColor: this.state.alphaSort ? themes[theme].palette.primary.main : "#fff"
+            }
+        };
+
+        const sortButton = (
+            <Button color={"primary"} variant={"outlined"} style={style.button} onClick={() => {this.setState({alphaSort: !this.state.alphaSort})}} >
+                <SortAlphabeticalIcon color={themes[theme].palette.primary.main}/>
+            </Button>
+        );
+
         return(
             <LoadingComponent>
-                <SearchChart samples={samples} selectSample={this.selectSample} />
+                <ChartToolbar samples={samples} selectSample={this.selectSample}>
+                    {sortButton}
+                </ChartToolbar>
                 <ReactHighcharts config={config.layout} ref="assemblySizeDist"></ReactHighcharts>
             </LoadingComponent>
         )
@@ -756,7 +782,7 @@ export class FindDistributionChart extends React.Component{
 }
 
 
-class SearchChart extends React.Component{
+class ChartToolbar extends React.Component{
 
     state = {
         selection: null,
@@ -771,19 +797,26 @@ class SearchChart extends React.Component{
         const style = {
             root: {
                 display: "flex",
-                float: "right",
-                width: "300px",
-                flexWrap: "wrap",
+                paddingLeft: "60px",
                 paddingRight: "10px"
             },
+            toolbar: {
+                flexGrow: "1",
+            },
+            searchContainer: {
+                display: "flex",
+                float: "right",
+                flexWrap: "wrap",
+            },
             select: {
+                width: "300px",
                 flexGrow: 1,
             },
             button: {
                 padding: 0,
                 minWidth: "35px",
                 height: "35px",
-                marginLeft: "5px"
+                marginLeft: "5px",
             }
         };
 
@@ -792,23 +825,48 @@ class SearchChart extends React.Component{
             value: v
         }});
 
-
         return(
             <div style={style.root}>
-                <div style={style.select}>
-                    <Select
-                        value={this.state.selection ? this.state.selection : 0}
-                        onChange={this.handleSelection}
-                        placeholder={"Search samples"}
-                        options={options}/>
+                <div style={style.toolbar}>
+                    {this.props.children}
                 </div>
-                <Button color={"primary"} variant={"outlined"} style={style.button} onClick={() => {this.props.selectSample(this.state.selection)}}>
-                    <MagnifyIcon color={themes[theme].palette.primary.main}/>
-                </Button>
-                <Button color={"primary"} variant={"outlined"} style={style.button} onClick={() => {this.props.selectSample(""); this.handleSelection(null)}}>
-                    <CloseIcon color={themes[theme].palette.error.main}/>
-                </Button>
+                <div style={style.searchContainer}>
+                    <div style={style.select}>
+                         <Select
+                             value={this.state.selection ? this.state.selection : 0}
+                             onChange={this.handleSelection}
+                             placeholder={"Search samples"}
+                             options={options}/>
+                    </div>
+                    <Button color={"primary"} variant={"outlined"} style={style.button} onClick={() => {this.props.selectSample(this.state.selection)}}>
+                        <MagnifyIcon color={themes[theme].palette.primary.main}/>
+                    </Button>
+                    <Button color={"primary"} variant={"outlined"} style={style.button} onClick={() => {this.props.selectSample(""); this.handleSelection(null)}}>
+                        <CloseIcon color={themes[theme].palette.error.main}/>
+                    </Button>
+                </div>
+
             </div>
+            // <div style={style.root}>
+            //     <div style={{float: "left"}}>
+            //         {this.props.children}
+            //     </div>
+            //     <div style={{flexGrow: "1"}}>
+            //         <div style={style.selectContainer}>
+            //             <Select
+            //                 value={this.state.selection ? this.state.selection : 0}
+            //                 onChange={this.handleSelection}
+            //                 placeholder={"Search samples"}
+            //                 options={options}/>
+            //         </div>
+            //         <Button color={"primary"} variant={"outlined"} style={style.button} onClick={() => {this.props.selectSample(this.state.selection)}}>
+            //             <MagnifyIcon color={themes[theme].palette.primary.main}/>
+            //         </Button>
+            //         <Button color={"primary"} variant={"outlined"} style={style.button} onClick={() => {this.props.selectSample(""); this.handleSelection(null)}}>
+            //             <CloseIcon color={themes[theme].palette.error.main}/>
+            //         </Button>
+            //     </div>
+            // </div>
         )
     }
 }
