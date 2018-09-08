@@ -7,6 +7,7 @@ import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails"
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import Typography from "@material-ui/core/Typography";
+import Tooltip from "@material-ui/core/Tooltip";
 import Button from "@material-ui/core/Button";
 
 import MagnifyIcon from "mdi-react/MagnifyIcon";
@@ -629,8 +630,43 @@ class PilonSizeDistChart extends React.Component{
         alphaSort: false
     };
 
+    spreadData = (dataArray, index) => {
+
+        let offset = index - 0.25;
+        const step = 0.5 / dataArray.length;
+        let data = [];
+
+        for (const point of dataArray){
+            data.push([offset + step, point]);
+            offset += step
+        }
+
+        return data;
+
+    };
+
     selectSample = (sample) => {
         highlightChartSample(sample.label, this.refs.assemblySizeDist)
+    };
+
+    sortDataAlphabetically = (chartData) => {
+
+        let sampleCounter = 0;
+        let newArray = JSON.parse(JSON.stringify(chartData))
+
+        const sortedData = newArray.sort((a, b) => {
+            a = a.name.toLowerCase();
+            b = b.name.toLowerCase();
+
+            return (a < b) ? -1 : (a > b) ? 1 : 0;
+        }).map((v) => {
+            v.data = this.spreadData(v.data.map((el) => el[1]), sampleCounter);
+            sampleCounter += 1;
+            return v
+        });
+
+        return sortedData
+
     };
 
     shouldComponentUpdate(nextProps, nextState){
@@ -651,7 +687,9 @@ class PilonSizeDistChart extends React.Component{
         let config = new Chart({
             title: "Contig size distribution",
             axisLabels: {x: "Sample", y: "Contig size"},
-            series: this.props.plotData.chartData
+            series: this.state.alphaSort ?
+                this.sortDataAlphabetically(this.props.plotData.chartData) :
+                this.props.plotData.chartData
         });
 
         const samples = this.props.plotData.chartData.map((v) => {return v.name});
@@ -702,7 +740,9 @@ class PilonSizeDistChart extends React.Component{
         config.extend("chart", {type: "scatter"});
         config.extend("chart", {height: "600px"});
         config.extend("xAxis", {
-            categories: this.props.plotData.categories,
+            categories: this.state.alphaSort ?
+                this.props.plotData.categories.concat().sort() :
+                this.props.plotData.categories,
             labels: {rotation: -45}
         });
         config.extend("legend", {
@@ -718,14 +758,16 @@ class PilonSizeDistChart extends React.Component{
                 minWidth: "35px",
                 height: "35px",
                 marginLeft: "5px",
-                backgroundColor: this.state.alphaSort ? themes[theme].palette.primary.main : "#fff"
+                backgroundColor: this.state.alphaSort ? themes[theme].palette.primary.main : "#fff",
             }
         };
 
         const sortButton = (
-            <Button color={"primary"} variant={"outlined"} style={style.button} onClick={() => {this.setState({alphaSort: !this.state.alphaSort})}} >
-                <SortAlphabeticalIcon color={themes[theme].palette.primary.main}/>
-            </Button>
+            <Tooltip placement={"top"} title={`Toggle alphabetical sort ${this.state.alphaSort ? "OFF" : "ON"}`}>
+                <Button color={"primary"} variant={"outlined"} style={style.button} onClick={() => {this.setState({alphaSort: !this.state.alphaSort})}} >
+                    <SortAlphabeticalIcon color={!this.state.alphaSort ? themes[theme].palette.primary.main : "#fff"}/>
+                </Button>
+            </Tooltip>
         );
 
         return(
