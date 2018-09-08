@@ -644,6 +644,8 @@ class OverviewCard extends React.Component{
             }
         };
 
+        console.log(this.props)
+
         return(
             <div>
                 <Typography style={style.header}>{this.props.header}</Typography>
@@ -661,7 +663,7 @@ class OverviewCard extends React.Component{
                             }
                         </div>
                         {
-                            this.props.highlights !== null &&
+                            this.props.highlights !== undefined &&
                             <div style={style.filterChild}>
                                 <Tooltip title={"Highlighted elements"} placement={"top"}>
                                     <MarkerIcon size={17} style={style.filterIcon}/>
