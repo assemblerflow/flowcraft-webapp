@@ -1825,7 +1825,7 @@ class SyncCharts extends React.Component{
                 this.props.plotData.xrangeCategoriesPlasmids,
                 this.props.plotData.xLabels,
                 this.props.plotData.plotLines,
-                "Plasmid hits",
+                "Mobile elements",
                 this._plasmidClick,
             );
         }
