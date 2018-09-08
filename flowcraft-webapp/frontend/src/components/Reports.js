@@ -52,6 +52,30 @@ import {TaskButtons} from "./reports/task_buttons"
 import {PositionedSnackbar} from "./reports/modals";
 
 
+
+export class ReportsFromFile extends  React.Component{
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            reportData: _fileReportData.data.results
+        }
+    }
+
+    render(){
+        return(
+            <div>
+                {
+                    this.state.reportData &&
+                        <ReportsWrapper reportData={this.state.reportData} />
+                }
+            </div>
+        )
+    }
+}
+
+
 export class ReportsBroadcast extends React.Component{
 
     constructor(props){

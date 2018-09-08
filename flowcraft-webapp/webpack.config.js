@@ -27,15 +27,15 @@ module.exports = {
             }
         ]
     },
-    plugins: [
-        new UglifyJsPlugin()
-    ],
+    // plugins: [
+    //     new UglifyJsPlugin()
+    // ],
     mode: "production",
-    optimization: {
-        minimizer: [
-            new UglifyJsPlugin()
-        ]
-    }
+    // optimization: {
+    //     minimizer: [
+    //         new UglifyJsPlugin()
+    //     ]
+    // }
 };
 
 

@@ -61,7 +61,7 @@ export class Header extends React.Component {
                                     className={styles.secTitle}><span
                             style={{color: "#f2f2f2"}}>{this.props.headerTitle}</span>
                             <span
-                                style={{fontSize: "12px"}}>v{version}</span></Typography>
+                                style={{fontSize: "12px", color: "#cbcbcb", marginLeft: "5px"}}>Beta</span></Typography>
                         <IconButton
                             href={"https://github.com/assemblerflow/flowcraft"}
                             target={"_blank"}>
