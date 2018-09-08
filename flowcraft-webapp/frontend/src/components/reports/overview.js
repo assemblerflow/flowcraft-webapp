@@ -34,6 +34,7 @@ import EyeIcon from "mdi-react/EyeIcon";
 import EyeOffIcon from "mdi-react/EyeOffIcon";
 import MagnifyIcon from "mdi-react/MagnifyIcon";
 import ChevronRightIcon from "mdi-react/ChevronRightIcon";
+import ChevronDownIcon from "mdi-react/ChevronDownIcon";
 import InformationIcon from "mdi-react/InformationIcon";
 
 import {themes} from "./themes";
@@ -521,13 +522,25 @@ export class ReportOverview extends React.Component{
                     projects : components
         }
 
+        const style = {
+            grid: {
+                margin: "auto",
+                width: "100%"
+            },
+            downButton: {
+                minHeight: "20px",
+                padding: 0,
+                width: "100%"
+            }
+        };
+
         return(
             <ExpansionPanel defaultExpanded >
                 <ExpansionPanelSummary  expandIcon={<ExpandMoreIcon/>}>
                     <Typography variant={"headline"}>Report overview</Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails>
-                    <Grid style={{width: "100%"}} container justify={"center"} spacing={40}>
+                    <Grid style={style.grid} container justify={"center"} spacing={40}>
                         <Grid item xs={3} style={{minWidth: 200}}>
                             <OverviewCard action={() => {this.updateData(samples, "samples")}}
                                           header={"Samples"}
@@ -537,6 +550,11 @@ export class ReportOverview extends React.Component{
                                           value={samples.data.length}
                                           highlights={this.props.highlights.samples.length}
                                           filtered={this.props.filters.samples.length}/>
+                            <Collapse in={!this.state.showTable}>
+                                <Button onClick={() => {this.updateData(samples, "samples")}} style={style.downButton}>
+                                    <ChevronDownIcon color={themes[theme].palette.primary.main}/>
+                                </Button>
+                            </Collapse>
                             <Collapse in={this.state.showTable}>
                                 <SelectedFootnote filtered={this.props.filters.samples.length}
                                                   tableKey={"samples"}
@@ -553,6 +571,11 @@ export class ReportOverview extends React.Component{
                                           clearIndividualHighlight={this.clearIndividualHighlight}
                                           highlights={this.props.highlights.projects.length}
                                           filtered={this.props.filters.projects.length}/>
+                            <Collapse in={!this.state.showTable}>
+                                <Button onClick={() => {this.updateData(samples, "projects")}} style={style.downButton}>
+                                    <ChevronDownIcon color={themes[theme].palette.primary.main}/>
+                                </Button>
+                            </Collapse>
                             <Collapse in={this.state.showTable}>
                                 <SelectedFootnote filtered={this.props.filters.projects.length}
                                                   tableKey={"projects"}
@@ -567,6 +590,11 @@ export class ReportOverview extends React.Component{
                                           active={this.state.activeTable === "components" && this.state.showTable}
                                           clearIndividualFilter={this.clearIndividualFilter}
                                           filtered={this.props.filters.components.length}/>
+                            <Collapse in={!this.state.showTable}>
+                                <Button onClick={() => {this.updateData(samples, "components")}} style={style.downButton}>
+                                    <ChevronDownIcon color={themes[theme].palette.primary.main}/>
+                                </Button>
+                            </Collapse>
                             <Collapse in={this.state.showTable}>
                                 <SelectedFootnote filtered={this.props.filters.components.length}
                                                   tableKey={"components"}
