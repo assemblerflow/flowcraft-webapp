@@ -10,6 +10,7 @@ import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
+import Collapse from "@material-ui/core/Collapse";
 import CloseIcon from "@material-ui/icons/Close";
 import Toolbar from "@material-ui/core/Toolbar";
 import Divider from "@material-ui/core/Divider";
@@ -1820,37 +1821,51 @@ class SyncCharts extends React.Component{
 
         let xRangeConfigPlasmids;
         if (this.props.plotData.hasOwnProperty("xrangeDataPlasmids")) {
-            xRangeConfigPlasmids = this.getxRangeLayout(
-                this.props.plotData.xrangeDataPlasmids,
-                this.props.plotData.xrangeCategoriesPlasmids,
-                this.props.plotData.xLabels,
-                this.props.plotData.plotLines,
-                "Mobile elements",
-                this._plasmidClick,
-            );
+
+            if (this.props.plotData.xrangeDataPlasmids.some((v) => {return v.data.length > 0})){
+                xRangeConfigPlasmids = this.getxRangeLayout(
+                    this.props.plotData.xrangeDataPlasmids,
+                    this.props.plotData.xrangeCategoriesPlasmids,
+                    this.props.plotData.xLabels,
+                    this.props.plotData.plotLines,
+                    "Mobile elements",
+                    this._plasmidClick,
+                );
+            }
         }
+
+        console.log(this.props.plotData)
 
         return(
             <div ref={elem => this.chartContainer = elem} style={{"width":"100%"}}>
-                <ReactHighcharts config={gcConfig.layout} ref={"slidindGc"}></ReactHighcharts>
-                <ReactHighcharts config={covConfig.layout} ref={"slidingCov"}></ReactHighcharts>
+                <CollapsableChart title={"GC% content"}>
+                    <ReactHighcharts config={gcConfig.layout} ref={"slidindGc"}></ReactHighcharts>
+                </CollapsableChart>
+                <CollapsableChart title={"Coverage depth"}>
+                    <ReactHighcharts config={covConfig.layout} ref={"slidingCov"}></ReactHighcharts>
+                </CollapsableChart>
                 {
-                    xRangeConfig &&
-                        <div ref={ref => (this.amrChart = ref)}>
-                            <GenePopup onRef={ref => (this.genePopover = ref)}/>
+                    xRangeConfig  &&
+                    <div ref={ref => (this.amrChart = ref)}>
+                        <GenePopup onRef={ref => (this.genePopover = ref)}/>
+                        <CollapsableChart title={"AMR annotations"}>
                             <ReactHighcharts config={xRangeConfig.layout} ref={"slidingAbr"}></ReactHighcharts>
                             <AbricateSelect
                                 highlightAbrSelection={this.highlightAbrSelection}
                                 zoomAbrSelection={this.zoomAbrSelection}
                                 zoomInitialGene={this.props.zoomInitialGene}
                                 data={this.props.plotData.xrangeData}/>
-                        </div>
+                        </CollapsableChart>
+
+                    </div>
                 }
                 {
                     xRangeConfigPlasmids &&
                     <div>
                         <PlasmidPopup onRef={ref => (this.plasmidPopover = ref)}/>
-                        <ReactHighcharts config={xRangeConfigPlasmids.layout} ref={"slidingPlasmids"}></ReactHighcharts>
+                        <CollapsableChart title={"Mobile elements"}>
+                            <ReactHighcharts config={xRangeConfigPlasmids.layout} ref={"slidingPlasmids"}></ReactHighcharts>
+                        </CollapsableChart>
                         <PatlasSend sample={this.props.sample}
                                     tableData={this.props.tableData}/>
                     </div>
@@ -1859,6 +1874,83 @@ class SyncCharts extends React.Component{
         )
     }
 }
+
+
+class CollapsableChart extends React.Component{
+
+    state = {
+        hidden: false
+    };
+
+    render(){
+
+        const style = {
+            topContainer: {
+                textAlign: "right"
+            },
+            button: {
+                float: "right",
+                position: "relative",
+                bottom: "-25px",
+                marginBottom: "-36px",
+                marginRight: "10px",
+                zIndex: "10",
+                height: "30px",
+                minHeight: "30px",
+                padding: 0
+            },
+            showButton: {
+                height: "30px",
+                minHeight: "30px",
+                paddingTop: 0,
+                paddingBottom: 0,
+                marginTop: "5px",
+                marginBottom: "5px"
+            }
+        };
+
+        return(
+            <div>
+                <Collapse in={this.state.hidden}>
+                    <div style={style.topContainer}>
+                        <Button style={style.showButton} variant={"outlined"} color={"primary"} onClick={() => {this.setState({hidden: !this.state.hidden})}}>Show {this.props.title}</Button>
+                    </div>
+                </Collapse>
+                <Collapse in={!this.state.hidden}>
+                    <div>
+                        <Button variant={"outlined"} color={"primary"} style={style.button} onClick={() => {this.setState({hidden: !this.state.hidden})}}>Hide</Button>
+                    </div>
+                    <ChartWrapper>
+                        {this.props.children}
+                    </ChartWrapper>
+                </Collapse>
+            </div>
+        )
+    }
+}
+
+
+class ChartWrapper extends React.Component{
+
+    shouldComponentUpdate(nextProps){
+
+        if (nextProps.children.constructor === Array){
+            return nextProps.children[0].props.config !== this.props.children[0].props.config;
+        } else {
+            return nextProps.children.props.config !== this.props.children.props.config;
+        }
+    }
+
+    render(){
+        console.log(this.props)
+        return(
+            <React.Fragment>
+                {this.props.children}
+            </React.Fragment>
+        )
+    }
+}
+
 
 class GenePopup extends React.Component{
 
@@ -2491,8 +2583,7 @@ class ProcessMenu extends React.Component{
         return(
             <div style={style.container}>
                 <Typography>Select process: </Typography>
-                <Select defaultValue={this.props.selectedProcess}
-                        value={this.props.selectedProcess}
+                <Select value={{value: this.props.selectedProcess, label: <Typography>{this.props.selectedProcess}</Typography>}}
                         clearable={false}
                         onChange={this.props.handleProcessChange}
                         options={options}/>
