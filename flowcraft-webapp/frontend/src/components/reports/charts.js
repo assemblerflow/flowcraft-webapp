@@ -627,6 +627,7 @@ export class AssemblySizeDistChart extends React.Component {
 class PilonSizeDistChart extends React.Component{
 
     state = {
+        highlightSample: null,
         alphaSort: false
     };
 
@@ -646,13 +647,14 @@ class PilonSizeDistChart extends React.Component{
     };
 
     selectSample = (sample) => {
+        this.setState({highlightSample: sample})
         highlightChartSample(sample.label, this.refs.assemblySizeDist)
     };
 
     sortDataAlphabetically = (chartData) => {
 
         let sampleCounter = 0;
-        let newArray = JSON.parse(JSON.stringify(chartData))
+        let newArray = JSON.parse(JSON.stringify(chartData));
 
         const sortedData = newArray.sort((a, b) => {
             a = a.name.toLowerCase();
@@ -675,8 +677,17 @@ class PilonSizeDistChart extends React.Component{
             return true
         } else if (nextState.alphaSort !== this.state.alphaSort){
             return true
+        } else if (nextState.highlightSample !== this.state.highlightSample) {
+            return false
         } else {
             return false
+        }
+    }
+
+    componentDidUpdate(){
+        if (this.state.highlightSample){
+            highlightChartSample(this.state.highlightSample.label,
+                this.refs.assemblySizeDist)
         }
     }
 
@@ -887,28 +898,7 @@ class ChartToolbar extends React.Component{
                         <CloseIcon color={themes[theme].palette.error.main}/>
                     </Button>
                 </div>
-
             </div>
-            // <div style={style.root}>
-            //     <div style={{float: "left"}}>
-            //         {this.props.children}
-            //     </div>
-            //     <div style={{flexGrow: "1"}}>
-            //         <div style={style.selectContainer}>
-            //             <Select
-            //                 value={this.state.selection ? this.state.selection : 0}
-            //                 onChange={this.handleSelection}
-            //                 placeholder={"Search samples"}
-            //                 options={options}/>
-            //         </div>
-            //         <Button color={"primary"} variant={"outlined"} style={style.button} onClick={() => {this.props.selectSample(this.state.selection)}}>
-            //             <MagnifyIcon color={themes[theme].palette.primary.main}/>
-            //         </Button>
-            //         <Button color={"primary"} variant={"outlined"} style={style.button} onClick={() => {this.props.selectSample(""); this.handleSelection(null)}}>
-            //             <CloseIcon color={themes[theme].palette.error.main}/>
-            //         </Button>
-            //     </div>
-            // </div>
         )
     }
 }
