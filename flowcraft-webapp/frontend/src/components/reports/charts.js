@@ -839,6 +839,7 @@ class ChartToolbar extends React.Component{
 
     state = {
         selection: null,
+        activeHighlight: null,
     };
 
     handleSelection = (e) => {
@@ -857,13 +858,22 @@ class ChartToolbar extends React.Component{
                 flexGrow: "1",
             },
             searchContainer: {
-                display: "flex",
                 float: "right",
                 flexWrap: "wrap",
+            },
+            selectContainer: {
+                display: "flex",
             },
             select: {
                 width: "300px",
                 flexGrow: 1,
+            },
+            selectionFooter: {
+                marginTop: "5px",
+                marginLeft: "2px",
+            },
+            selectionText: {
+                color: "#6b6b6b"
             },
             button: {
                 padding: 0,
@@ -884,19 +894,27 @@ class ChartToolbar extends React.Component{
                     {this.props.children}
                 </div>
                 <div style={style.searchContainer}>
-                    <div style={style.select}>
-                         <Select
-                             value={this.state.selection ? this.state.selection : 0}
-                             onChange={this.handleSelection}
-                             placeholder={"Search samples"}
-                             options={options}/>
+                    <div style={style.selectContainer}>
+                        <div style={style.select}>
+                             <Select
+                                 value={this.state.selection ? this.state.selection : 0}
+                                 onChange={this.handleSelection}
+                                 placeholder={"Search samples"}
+                                 options={options}/>
+                        </div>
+                        <Button color={"primary"} variant={"outlined"} style={style.button} onClick={() => {this.props.selectSample(this.state.selection); this.setState({activeHighlight: this.state.selection})}}>
+                            <MagnifyIcon color={themes[theme].palette.primary.main}/>
+                        </Button>
+                        <Button color={"primary"} variant={"outlined"} style={style.button} onClick={() => {this.props.selectSample(""); this.handleSelection(null); this.setState({activeHighlight: null})}}>
+                            <CloseIcon color={themes[theme].palette.error.main}/>
+                        </Button>
                     </div>
-                    <Button color={"primary"} variant={"outlined"} style={style.button} onClick={() => {this.props.selectSample(this.state.selection)}}>
-                        <MagnifyIcon color={themes[theme].palette.primary.main}/>
-                    </Button>
-                    <Button color={"primary"} variant={"outlined"} style={style.button} onClick={() => {this.props.selectSample(""); this.handleSelection(null)}}>
-                        <CloseIcon color={themes[theme].palette.error.main}/>
-                    </Button>
+                    {
+                        this.state.activeHighlight &&
+                        <div style={style.selectionFooter}>
+                            <Typography style={style.selectionText}><b>Current selection:</b> {this.state.activeHighlight.label}</Typography>
+                        </div>
+                    }
                 </div>
             </div>
         )
