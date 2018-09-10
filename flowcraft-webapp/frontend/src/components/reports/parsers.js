@@ -81,6 +81,7 @@ export const findTableSignatures = (reportArray, highlights) => {
                         cell.processName = r.processName;
                         cell.processId = r.processId;
                         cell.pipelineId = r.pipelineId;
+                        cell.versions = r.versions;
                         cell.highlight = highlightElement ? highlightElement : null;
 
                         if (!tables.has(cell.table)) {

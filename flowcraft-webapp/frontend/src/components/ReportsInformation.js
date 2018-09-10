@@ -91,20 +91,6 @@ class SoftwareVersions extends React.Component {
 
     }
 
-    // Update in case the list of current software or versions changes
-    static componentShouldUpdate() {
-        const getVersions = this.getSoftwareVersions();
-        if (JSON.stringify(this.state.versions) !== JSON.stringify(getVersions)) {
-            this.setState({
-                versions: getVersions
-            });
-
-        }
-        else {
-            return false;
-        }
-    }
-
     // Gets the software versions from the ReportData
     getSoftwareVersions() {
         const versions = {};
@@ -123,6 +109,20 @@ class SoftwareVersions extends React.Component {
         }
 
         return versions;
+    }
+
+    // Update in case the list of current software or versions changes
+    static componentShouldUpdate() {
+        const getVersions = this.getSoftwareVersions();
+        if (JSON.stringify(this.state.versions) !== JSON.stringify(getVersions)) {
+            this.setState({
+                versions: getVersions
+            });
+
+        }
+        else {
+            return false;
+        }
     }
 
     render() {

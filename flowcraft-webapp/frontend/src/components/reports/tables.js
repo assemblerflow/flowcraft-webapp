@@ -23,9 +23,11 @@ import Divider from "@material-ui/core/Divider";
 import AppBar from "@material-ui/core/AppBar"
 import Button from "@material-ui/core/Button";
 import Dialog from "@material-ui/core/Dialog";
+import Avatar from "@material-ui/core/Avatar";
 import Slide from "@material-ui/core/Slide";
 import Badge from "@material-ui/core/Badge";
 import Paper from "@material-ui/core/Paper";
+import Chip from "@material-ui/core/Chip";
 import Grid from "@material-ui/core/Grid";
 import List from "@material-ui/core/List";
 
@@ -48,6 +50,7 @@ const CheckboxTable = checkboxHOC(ReactTable);
 import MapMarkerRadiusIcon from "mdi-react/MapMarkerRadiusIcon";
 import CrosshairsGpsIcon from "mdi-react/CrosshairsGpsIcon"
 import AlertOctagonIcon from "mdi-react/AlertOctagonIcon";
+import InformationIcon from "mdi-react/InformationIcon";
 import ApprovalIcon from "mdi-react/ApprovalIcon";
 import DownloadIcon from "mdi-react/DownloadIcon";
 import ExportIcon from "mdi-react/ExportIcon";
@@ -58,7 +61,7 @@ import EyeIcon from "mdi-react/EyeIcon";
 import GoogleCirclesExtendedIcon from "mdi-react/GoogleCirclesExtendedIcon";
 
 import {LoadingComponent} from "../ReportsBase";
-import {PhylovizModal, PositionedSnackbar} from "./modals";
+import {BasicModal, PhylovizModal, PositionedSnackbar} from "./modals";
 import {ReportDataConsumer, ReportAppConsumer} from './contexts';
 import {
     getAssemblies,
@@ -521,9 +524,7 @@ export class FCTable extends React.Component {
                                     {
                                         this.state.selection.keys.length > 0 &&
                                         <Button variant={"outlined"}
-                                                onClick={() => {
-                                                    this.toggleAll(true)
-                                                }} style={style.footerButton}>Clear
+                                                onClick={() => {this.toggleAll(true)}} style={style.footerButton}>Clear
                                             selection</Button>
                                     }
 
@@ -904,12 +905,19 @@ export class QualityControlTable extends React.Component {
             this.props.qcInfo, "qc");
 
         console.log("render qc table")
+        console.log(this.props)
+
+        const style = {
+            header: {
+                flexGrow: "1"
+            }
+        };
 
         return (
             <ExpansionPanel defaultExpanded>
                 <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
-                    <Typography variant={"headline"}>Quality
-                        control</Typography>
+                    <Typography style={style.header} variant={"headline"}>Quality control</Typography>
+                    <TableInformation data={this.props.tableData} />
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails>
                     <div className={styles.mainPaper}>
@@ -976,13 +984,17 @@ export class AssemblyTable extends React.Component {
         const style = {
             icon: {
                 fill: "white"
+            },
+            header: {
+                flexGrow: "1"
             }
         };
 
         return (
             <ExpansionPanel defaultExpanded>
                 <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
-                    <Typography variant={"headline"}>Assembly</Typography>
+                    <Typography style={style.header} variant={"headline"}>Assembly</Typography>
+                    <TableInformation data={this.props.tableData} />
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails>
                     <div className={styles.mainPaper}>
@@ -1035,13 +1047,19 @@ export class TypingTable extends React.Component {
     render() {
         const tableData = genericTableParser(this.props.tableData);
 
+        const style = {
+            header: {
+                flexGrow: "1"
+            }
+        };
+
         console.log("render qc table")
 
         return (
             <ExpansionPanel defaultExpanded>
                 <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
-                    <Typography variant={"headline"}>In silico
-                        Typing</Typography>
+                    <Typography style={style.header} variant={"headline"}>In silico Typing</Typography>
+                    <TableInformation data={this.props.tableData} />
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails>
                     <div className={styles.mainPaper}>
@@ -1123,10 +1141,17 @@ export class AbricateTable extends React.Component {
     render() {
         const tableData = genericTableParser(this.props.tableData, this.handleCellClick);
 
+        const style = {
+            header: {
+                flexGrow: "1"
+            }
+        };
+
         return (
             <ExpansionPanel defaultExpanded>
                 <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
-                    <Typography variant={"headline"}>AMR table</Typography>
+                    <Typography style={style.header} variant={"headline"}>AMR table</Typography>
+                    <TableInformation data={this.props.tableData} />
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails>
                     <div className={styles.mainPaper}>
@@ -1313,14 +1338,17 @@ export class ChewbbacaTable extends React.Component {
             },
             icon: {
                 fill: "white"
+            },
+            header: {
+                flexGrow: "1"
             }
         };
 
         return (
             <ExpansionPanel defaultExpanded>
                 <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
-                    <Typography variant={"headline"}>chewBBACA
-                        table</Typography>
+                    <Typography style={style.header} variant={"headline"}>chewBBACA table</Typography>
+                    <TableInformation data={this.props.tableData} />
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails>
                     <div style={style.mainPaper}>
@@ -1770,6 +1798,155 @@ export class FindDistributionPopover extends React.Component {
                         }
                     </div>
                 </Dialog>
+            </div>
+        )
+    }
+}
+
+
+class TableInformation extends React.Component {
+
+    state = {
+        anchorEl: null,
+        informationData: null,
+    };
+
+    retrieveInformation = (e) => {
+
+        const info = new Map();
+
+        for (const el of this.props.data){
+            if (el.hasOwnProperty("versions")){
+                if (!info.has(el.processName)){
+                    info.set(el.processName, {
+                        column: el.header,
+                        version: el.versions
+                    })
+                }
+            }
+        }
+
+        this.setState({
+            informationData: info,
+            anchorEl: e.currentTarget
+        })
+    };
+
+    handleClick = (e) => {
+        e.stopPropagation();
+        this.retrieveInformation(e);
+    };
+
+    handleClose = (e) => {
+        e.stopPropagation();
+        this.setState({ anchorEl: null });
+    };
+
+    render(){
+
+        const style = {
+            root: {
+                padding: "15px",
+                minWidth: "300px"
+            },
+            header: {
+                display: "flex",
+                marginBottom: "5px"
+            },
+            headerText: {
+                flexGrow: "1",
+                lineHeight: "30px",
+                fontSize: "17px",
+                color: themes[theme].palette.primary.main,
+                fontWeight: "bold"
+            },
+            headerButton: {
+                padding: 0,
+                width: "30px",
+                height: "30px"
+            },
+            listItem: {
+                paddingTop: "5px",
+                paddingBottom: "5px"
+            },
+            contents: {
+                marginTop: "10px"
+            },
+            itemPrimaryText: {
+                fontSize: "15px",
+                color: themes[theme].palette.primary.main,
+                fontWeight: "bold"
+            },
+            itemSecondaryText: {
+                fontSize: "14px",
+                flexGrow: "1"
+            },
+            secondaryContainer: {
+                display: "flex",
+                marginTop: "10px",
+            },
+            chip: {
+                height: "25px"
+            },
+            avatar: {
+                height: "28px"
+            }
+        };
+
+        return(
+            <div>
+                <IconButton onClick={this.handleClick}>
+                    <InformationIcon color={themes[theme].palette.primary.main}/>
+                </IconButton>
+                <Popover
+                    open={Boolean(this.state.anchorEl)}
+                    anchorEl={this.state.anchorEl}
+                    onClose={this.handleClose}
+                    anchorOrigin={{
+                        vertical: 'center',
+                        horizontal: 'left',
+                    }}
+                    transformOrigin={{
+                        vertical: 'center',
+                        horizontal: 'right',
+                    }}
+                >
+                    <div style={style.root}>
+                        <div style={style.header}>
+                            <Typography style={style.headerText}>Component information</Typography>
+                            <IconButton style={style.headerButton}><CloseIcon onClick={this.handleClose}/></IconButton>
+                        </div>
+                        <Divider/>
+                        <div style={style.contents}>
+                            <List>
+                                {
+                                    this.state.informationData &&
+                                    Array.from(this.state.informationData, ([key, value]) => {
+                                        return (
+                                            <div style={style.listItem} key={key}>
+                                                <Typography style={style.itemPrimaryText}>{value.column}</Typography>
+                                                {
+                                                    value.version.map((v, i) => {
+                                                        return(
+                                                            <div style={style.secondaryContainer} key={i}>
+                                                                <Typography style={style.itemSecondaryText} >{v.program}</Typography>
+                                                                <Chip
+                                                                    style={style.chip}
+                                                                    label={v.version}
+                                                                    avatar={<Avatar style={style.avatar}>V</Avatar>}
+                                                                />
+                                                            </div>
+                                                        )
+                                                    })
+                                                }
+                                            </div>
+                                        )
+                                    })
+                                }
+                            </List>
+                        </div>
+                    </div>
+                </Popover>
             </div>
         )
     }
