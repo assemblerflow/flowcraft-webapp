@@ -372,13 +372,14 @@ export class FCTable extends React.Component {
             },
             footerText: {
                 fontSize: "16px",
-                lineHeight: "40px",
+                lineHeight: "30px",
                 marginRight: "15px"
             },
             footerButton: {
                 paddingTop: 0,
                 paddingBottom: 0,
-                height: "40px",
+                height: "30px",
+                minHeight: "30px",
                 color: themes[theme].palette.error.main,
                 borderColor: themes[theme].palette.error.main
             }
@@ -516,9 +517,7 @@ export class FCTable extends React.Component {
                                     {...checkboxProps}
                                 />
                                 <div style={style.tableFooter}>
-                                    <Typography style={style.footerText}>Current
-                                        selection:
-                                        <b>{this.state.selection.keys.length}</b></Typography>
+                                    <Typography style={style.footerText}>Current selection: <b>{this.state.selection.keys.length}</b></Typography>
                                     {
                                         this.state.selection.keys.length > 0 &&
                                         <Button variant={"outlined"}
