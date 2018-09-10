@@ -1565,6 +1565,9 @@ class SyncCharts extends React.Component{
         config.extend("legend", {
             enabled: false
         });
+        config.extend("title", {
+            y: -10
+        });
         config.extend("xAxis", {
             categories: xLabels,
             crosshair: {
@@ -1584,7 +1587,7 @@ class SyncCharts extends React.Component{
         config.extend("tooltip", {
             positioner() {
                 return {
-                    x: 70,
+                    x: 90,
                     y: 20
                 }
             },
@@ -1671,7 +1674,7 @@ class SyncCharts extends React.Component{
         config.extend("tooltip", {
             positioner() {
                 return {
-                    x: 70,
+                    x: 90,
                     y: 35
                 };
             },
