@@ -17,7 +17,8 @@ export class Main extends React.Component {
         return (
             <main className={styles.mainContainer}>
                 <Switch>
-                    <Route exact path="/" component={Home}/><Route exact path="/inspect" component={InspectHome}/>
+                    <Route exact path="/" component={Home}/>
+                    <Route exact path="/inspect" component={InspectHome}/>
                     <Route exact path="/inspect/:runId" component={Inspect} setHeader={this.props.setHeader}/>
                     <Route exact path="/reports" component={ReportsHome}/>
                     <Route exact path="/reports/innuendo" component={ReportsRedirect}/>
