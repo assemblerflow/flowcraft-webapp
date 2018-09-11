@@ -23,7 +23,8 @@ import {
     MetadataTable,
     PhylovizTable,
     TypingTable,
-    PlasmidsTable
+    PlasmidsTable,
+    MappingTable
 } from "./reports/tables";
 import {Innuendo} from "./reports/innuendo";
 import {ReportsHeader} from "./reports/drawer";
@@ -701,6 +702,17 @@ class ReportsApp extends React.Component {
                                     tableData={tableData.get("assembly")}
                                     qcInfo={qcInfo}
                                     additionalInfo={this.props.additionalInfo}
+                                    reportData={this.props.reportData}
+                                />
+                            </Element>
+                        }
+                        {
+                            tables.includes("mapping") &&
+                            <Element name={"mappingTable"}
+                                     className={styles.scrollElement}>
+                                <MappingTable
+                                    tableData={tableData.get("mapping")}
+                                    qcInfo={qcInfo}
                                     reportData={this.props.reportData}
                                 />
                             </Element>

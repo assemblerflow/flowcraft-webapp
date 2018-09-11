@@ -935,6 +935,66 @@ export class QualityControlTable extends React.Component {
 }
 
 
+export class MappingTable extends React.Component {
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            selection: {keys: []}
+        };
+    }
+
+    shouldComponentUpdate(nextProps, nextState, nextContext) {
+        if (nextProps.tableData !== this.props.tableData) {
+            return true
+        } else if (nextState.selection !== this.state.selection) {
+            return true
+        }
+
+        return false
+    }
+
+    setSelection = (selection) => {
+        this.setState({selection});
+    };
+
+    render() {
+        const tableData = genericTableParser(this.props.tableData);
+        qcParseAdditionalData(tableData, this.props.tableData,
+            this.props.qcInfo, "mapping");
+
+        console.log("render mapping table")
+
+        const style = {
+            header: {
+                flexGrow: "1"
+            }
+        };
+
+        return (
+            <ExpansionPanel defaultExpanded>
+                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
+                    <Typography style={style.header} variant={"headline"}>Read mapping</Typography>
+                    <TableInformation data={this.props.tableData} />
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails>
+                    <div className={styles.mainPaper}>
+                        <FCTable
+                            data={tableData.tableArray}
+                            columns={tableData.columnsArray}
+                            rawData={tableData.rawTableArray}
+                            setSelection={this.setSelection}
+                        />
+                    </div>
+                </ExpansionPanelDetails>
+            </ExpansionPanel>
+        )
+    }
+}
+
+
+
 export class AssemblyTable extends React.Component {
     constructor(props) {
         super(props);
