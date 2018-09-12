@@ -40,6 +40,8 @@
     "material-design-icons": "^3.0.1",
     "mdi-react": "^3.4.0",
     "moment": "^2.22.1",
+    "phylocanvas": "^2.8.1",
+    "phylocanvas-plugin-context-menu": "^3.11.0",
     "prismjs": "^1.14.0",
     "react-color": "^2.14.1",
     "react-csv": "^1.0.14",
