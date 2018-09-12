@@ -113,26 +113,40 @@ export class FCTable extends React.Component {
         }
     }
 
+    /**
+     * Changes the rowFilter state string variable. rowFilter is then used to
+     * apply a string filter to the rowId accessor of the ReactTable component
+     *
+     * @param {string} e - Arbitrary string that will be used to filter table
+     * rows by the rowId accessor.
+     */
     handleSearchChange = (e) => {
         this.setState({rowFilter: e.target.value})
     };
 
-    filterSelection = (filters, updateCallback) => {
+    /**
+     * This method updates the filter state of the ReportsApp component.
+     *
+     * The filtering is done based on the samples already in the filters array
+     * (filters parameter), the currently existing samples (samples parameter)
+     * and the ReportsApp method that updates its state (updateCallback parameter).
+     * The updataCallback parameter is the updateFilters method of ReportsApp.
+     *
+     * The new filters object will be determined by providing all samples that
+     * are NOT selected in the table, and therefore, not in this.state.selection.
+     *
+     * @param {Object} filters - The current filters state object of ReportsApp
+     * @param {Array} samples - Array with all available current samples
+     * @param {callback} updateCallback -
+     */
+    filterSelection = (filters, samples, updateCallback) => {
 
         const arrayMap = {
-            "samples": []
+            "samples": samples
         };
         const selection = {
             "samples": this.state.selection
         };
-
-        const wrappedInstance = this.checkboxTable.getWrappedInstance();
-        // the 'sortedData' property contains the currently accessible records based on the filter and sort
-        const currentRecords = wrappedInstance.getResolvedState().sortedData;
-        // we just push all the IDs onto the selection array
-        currentRecords.forEach(item => {
-            arrayMap.samples.push(item._original._id);
-        });
 
         updateCallback(updateFilterArray(arrayMap, selection, filters))
 
@@ -426,7 +440,8 @@ export class FCTable extends React.Component {
             <div>
                 <ReportAppConsumer>
                     {
-                        ({tableSamples, filters, updateFilters, highlights, updateHighlights}) => (
+                        ({tableSamples, filters, updateFilters, highlights,
+                             updateHighlights, chartSamples}) => (
                             <LoadingComponent>
                                 <Grid container style={style.toolbar}>
                                     {
@@ -478,7 +493,7 @@ export class FCTable extends React.Component {
                                             {
                                                 !this.props.hideGeneralButtons &&
                                                 <div style={{display: "inline-block"}}>
-                                                    <TableButton onClick={() => {this.filterSelection(filters, updateFilters)}} tooltip={"Filter and keep only selection"}>
+                                                    <TableButton onClick={() => {this.filterSelection(filters, [...new Set([...tableSamples, ...chartSamples])], updateFilters)}} tooltip={"Filter and keep only selection"}>
                                                         <FilterIcon color={"#fff"}/>
                                                     </TableButton>
                                                     <HighlightSelectionPopup action={(color) =>{this.highlightSelection(highlights, updateHighlights, color)}} />
