@@ -8,11 +8,34 @@ import Grid from "@material-ui/core/Grid";
 
 import logo from  "../../resources/Logo_small.png";
 
+import {HomeInnuendo} from "./innuendo/home";
+
 // Theme imports
 import {themes} from "./reports/themes";
-import {theme} from "../../config.json";
+import {theme, service} from "../../config.json";
+
 
 class Home extends React.Component {
+
+    render(){
+
+        const homeComponents = {
+            "default": <HomeFlowcraft/>,
+            "innuendo": <HomeInnuendo/>
+        };
+
+        return(
+            <div>
+                {
+                    homeComponents[service]
+                }
+            </div>
+        )
+    }
+}
+
+
+class HomeFlowcraft extends React.Component {
 
     state = {
         showInspectTooltip: false,

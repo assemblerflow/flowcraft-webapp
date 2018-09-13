@@ -7,7 +7,7 @@ import {
     LoadingScreen
 } from "./ReportsBase"
 
-import {HomeInnuendo} from "./reports/innuendo";
+import {HomeInnuendo} from "./innuendo/innuendo";
 import {HomeInput} from "./Inspect";
 import {Header} from "./Header";
 

@@ -16,7 +16,7 @@ import Grid from '@material-ui/core/Grid';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import Select from '../SelectPlusAll';
-import {FCTable} from './tables';
+import {FCTable} from '../reports/tables';
 
 // styles
 import styles from "../../styles/innuendo.css";
@@ -36,15 +36,15 @@ import TimelineIcon from '@material-ui/icons/Timeline';
 import ExportIcon from "mdi-react/ExportIcon";
 
 // utils
-import {parseProjectSearch, getMetadataMapping} from "./utils"
+import {parseProjectSearch, getMetadataMapping} from "../reports/utils"
 import axios from "axios";
 
 import {ReportsHome} from "../Reports";
-import {TableButton} from "./tables";
-import {PositionedSnackbar} from "./modals";
+import {TableButton} from "../reports/tables";
+import {PositionedSnackbar} from "../reports/modals";
 
 //parsers
-import {InnuendoReportsTableParser} from './parsers';
+import {InnuendoReportsTableParser} from '../reports/parsers';
 
 // Other imports
 import {address} from "../../../config.json";

@@ -26,7 +26,7 @@ import {
     PlasmidsTable,
     MappingTable
 } from "./reports/tables";
-import {Innuendo} from "./reports/innuendo";
+import {Innuendo} from "./innuendo/innuendo";
 import {ReportsHeader} from "./reports/drawer";
 import {ReportOverview} from "./reports/overview";
 import {filterReportArray} from "./reports/filters_highlights";
@@ -644,6 +644,7 @@ class ReportsApp extends React.Component {
                     tableData,
                     qcInfo,
                     tableSamples,
+                    chartSamples,
                     nfMetadata,
                     reportData: this.props.reportData
                 }}>
