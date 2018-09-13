@@ -309,6 +309,60 @@ export class LoadingComponent extends React.Component {
 
 }
 
+/*
+Loading component were the open state and close state can be triggered
+ */
+export class LoadingState extends React.Component {
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            show: false
+        }
+    }
+
+    // Required to set reference on parent component to allow state change
+    componentDidMount() {
+        this.props.onRef(this);
+    }
+
+    componentWillUnmount() {
+        this.props.onRef(undefined);
+    }
+
+    handleClose = () => {
+        this.setState({show: false});
+    };
+
+    // USed on parent component to set the snackbar state
+    handleOpen = (message, type) => {
+        this.setState({show: true});
+    };
+
+    render() {
+
+        const style = {
+            loadingDiv: {
+                textAlign: "center"
+            }
+        };
+        return (
+            <div>
+                {
+                    !this.state.show ?
+                        this.props.children
+                        :
+                        <div style={style.loadingDiv}>
+                            <CircularProgress/>
+                        </div>
+                }
+            </div>
+        )
+    }
+
+}
+
 
 export class LoadingScreen extends React.Component {
 

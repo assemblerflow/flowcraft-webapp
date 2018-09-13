@@ -1267,8 +1267,9 @@ export class ChewbbacaTable extends React.Component {
 
     componentDidMount() {
         if (this.props.additionalInfo.innuendo) {
+
             this.handleClickSpecies(
-                this.props.additionalInfo.innuendo.species["1"],
+                this.props.additionalInfo.innuendo.species["1"].name,
                 0
             )
         }

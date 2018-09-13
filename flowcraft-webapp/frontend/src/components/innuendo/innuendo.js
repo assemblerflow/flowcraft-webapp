@@ -42,6 +42,7 @@ import axios from "axios";
 import {ReportsHome} from "../Reports";
 import {TableButton} from "../reports/tables";
 import {PositionedSnackbar} from "../reports/modals";
+import {LoadingState} from "../ReportsBase";
 
 //parsers
 import {InnuendoReportsTableParser} from '../reports/parsers';
@@ -889,6 +890,9 @@ class InnuendoProjects extends React.Component {
     getProjectStrains = () => {
 
         if (this.state.selectedProjectIds.length > 0) {
+            // Open loading state
+            this.loading.handleOpen();
+
             this.props.innuendo.getInnuendoProjectStrains(this.state.selectedProjectIds)
                 .then((response) => {
                     const responseData = parseProjectSearch(response.data);
@@ -898,7 +902,10 @@ class InnuendoProjects extends React.Component {
                         minDate: responseData.minDate,
                         maxDate: responseData.maxDate,
                         reportInfo: response.data
-                    })
+                    });
+
+                    // Close loading state
+                    this.loading.handleClose();
 
                 });
         }
@@ -960,6 +967,8 @@ class InnuendoProjects extends React.Component {
 
         const strainsForRequest = [];
 
+        this.loadingFilters.handleOpen();
+
         for (const el of this.state.reportInfo) {
             if (this.state.selectedStrains.includes(el.sample_name)) {
                 const dt = new Date(el.timestamp);
@@ -979,6 +988,8 @@ class InnuendoProjects extends React.Component {
             resultsReports: results.resultsReports,
             resultsMetadata: results.resultsMetadata
         });
+
+        this.loadingFilters.handleClose();
 
     };
 
@@ -1045,15 +1056,22 @@ class InnuendoProjects extends React.Component {
                 }
                 <Grid container>
                     <Grid item xs={12} sm={12}>
-                        <InnuendoProjectSelector
-                            handleChangeProjects={this.handleChangeProjects}
-                            projects={this.state.projects}
-                            getProjectStrains={this.getProjectStrains}
-                        />
+                        <LoadingState
+                            onRef={ref => (this.loading = ref)}
+                        >
+                            <InnuendoProjectSelector
+                                handleChangeProjects={this.handleChangeProjects}
+                                projects={this.state.projects}
+                                getProjectStrains={this.getProjectStrains}
+                            />
+                        </LoadingState>
                     </Grid>
                     {
                         this.state.strains.length > 0 &&
                         <Grid item xs={12} sm={12}>
+                            <LoadingState
+                                onRef={ref => (this.loadingFilters = ref)}
+                            >
                             <InnuendoFilters
                                 handleChangeStrains={this.handleChangeStrains}
                                 strains={this.state.strains}
@@ -1062,6 +1080,7 @@ class InnuendoProjects extends React.Component {
                                 updateDate={this.updateDate}
                                 submitStrains={this.submitStrains}
                             />
+                            </LoadingState>
                         </Grid>
                     }
 

@@ -371,8 +371,13 @@ export class PhylovizModal extends React.Component {
     Handle change on input values state
      */
     handleChange = name => event => {
+        let value = event.target.value;
+        if (name === "closestStrains") {
+            const maxValue = parseInt(1000 / this.state.selection.rows.length);
+            value = value > maxValue ? maxValue : value;
+        }
         this.setState({
-            [name]: event.target.value,
+            [name]: value,
         });
     };
 
@@ -412,7 +417,6 @@ export class PhylovizModal extends React.Component {
     Set additional information values
      */
     handleSelectInfoChange(additionalInfoValues) {
-        console.log(additionalInfoValues);
         this.setState({additionalInfoValues});
     }
 
@@ -830,6 +834,7 @@ export class PhylovizModal extends React.Component {
                                             InputLabelProps={{
                                                 shrink: true,
                                             }}
+                                            InputProps={{ inputProps: { max: parseInt(1000 / this.state.selection.rows.length) } }}
                                             margin="normal"
                                             style={style.rowComponent}
                                             required
