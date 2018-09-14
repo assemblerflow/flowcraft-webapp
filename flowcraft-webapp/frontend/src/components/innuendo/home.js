@@ -47,6 +47,14 @@ export class HomeInnuendo extends React.Component{
                 fontWeight: "bold",
                 color: "#6e6e6e",
             },
+            headerTip: {
+                fontSize: "0.8vmax",
+                float: "right",
+                marginBottom: "5px"
+            },
+            headerTipDiv: {
+                textAlign: "left"
+            },
             logo: {
                 height: "auto",
                 width: "300px",
@@ -63,6 +71,9 @@ export class HomeInnuendo extends React.Component{
                 color: themes[theme].palette.primary.main,
                 position: "absolute",
                 bottom: "10px"
+            },
+            mainColor: {
+                color: "#4572c1"
             },
             buttonContainer: {
                 justifyContent: "center",
@@ -100,25 +111,30 @@ export class HomeInnuendo extends React.Component{
                     </div>
                 </div>
                 <Typography style={style.headerText}>Integrating genomics into foodborne pathogens surveillance</Typography>
-                <Typography style={style.notice}>Select one of the following options:</Typography>
-                <Grid container spacing={24} style={style.buttonContainer}>
-                    <a href={`${address}app/`} style={{textDecoration: "none"}}>
-                        <Button
-                            onMouseEnter={() => {this.setState({showInspectTooltip: true})}}
-                            onMouseLeave={() => {this.setState({showInspectTooltip: false})}}
-                            variant={"outlined"}
-                            color={"primary"}
-                            style={style.mainButton}>App</Button>
-                    </a>
-                    <Link to={"reports"} style={{textDecoration: "none"}}>
-                        <Button
-                            onMouseEnter={() => {this.setState({showReportTooltip: true})}}
-                            onMouseLeave={() => {this.setState({showReportTooltip: false})}}
-                            variant={"outlined"}
-                            color={"primary"}
-                            style={style.mainButton}>Reports</Button>
-                    </Link>
-                </Grid>
+                <div  style={style.headerTipDiv}>
+                    <Typography style={style.headerTip}>powered by <span style={style.mainColor}>FlowCraft</span></Typography>
+                </div>
+                <div style={{marginTop: "40px"}}>
+                    <Typography style={style.notice}>Select one of the following options:</Typography>
+                    <Grid container spacing={24} style={style.buttonContainer}>
+                        <a href={`${address}app/`} style={{textDecoration: "none"}}>
+                            <Button
+                                onMouseEnter={() => {this.setState({showInspectTooltip: true})}}
+                                onMouseLeave={() => {this.setState({showInspectTooltip: false})}}
+                                variant={"outlined"}
+                                color={"primary"}
+                                style={style.mainButton}>App</Button>
+                        </a>
+                        <Link to={"reports"} style={{textDecoration: "none"}}>
+                            <Button
+                                onMouseEnter={() => {this.setState({showReportTooltip: true})}}
+                                onMouseLeave={() => {this.setState({showReportTooltip: false})}}
+                                variant={"outlined"}
+                                color={"primary"}
+                                style={style.mainButton}>Reports</Button>
+                        </Link>
+                    </Grid>
+                </div>
                 <div style={style.tooltipContainer}>
                     <Fade in={this.state.showInspectTooltip}>
                         <Typography style={style.tooltip} align={"center"}>Application for project creation and job submission</Typography>

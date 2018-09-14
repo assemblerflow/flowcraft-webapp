@@ -1267,7 +1267,6 @@ export class ChewbbacaTable extends React.Component {
 
     componentDidMount() {
         if (this.props.additionalInfo.innuendo) {
-
             this.handleClickSpecies(
                 this.props.additionalInfo.innuendo.species["1"].name,
                 0
@@ -1340,7 +1339,12 @@ export class ChewbbacaTable extends React.Component {
     };
 
     downloadProfiles = () => {
-        downloadChewbbacaProfiles(this.state.selection, this.props.reportData);
+        downloadChewbbacaProfiles(
+            this.state.selection,
+            this.props.reportData,
+            this.props.additionalInfo.innuendo,
+            this.snackBar
+        );
     };
 
     chewbbacaParser = (tableData, originalData) => {
@@ -1427,6 +1431,11 @@ export class ChewbbacaTable extends React.Component {
                     <TableInformation data={this.props.tableData} />
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails>
+                    <PositionedSnackbar
+                        vertical="top"
+                        horizontal="right"
+                        onRef={ref => (this.snackBar = ref)}
+                    />
                     <div style={style.mainPaper}>
                         <div style={style.buttonBar}>
                             {

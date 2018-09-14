@@ -154,73 +154,64 @@ export const parseProjectSearch = (projectsData) => {
 /**
  * Download profiles from chewbbaca in a tab-delimited format
  */
-export const downloadChewbbacaProfiles = (selection, reportData) => {
+export const downloadChewbbacaProfiles = (selection, reportData, innuendoClass, snackBar) => {
 
-    console.log(selection);
+    let ids = [];
 
-
-    let headers = ["FILE"];
-    let body = [];
-    let firstTime = true;
-    let dataKey;
-    let auxBody = [];
-
-    const selectionRows = selection.rows === undefined ? [] : selection.rows;
-
-    if (selectionRows.length === 0) {
-        return false;
+    for (const s of selection.rows) {
+        let entry = s.raw["INF_chewbbaca"];
+        ids.push(`${entry.projectId}-${entry.pipelineId}-${entry.processId}`)
     }
 
-    for (const row of selectionRows) {
-
-
-        console.log(row);
-        const idToCheck = `${row.projectId}.${row.pipelineId}.${row.processId}`;
-
-        for (const [index, report] of reportData.entries()) {
-            const indexToCheck = `${report.projectid}.${report.pipelineId}.${report.processId}`;
-
-
-            if (indexToCheck === idToCheck) {
-
-                console.log(report);
-
-                auxBody = [];
-
-                if (firstTime) {
-                    firstTime = false;
-                    headers = headers.concat(report.reportJson.cagao[0].header);
-                }
-
-                for (const d in report.reportJson.cagao[0]) {
-                    if (d !== "header"){
-                        dataKey = d;
-                        break;
-                    }
-                }
-
-                auxBody.push(report.sample_name);
-                auxBody = auxBody.concat(report.reportJson.cagao[0][dataKey]);
-                body.push(auxBody);
-
-            }
+    // Get chewBBACA reports
+    innuendoClass.getReports(ids).then((response) => {
+        if (response.data.length === 0) {
+            snackBar.handleOpen("No profiles available for the selected strains" +
+            " in the service.", "info");
         }
-    }
-    ;
+        else {
+            let headers = ["FILE"];
+            let body = [];
+            let firstTime = true;
+            let dataKey;
+            let auxBody = [];
 
-    // Create string for user to download
-    let downloadString = "";
-    downloadString += (headers.join("\t") + "\n");
+            for (const [index, report] of response.data.entries()) {
 
-    for (const profile of body) {
-        downloadString += (profile.join("\t") + "\n");
-    }
+                    if (firstTime) {
+                        firstTime = false;
+                        headers = headers.concat(report.reportJson.cagao[0].header);
+                    }
 
-    // Send to download
-    const fileName = Math.random().toString(36).substring(7);
-    sendFile(fileName, downloadString, "text/csv");
-    return true;
+                    for (const d in report.reportJson.cagao[0]) {
+                        if (d !== "header"){
+                            dataKey = d;
+                            break;
+                        }
+                    }
+                    auxBody.push(report.sample_name);
+                    auxBody = auxBody.concat(report.reportJson.cagao[0][dataKey]);
+                    body.push(auxBody);
+                    auxBody = [];
+            }
 
+            // Create string for user to download
+            let downloadString = "";
+            downloadString += (headers.join("\t") + "\n");
+
+            for (const profile of body) {
+                downloadString += (profile.join("\t").replace(/(\r\n|\n|\r)/gm,"") + "\n");
+            }
+
+            // Send to download
+            const fileName = Math.random().toString(36).substring(7);
+            sendFile(fileName, downloadString, "text/plain");
+            snackBar.handleOpen("Profiles downloaded successfully!", "success");
+        }
+    }).catch((response) => {
+        snackBar.handleOpen("There was an error when trying to get the" +
+        " profiles.", "info");
+    });
 
 };
 

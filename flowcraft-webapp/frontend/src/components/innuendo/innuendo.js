@@ -214,6 +214,20 @@ export class Innuendo {
     }
 
     /*
+    Get reports by id
+     */
+    getReports(ids) {
+        return axios({
+            method: "post",
+            url: address + "app/api/v1.0/reports/ids/",
+            params: {
+                job_ids: ids.join(",")
+            }
+
+        })
+    }
+
+    /*
     Request to get all reports for a set of strains in a given time interval.
      */
     async getInnuendoReportsByFilter(filter) {
@@ -347,10 +361,45 @@ export class HomeInnuendo extends React.Component {
     };
 
     setCredentials = (innuendoClass) => {
-        this.props.setAdditionalInfo({innuendo: innuendoClass});
-        this.setState({
-            innuendo: innuendoClass
-        })
+
+        // Get innuendo species and set the credentials and the species on
+        // the innuendo class
+        innuendoClass.getInnuendoSpecies().then((response) => {
+            let speciesObject = {};
+
+            for (const r of response.data) {
+                speciesObject[r.id] = {
+                    name: r.name
+                };
+            }
+
+            innuendoClass.setSpecies(speciesObject);
+
+            // Get available innuenod schema versions
+            innuendoClass.getInnuendoSchemasVersions().then((versions) => {
+
+                let speciesObject = innuendoClass.getSpecies();
+                let intermediate = {};
+
+                for (const r in speciesObject) {
+                    intermediate[r] = {
+                        name: speciesObject[r].name,
+                        schemaVersions: versions.data[speciesObject[r].name]
+                    }
+                }
+
+                innuendoClass.setSpecies(intermediate);
+
+                this.props.setAdditionalInfo({innuendo: innuendoClass});
+
+                this.setState({
+                    innuendo: innuendoClass
+                })
+
+            });
+
+        });
+
     };
 
     // Method used to parse message form iframe
