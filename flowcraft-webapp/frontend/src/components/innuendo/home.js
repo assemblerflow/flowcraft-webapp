@@ -10,6 +10,7 @@ import Grid from "@material-ui/core/Grid";
 // Theme imports
 import {themes} from "../reports/themes";
 import {theme, service, address} from "../../../config.json";
+import logo from "../../../resources/innuendo.svg";
 
 export class HomeInnuendo extends React.Component{
 
@@ -31,7 +32,15 @@ export class HomeInnuendo extends React.Component{
                 fontSize: "2.5vmax",
                 fontWeight: "bold",
                 color: "#4572c1",
-                textAlign: "center"
+                textAlign: "left",
+                position: "relative",
+                marginBottom: "0px",
+                top: "55%"
+            },
+            titleDiv: {
+              position: "relative",
+              bottom: "0",
+              left: "0",
             },
             headerText: {
                 fontSize: "1.5vmax",
@@ -39,8 +48,10 @@ export class HomeInnuendo extends React.Component{
                 color: "#6e6e6e",
             },
             logo: {
-                height: "20%",
-                width: "80%"
+                height: "auto",
+                width: "300px",
+                position: "relative",
+                top: "10%"
             },
             logoContainer: {
                 display: "flex",
@@ -80,8 +91,13 @@ export class HomeInnuendo extends React.Component{
 
         return (
             <div style={style.root}>
-                <div style={style.logoContainer}>
-                    <Typography style={style.title}>INNUENDO Platform</Typography>
+                <div style={{"display": "flex"}}>
+                    <div style={style.titleDiv}>
+                        <Typography style={style.title}>INNUENDO Platform</Typography>
+                    </div>
+                    <div>
+                        <img style={style.logo} src={logo} alt={"logo"}/>
+                    </div>
                 </div>
                 <Typography style={style.headerText}>Integrating genomics into foodborne pathogens surveillance</Typography>
                 <Typography style={style.notice}>Select one of the following options:</Typography>

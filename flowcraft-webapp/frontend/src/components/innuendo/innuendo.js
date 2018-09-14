@@ -363,13 +363,44 @@ export class HomeInnuendo extends React.Component {
                     // Set userId on INNUENDO state
                     this.state.innuendo.setUserId(e.data.current_user_id);
                     this.state.innuendo.setUsername(e.data.current_user_name);
+                    // Get INNUENDO available species andd add to the class
+                    // instance
+                    this.state.innuendo.getInnuendoSpecies().then((response) => {
+                        let speciesObject = {};
 
-                    this.props.setAdditionalInfo({innuendo: this.state.innuendo});
+                        for (const r of response.data) {
+                            speciesObject[r.id] = {
+                                name: r.name
+                            };
+                        }
 
-                    this.setState({
-                        showProjects: true,
-                        initialProjects: e.data.projects,
-                        initialStrains: e.data.strains
+                        this.state.innuendo.setSpecies(speciesObject);
+
+                        // Get available innuenod schema versions
+                        this.state.innuendo.getInnuendoSchemasVersions().then((versions) => {
+
+                            let speciesObject = this.state.innuendo.getSpecies();
+                            let intermediate = {};
+
+                            for (const r in speciesObject) {
+                                intermediate[r] = {
+                                    name: speciesObject[r].name,
+                                    schemaVersions: versions.data[speciesObject[r].name]
+                                }
+                            }
+
+                            this.state.innuendo.setSpecies(intermediate);
+
+                            this.props.setAdditionalInfo({innuendo: this.state.innuendo});
+
+                            this.setState({
+                                showProjects: true,
+                                initialProjects: e.data.projects,
+                                initialStrains: e.data.strains
+                            });
+
+                        });
+
                     });
 
                 } catch (e) {
@@ -942,6 +973,8 @@ class InnuendoProjects extends React.Component {
 
         let metadataMap = [[], []];
 
+        this.loading.handleOpen();
+
         for (const strain of this.props.initialStrains) {
             metadataMap[0].push(this.props.initialProjects);
             metadataMap[1].push(strain);
@@ -957,6 +990,7 @@ class InnuendoProjects extends React.Component {
             resultsMetadata: results.resultsMetadata
         });
 
+        this.loading.handleClose();
     };
 
 
