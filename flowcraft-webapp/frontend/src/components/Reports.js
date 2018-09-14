@@ -31,9 +31,11 @@ import {ReportsHeader} from "./reports/drawer";
 import {ReportOverview} from "./reports/overview";
 import {filterReportArray} from "./reports/filters_highlights";
 import {AssemblySizeDistChart, FastQcCharts} from "./reports/charts";
+import {BadRequestPaper} from "./Inspect";
 import {
     ReportDataProvider,
     ReportAppProvider,
+    ReportBroadcastProvider
 } from './reports/contexts';
 
 
@@ -84,8 +86,12 @@ export class ReportsBroadcast extends React.Component{
 
         this.state = {
             reportData: null,
-            runId: this.props.match.params.runId
-        }
+            reportQueue: 0,
+            badRequest: false,
+            runId: this.props.match.params.runId,
+        };
+
+        this.fetchReports = this.fetchReports.bind(this);
 
     }
 
@@ -93,12 +99,13 @@ export class ReportsBroadcast extends React.Component{
         axios.get(`api/reports?run_id=${this.state.runId}`)
             .then(
                 (response) => {
+                    console.log(response)
                     this.setState({
                         reportData: response.data.data.data.results
                     })
                 },
                 (error) => {
-                    console.log("bad")
+                    this.setState({badRequest: true})
                     console.log(error)
                 }
             )
@@ -111,11 +118,24 @@ export class ReportsBroadcast extends React.Component{
     }
 
     render(){
+        console.log(this.state)
         return(
             <div>
                 {
-                    this.state.reportData &&
-                        <ReportsWrapper reportData={this.state.reportData}/>
+                    this.state.badRequest ?
+                        <BadRequestPaper runID={this.state.runId}/> :
+                        <ReportBroadcastProvider value={{
+                            liveReport: true,
+                            runId: this.props.match.params.runId,
+                            fetchReports: this.fetchReports
+                        }}>
+                            {
+                                this.state.reportData &&
+                                <ReportsWrapper
+                                    liveReport={true}
+                                    reportData={this.state.reportData}/>
+                            }
+                        </ReportBroadcastProvider>
                 }
             </div>
         )
@@ -261,8 +281,6 @@ class ReportsWrapper extends React.Component {
         const highlights = props.highlights;
         const additionalInfo = props.additionalInfo;
 
-        console.log(additionalInfo);
-
         this.state = {
             // Retrieve the initial state of reportData from the URL state
             "reportData": reportData === undefined ? [] : reportData,
@@ -316,84 +334,93 @@ class ReportsWrapper extends React.Component {
      */
     handleDrop(files, event) {
 
-        const data = files[0];
-        const reader = new FileReader();
+        if (this.props.liveReport === true){
+            this.loadingSnackbar.handleOpen(
+                "Drag and drop of report files is not allowed for live reports",
+                "error"
+            )
+        } else {
 
-        reader.onload = function (e) {
 
-            try {
-                const parsedString = JSON.parse(e.target.result);
-                const reportData = parsedString.data.results;
+            const data = files[0];
+            const reader = new FileReader();
 
-                let globalFilters = {};
-                let globalHighlights = {};
-                let dropFilters = {};
-                let dropHighlights = {};
+            reader.onload = function (e) {
 
-                // Check if report file has the filters object. If not, add
-                // empty
-                if (parsedString.data.filters !== undefined) {
-                    dropFilters = parsedString.data.filters;
+                try {
+                    const parsedString = JSON.parse(e.target.result);
+                    const reportData = parsedString.data.results;
+
+                    let globalFilters = {};
+                    let globalHighlights = {};
+                    let dropFilters = {};
+                    let dropHighlights = {};
+
+                    // Check if report file has the filters object. If not, add
+                    // empty
+                    if (parsedString.data.filters !== undefined) {
+                        dropFilters = parsedString.data.filters;
+                    }
+                    dropFilters.samples = dropFilters.samples === undefined ? [] : dropFilters.samples;
+                    dropFilters.projects = dropFilters.projects === undefined ? [] : dropFilters.projects;
+                    dropFilters.components = dropFilters.components === undefined ? [] : dropFilters.components;
+
+                    // Check if report file has the highlights object. If not, add
+                    // empty
+                    if (parsedString.data.highlights !== undefined) {
+                        dropHighlights = parsedString.data.highlights;
+                    }
+                    dropHighlights.samples = dropHighlights.samples === undefined ? [] : dropHighlights.samples;
+                    dropHighlights.projects = dropHighlights.projects === undefined ? [] : dropHighlights.projects;
+
+                    // Update state filters by updating filters by concatenating
+                    // unique state and drop filters
+                    if (this.state.filters !== undefined) {
+                        globalFilters.samples = [...new Set([
+                            ...(this.state.filters === null ? [] : this.state.filters.samples),
+                            ...dropFilters.samples])];
+                        globalFilters.projects = [...new Set([
+                            ...(this.state.filters === null ? [] : this.state.filters.projects),
+                            ...dropFilters.projects])];
+                        globalFilters.components = [...new Set([
+                            ...(this.state.filters === null ? [] : this.state.filters.components),
+                            ...dropFilters.components])];
+                    }
+
+                    // Update state highlights by concatenating
+                    // unique state and drop highlights
+                    if (this.state.highlights !== undefined) {
+                        globalHighlights.samples = [...new Set([
+                            ...(this.state.highlights === null ? [] : this.state.highlights.samples),
+                            ...dropHighlights.samples])];
+                        globalHighlights.projects = [...new Set([
+                            ...(this.state.highlights === null ? [] : this.state.highlights.projects),
+                            ...dropHighlights.projects])];
+                    }
+
+                    // Build dropData object to pass to state. It has the
+                    // filters and highlights obtained from the file but also
+                    // the concatenation with the previous ones
+                    const jsonData = {
+                        reportData,
+                        filters: globalFilters,
+                        highlights: globalHighlights,
+                        dropFilters: dropFilters,
+                        dropHighlights: dropHighlights
+                    };
+
+                    if (this.state.reportData === null) {
+                        this.loadReports(jsonData);
+                    } else {
+                        this.reportModal.openModal(jsonData);
+                    }
+                } catch (e) {
+                    console.log(e);
                 }
-                dropFilters.samples = dropFilters.samples === undefined ? [] : dropFilters.samples;
-                dropFilters.projects = dropFilters.projects === undefined ? [] : dropFilters.projects;
-                dropFilters.components = dropFilters.components === undefined ? [] : dropFilters.components;
+            }.bind(this);
 
-                // Check if report file has the highlights object. If not, add
-                // empty
-                if (parsedString.data.highlights !== undefined) {
-                    dropHighlights = parsedString.data.highlights;
-                }
-                dropHighlights.samples = dropHighlights.samples === undefined ? [] : dropHighlights.samples;
-                dropHighlights.projects = dropHighlights.projects === undefined ? [] : dropHighlights.projects;
-
-                // Update state filters by updating filters by concatenating
-                // unique state and drop filters
-                if (this.state.filters !== undefined) {
-                    globalFilters.samples = [...new Set([
-                        ...(this.state.filters === null ? [] : this.state.filters.samples),
-                        ...dropFilters.samples])];
-                    globalFilters.projects = [...new Set([
-                        ...(this.state.filters === null ? [] : this.state.filters.projects),
-                        ...dropFilters.projects])];
-                    globalFilters.components = [...new Set([
-                        ...(this.state.filters === null ? [] : this.state.filters.components),
-                        ...dropFilters.components])];
-                }
-
-                // Update state highlights by concatenating
-                // unique state and drop highlights
-                if (this.state.highlights !== undefined) {
-                    globalHighlights.samples = [...new Set([
-                        ...(this.state.highlights === null ? [] : this.state.highlights.samples),
-                        ...dropHighlights.samples])];
-                    globalHighlights.projects = [...new Set([
-                        ...(this.state.highlights === null ? [] : this.state.highlights.projects),
-                        ...dropHighlights.projects])];
-                }
-
-                // Build dropData object to pass to state. It has the
-                // filters and highlights obtained from the file but also
-                // the concatenation with the previous ones
-                const jsonData = {
-                    reportData,
-                    filters: globalFilters,
-                    highlights: globalHighlights,
-                    dropFilters: dropFilters,
-                    dropHighlights: dropHighlights
-                };
-
-                if (this.state.reportData === null) {
-                    this.loadReports(jsonData);
-                } else {
-                    this.reportModal.openModal(jsonData);
-                }
-            } catch (e) {
-                console.log(e);
-            }
-        }.bind(this);
-
-        reader.readAsText(data)
+            reader.readAsText(data)
+        }
     }
 
     componentDidMount() {
@@ -403,13 +430,13 @@ class ReportsWrapper extends React.Component {
 
     shouldComponentUpdate(nextProps, nextState) {
 
-        if(JSON.stringify(this.state.reportData) !== JSON.stringify(nextState.reportData)) {
+        if (JSON.stringify(this.state.reportData) !== JSON.stringify(nextState.reportData)) {
             return true
-        }
-        else if (this.state.loading !== nextState.loading) {
+        } else if (this.state.loading !== nextState.loading) {
             return true;
-        }
-        else {
+        } else if (JSON.stringify(this.state.reportData) !== JSON.stringify(nextProps.reportData)) {
+            return true;
+        } else {
             return false;
         }
     }
@@ -425,6 +452,13 @@ class ReportsWrapper extends React.Component {
                     shouldUpdate = false;
                 }
             }
+        }
+
+        // Update the reportData state when the component has been mounted with
+        // the liveReport prop. Otherwise, keep using the state.
+        if (JSON.stringify(this.state.reportData) !== JSON.stringify(this.props.reportData) &&
+                this.props.liveReport === true){
+            this.setState({reportData: this.props.reportData})
         }
 
         // Fetch additional reportData from external sources. That are not
@@ -448,6 +482,8 @@ class ReportsWrapper extends React.Component {
     }
 
     render() {
+
+        console.log("Wrapper render")
 
         return (
             <div>
@@ -624,8 +660,6 @@ class ReportsApp extends React.Component {
         const tables = [...tableData.keys()];
 
         console.log(this.props.reportData)
-        console.log(this.state.highlights)
-        console.log(this.props.additionalInfo);
 
         //
         // This is the main element where the Reports components will be added,

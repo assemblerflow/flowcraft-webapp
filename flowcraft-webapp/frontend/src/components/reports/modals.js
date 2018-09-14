@@ -109,7 +109,8 @@ export class PositionedSnackbar extends React.Component {
                 display: "flex",
                 alignItems: "center",
                 marginLeft: "10px",
-                fontSize: "16px"
+                fontSize: "16px",
+                maxWidth: "450px"
             }
         };
 
@@ -126,7 +127,7 @@ export class PositionedSnackbar extends React.Component {
                     open={open}
                     autoHideDuration={
                         (this.props.autoHideDuration) ?
-                            this.props.autoHideDuration : 6000
+                            this.props.autoHideDuration : 216000
                     }
                     onClose={this.handleClose}
                 >
@@ -148,8 +149,7 @@ export class PositionedSnackbar extends React.Component {
                                         <CircularProgress size={30} style={style.loadingCircle}/> :
                                          <Icon className={classNames(style.icon, style.iconVariant)}/>
                                 }
-                                <Typography
-                                    style={style.message}>{message}</Typography>
+                                <Typography style={style.message}>{message}</Typography>
                             </span>}
                     />
                 </Snackbar>

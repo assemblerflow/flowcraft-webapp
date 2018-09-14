@@ -1,5 +1,5 @@
 {
-  "service": "innuendo",
-  "address": "https://193.166.24.85/",
-  "theme": "innuendo"
+  "service": "default",
+  "address": "",
+  "theme": "base"
 }

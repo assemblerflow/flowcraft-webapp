@@ -28,7 +28,7 @@ import AlienIcon from "mdi-react/AlienIcon";
 import PillIcon from "mdi-react/PillIcon";
 import TagIcon from "mdi-react/TagIcon";
 
-import {Header} from "../Header";
+import Header from "../Header";
 import {themes} from "./themes";
 import {theme} from "../../../config.json";
 

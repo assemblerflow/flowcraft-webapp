@@ -57,7 +57,7 @@ const styles = require("../styles/inspect.css");
 // TreeDag import
 
 import TreeDag from "./treeDag";
-import {Header} from "./Header";
+import Header from "./Header";
 import {Footer} from "./Footer";
 
 /*
@@ -1491,7 +1491,7 @@ class Loader extends React.Component {
 /*
 Error Paper
  */
-class BadRequestPaper extends React.Component {
+export class BadRequestPaper extends React.Component {
     render () {
         return (
             <div className={styles.badrequestContainer}>

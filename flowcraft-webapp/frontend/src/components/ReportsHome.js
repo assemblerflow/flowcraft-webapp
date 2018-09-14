@@ -9,7 +9,7 @@ import {
 
 import {HomeInnuendo} from "./innuendo/innuendo";
 import {HomeInput} from "./Inspect";
-import {Header} from "./Header";
+import Header from "./Header";
 
 import {service} from "../../config.json"
 
