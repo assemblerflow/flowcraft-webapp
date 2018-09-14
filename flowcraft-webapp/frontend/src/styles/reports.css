@@ -1,0 +1,102 @@
+
+:local(.mainPaper) {
+    flex-grow: 1;
+    overflow-x: auto;
+}
+
+:local(.tabButton){
+    border-bottom: 2px solid #5c6bc0!important;
+}
+
+:local(.tableCell) {
+    position: relative;
+    text-align: center;
+    line-height: 33px!important;
+    vertical-align: middle!important;
+}
+
+:local(.scrollElement) {
+    margin-top: 40px;
+}
+
+:local(.centralModal) {
+    background-color: white!important;
+    opacity: 1;
+    position:absolute;
+    width:40%;
+    height:auto;
+    top:25%;
+    left:30%;
+}
+
+:local(.modalBody) {
+    margin: 2%!important;
+}
+
+:local(.centeredContent) {
+    text-align: center!important;
+}
+
+:local(.modalHeader) {
+    margin: 2%!important;
+    display: flex;
+
+}
+
+:local(.modalCloseButton) {
+    height: 25px!important;
+    width: 25px!important;
+}
+
+:local(.cellLabelText) {
+    color: white!important;
+    font-weight: bold!important;
+}
+
+:local(.tableButtonsDiv) {
+    flex-grow: 1;
+    display: flex;
+    overflow-x: auto;
+    text-align: left;
+    margin-bottom: 5px;
+}
+
+:local(.moreOptionsButton) {
+    position: fixed;
+    bottom: 2%;
+    right: 5px;
+    z-index: 1301;
+    display: block;
+    text-align: center;
+}
+
+:local(.taskButton) {
+    margin-bottom: 0;
+    z-index: 99;
+    transition: opacity ease-in 0.15s, margin-bottom ease-in 0.15s;
+}
+
+:local(.tableMainHeader) {
+    font-weight: bold!important;
+}
+
+:local(.tableSecondaryHeader) {
+    font-size: 12px!important;
+    font-weight: bold!important;
+    color: #525252 !important;
+}
+
+:local(.warningBadge) {
+    font-size: 13px!important;
+    height: 18px!important;
+    width: 18px!important;
+    top: -6px!important;
+    background-color: #9b9b9b !important;
+}
+
+:local(.taskDialogContainer) {
+    position: absolute!important;
+    top: 0!important;
+    overflow-y: visible!important;
+    padding: 15px
+}

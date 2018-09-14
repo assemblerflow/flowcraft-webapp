@@ -1,0 +1,69 @@
+:local(.innuendoHomeContainer) {
+    width: 89%!important;
+    height: auto!important;
+    position: absolute;
+    left: 0;
+    right: 0;
+
+    margin: auto;
+}
+
+.Select.is-open {
+    position: relative!important;
+    z-index: 1000!important;
+}
+
+.Select-menu-outer {
+  z-index: 999!important;
+}
+
+:local(.basicMargin) {
+    margin-bottom: 2%!important;
+}
+
+:local(.innuendoHome) {
+
+    display: flex;
+    flex-grow: 1;
+
+    padding: 10px
+}
+
+:local(.innuendoLogin) {
+    text-align: center!important;
+    margin: 3%!important;
+
+}
+
+:local(.innuendoInputForm) {
+    width: 30%!important;
+    margin:1%!important;
+}
+
+:local(.innuendoFormDiv) {
+    margin-top: 10px!important;
+}
+
+:local(.innuendoTabButtonsDiv) {
+    width: 100%!important;
+    text-align: center!important;
+}
+
+:local(.innuendoTabButtons) {
+    width: 50%!important;
+}
+
+:local(.innuendoTabButtonText) {
+    color: white!important;
+}
+
+:local(.innuendoGrid) {
+    width: 100%!important;
+    height: 100%!important;
+}
+
+:local(.innuendoTitle) {
+    text-align: left!important;
+    margin: 1%!important;
+    font-size: 20px!important;
+}

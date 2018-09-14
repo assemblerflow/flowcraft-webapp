@@ -1,5 +1,5 @@
 // React imports
-import React from "react"
+import React from "react";
 import ReactTable from "react-table";
 
 //Material UI imports
@@ -57,7 +57,7 @@ const styles = require("../styles/inspect.css");
 // TreeDag import
 
 import TreeDag from "./treeDag";
-import {Header} from "./Header";
+import Header from "./Header";
 import {Footer} from "./Footer";
 
 /*
@@ -232,19 +232,20 @@ export class InspectHome extends React.Component {
         return (
             <div>
                 <Header headerTitle={"Inspect"}/>
-                <InspectHomeInput/>
+                <HomeInput route={"inspect"}/>
             </div>
         )
     }
 }
 
-class InspectHomeInput extends React.Component {
+export class HomeInput extends React.Component {
 
     constructor(props) {
         super(props);
 
         this.state = {
-            "runId": ""
+            "runId": "",
+            "route": props.route
         };
     }
 
@@ -277,7 +278,7 @@ class InspectHomeInput extends React.Component {
                         margin="normal"/>
                     <div style={{height: "100%", margin: "auto", marginLeft: "10px"}}>
                         <Button styles={{height: "40px"}} variant={"raised"} color={"primary"}
-                                component={props => <Link to={`/inspect/${this.state.runId}`} {...props}/>}
+                                component={props => <Link to={`/${this.state.route}/${this.state.runId}`} {...props}/>}
                                 >
                             GO!
                         </Button>
@@ -1494,7 +1495,7 @@ class Loader extends React.Component {
 /*
 Error Paper
  */
-class BadRequestPaper extends React.Component {
+export class BadRequestPaper extends React.Component {
     render () {
         return (
             <div className={styles.badrequestContainer}>

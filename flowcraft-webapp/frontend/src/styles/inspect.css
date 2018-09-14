@@ -193,7 +193,7 @@
     line-height: 15px!important;
 }
 
-/* This prevents the focus outlier when clicking react table headers */
+/* This prevents the focus outlier when clicking react table tableHeaders */
 .ReactTable .rt-thead [role="columnheader"] {
 outline: 0;
 }

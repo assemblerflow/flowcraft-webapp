@@ -1,5 +1,13 @@
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+
 module.exports = {
     devtool: 'cheap-module-source-map',
+    resolve: {
+        alias: {
+            // 'lodash': 'lodash/core',
+            // 'moment': 'moment/src/moment',
+        },
+    },
     module: {
         rules: [
             {
@@ -19,7 +27,15 @@ module.exports = {
             }
         ]
     },
-    mode: "production"
+    // plugins: [
+    //     new UglifyJsPlugin()
+    // ],
+    mode: "production",
+    // optimization: {
+    //     minimizer: [
+    //         new UglifyJsPlugin()
+    //     ]
+    // }
 };
 
 
