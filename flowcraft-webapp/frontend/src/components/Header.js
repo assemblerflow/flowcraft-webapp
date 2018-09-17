@@ -49,10 +49,9 @@ const styles = {
         "-webkit-transition": "width .5s",
         "transition": "width .5s"
     },
-    menuButtom: {
-        [themes[theme].breakpoints.down("xs")]: {
+    menuButton: {
+        [themes[theme].breakpoints.up("xs")]: {
             marginLeft: "-12px",
-            marginRight: "-12px"
         }
     },
     logo: {
@@ -122,10 +121,6 @@ class Header extends React.Component {
                                                 className={classes.menuButton}>
                                         <MenuIcon style={style.icon}/>
                                     </IconButton>}
-                                    <img
-                                        className={classes.logo}
-                                        src={"https://github.com/assemblerflow/flowcraft-webapp/raw/master/flowcraft-webapp/frontend/resources/flowcraft_text_white.png"}
-                                        alt={"logo"} height={"15"}/>
                                     {
                                         this.props.homeRef &&
                                         <ReportDataConsumer>

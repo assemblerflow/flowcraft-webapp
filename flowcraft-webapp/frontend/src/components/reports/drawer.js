@@ -31,6 +31,9 @@ import TagIcon from "mdi-react/TagIcon";
 import Header from "../Header";
 import {themes} from "./themes";
 import {theme} from "../../../config.json";
+import Toolbar from "@material-ui/core/Toolbar";
+import logo from  "../../../resources/Logo_small.png";
+
 
 const styles = require("../../styles/drawer.css");
 
@@ -57,8 +60,11 @@ export class ReportsHeader extends React.Component {
 
         this.state = {
             drawerOpen: false,
+            hoverOpen: false,
             tabValue: "0"
-        }
+        };
+
+        this.mouseOverTimer = null;
     }
 
     openDrawer = () => {
@@ -67,6 +73,24 @@ export class ReportsHeader extends React.Component {
 
     closeDrawer = () => {
         this.setState({drawerOpen: false})
+    };
+
+    scheduleMouseOver = () => {
+        if (this.state.drawerOpen === false && this.state.hoverOpen === false){
+            this.mouseOverTimer = setTimeout(() => {this.openDrawer()}, 350);
+            this.setState({hoverOpen: true});
+        }
+    };
+
+    cancelMouseOver = () => {
+        if (this.state.hoverOpen === true){
+            this.closeDrawer();
+            this.setState({hoverOpen: false});
+        }
+        if (this.mouseOverTimer){
+            clearTimeout(this.mouseOverTimer);
+            this.mouseOverTimer = null;
+        }
     };
 
     render () {
@@ -81,8 +105,13 @@ export class ReportsHeader extends React.Component {
 
                 <Drawer variant={"permanent"}
                         open={this.props.drawerOpen}
+                        onMouseEnter={this.scheduleMouseOver}
+                        onMouseLeave={this.cancelMouseOver}
                         classes={{paper: classNames(styles.drawerPaper, !this.state.drawerOpen && styles.drawerPaperClose)}}>
                     <div className={styles.toolbar}>
+                        <img
+                            src={logo}
+                            alt={"logo"} height={"25"}/>
                         <IconButton className={styles.closeDrawerButton} onClick={this.closeDrawer}>
                             <ChevronLeftIcon/>
                         </IconButton>
