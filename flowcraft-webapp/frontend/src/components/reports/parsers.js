@@ -289,7 +289,9 @@ export const findQcWarnings = (reportArray) => {
             // Parse fails
             if (r.reportJson.hasOwnProperty("fail")) {
 
-                if (typeof r.reportJson.fail === "object") {
+                // Handle cases where the fail message is a JSON and not an
+                // array
+                if (r.reportJson.fail.constructor === Object) {
                     r.reportJson.fail = [r.reportJson.fail];
                 }
 
