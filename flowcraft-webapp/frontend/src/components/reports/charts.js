@@ -37,10 +37,12 @@ export class FastQcCharts extends React.Component {
     constructor(props) {
         super(props);
 
+        const limit = 200;
+
         this.state = {
             chartData: props.rawReports,
             tabValue: 0,
-            limit: 200
+            limit
         };
 
         this.updateChartLimit = this.updateChartLimit.bind(this);
@@ -151,7 +153,7 @@ export class FastQcCharts extends React.Component {
         // toggle system is introduced.
         const previewThreshold = 200;
 
-        const chartData = this.parsePlotData(this.state.chartData, 200);
+        const chartData = this.parsePlotData(this.state.chartData, this.state.limit);
 
         return (
             <div>
@@ -193,7 +195,7 @@ export class FastQcCharts extends React.Component {
                                 <PreviewSnack
                                     actionClick={() => {this.updateChartLimit(previewThreshold)}}
                                     actionMessage={"Show preview Chart"}
-                                    message={`Chart displaying a large number of samples (${data.categories.length})`}/>
+                                    message={`Chart displaying a large number of samples (${chartData.qcCharts["base_sequence_quality"].length})`}/>
                             }
                         </div>
                 </ExpansionPanelDetails>
