@@ -117,7 +117,7 @@ export class ReportsHeader extends React.Component {
                         </IconButton>
                     </div>
                     <Divider/>
-                    <Link activeClass={styles.activeSideButton} to={"reportOverview"} smooth={true} duration={500} offset={-70}>
+                    <Link activeClass={styles.activeSideButton} to={"reportOverview"} spy={true} smooth={true} duration={500} offset={-70}>
                         <DrawerButtonEntry icon={<InformationIcon/>}
                                            text={"Report Overview"} />
                     </Link>
@@ -166,7 +166,7 @@ class ChartDrawer extends React.Component {
                         this.props.chartHeaders.map((h) => {
                             if (headerMap.hasOwnProperty(h)){
                                 return (
-                                    <Link activeClass={styles.activeSideButton} key={h} to={`${h}Chart`} smooth={true} duration={500} offset={-70}>
+                                    <Link activeClass={styles.activeSideButton} key={h} spy={true} to={`${h}Chart`} smooth={true} duration={500} offset={-70}>
                                         <DrawerButtonEntry key={h} icon={headerMap[h].icon}
                                                            text={headerMap[h].text}/>
                                     </Link>
@@ -221,8 +221,9 @@ class TableDrawer extends React.Component {
                                         <Link activeClass={styles.activeSideButton}
                                               key={h.signature}
                                               to={`${h.signature}Table`}
+                                              spy={true}
                                               smooth={true} duration={500}
-                                              offset={-70}>
+                                              offset={-100}>
                                             <DrawerButtonEntry icon={h.icon}
                                                                text={h.label}/>
                                         </Link>

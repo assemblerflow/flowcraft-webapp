@@ -71,6 +71,11 @@
     margin-left: 300px;
 }
 
+:local(.activeSideButton){
+    display: flex;
+    border-left: 7px solid #5c6bc0!important;
+}
+
 :local(.activeSideButton svg path){
     fill: #5c6bc0!important;
 }
