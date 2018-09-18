@@ -596,7 +596,7 @@ export class AssemblySizeDistChart extends React.Component {
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails>
                     <div style={{"width": "100%"}}>
-                        <div className={styles.mainPaper} style={{"height": "600px", "width":"100%"}}>
+                        <div className={styles.mainPaper} style={{"height": "620px", "width":"100%"}}>
                             <PilonSizeDistChart plotData={data}/>
                         </div>
                         {
