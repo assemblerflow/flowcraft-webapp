@@ -863,10 +863,17 @@ export class PlasmidsTable extends React.Component {
 
         const tableData = genericTableParser(this.props.tableData);
 
+        const style = {
+            header: {
+                flexGrow: 1
+            }
+        };
+
         return (
             <ExpansionPanel defaultExpanded>
                 <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
-                    <Typography variant={"headline"}>Plasmids</Typography>
+                    <Typography style={style.header} variant={"headline"}>Plasmids</Typography>
+                    <TableInformation data={this.props.tableData} />
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails>
                     <div className={styles.mainPaper}>
@@ -1900,13 +1907,14 @@ class TableInformation extends React.Component {
 
         const info = new Map();
 
-        for (const el of this.props.data){
-            if (el.hasOwnProperty("versions")){
-                if (!info.has(el.processName)){
-                    info.set(el.processName, {
-                        column: el.header,
-                        version: el.versions
-                    })
+        for (const el of this.props.data) {
+            if (el.hasOwnProperty("versions")) {
+                if (!info.has(el.processName)) {
+                    info.set(el.processName, new Map([[el.header, el.versions]]))
+                } else {
+                    if (!info.get(el.processName).has(el.header)) {
+                        info.get(el.processName).set(el.header, el.versions)
+                    }
                 }
             }
         }
@@ -2009,17 +2017,25 @@ class TableInformation extends React.Component {
                                     Array.from(this.state.informationData, ([key, value]) => {
                                         return (
                                             <div style={style.listItem} key={key}>
-                                                <Typography style={style.itemPrimaryText}>{value.column}</Typography>
                                                 {
-                                                    value.version.map((v, i) => {
+                                                    Array.from(value, ([column, versions]) => {
                                                         return(
-                                                            <div style={style.secondaryContainer} key={i}>
-                                                                <Typography style={style.itemSecondaryText} >{v.program}</Typography>
-                                                                <Chip
-                                                                    style={style.chip}
-                                                                    label={v.version}
-                                                                    avatar={<Avatar style={style.avatar}>V</Avatar>}
-                                                                />
+                                                            <div key={column} >
+                                                                <Typography style={style.itemPrimaryText}>{column}</Typography>
+                                                                {
+                                                                    versions.map((v, i) => {
+                                                                        return(
+                                                                            <div style={style.secondaryContainer} key={i}>
+                                                                                <Typography style={style.itemSecondaryText} >{v.program}</Typography>
+                                                                                <Chip
+                                                                                    avatar={<Avatar style={style.avatar}>V</Avatar>}
+                                                                                    label={v.version}
+                                                                                    style={style.chip}/>
+                                                                            </div>
+                                                                        )
+                                                                    })
+                                                                }
+
                                                             </div>
                                                         )
                                                     })
