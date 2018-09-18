@@ -96,16 +96,17 @@ export class ReportsBroadcast extends React.Component{
     }
 
     fetchReports = () => {
+        this.loadingSnackbar.handleOpen("Fetching report data...", "loading");
         axios.get(`api/reports?run_id=${this.state.runId}`)
             .then(
                 (response) => {
-                    console.log(response)
                     this.setState({
-                        reportData: response.data.data.data.results
-                    })
+                        reportData: response.data.data.data.results,
+                    });
+                    this.loadingSnackbar.handleClose();
                 },
                 (error) => {
-                    this.setState({badRequest: true})
+                    this.setState({badRequest: true});
                     console.log(error)
                 }
             )
@@ -121,6 +122,10 @@ export class ReportsBroadcast extends React.Component{
         console.log(this.state)
         return(
             <div>
+                <PositionedSnackbar
+                    onRef={ref => (this.loadingSnackbar = ref)}
+                    horizontal={"left"}
+                    vertical={"bottom"}/>
                 {
                     this.state.badRequest ?
                         <BadRequestPaper runID={this.state.runId}/> :
