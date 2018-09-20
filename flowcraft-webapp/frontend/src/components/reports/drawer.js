@@ -50,7 +50,7 @@ class TableOfContents extends React.Component {
                 <TableDrawer tableHeaders={this.props.tableHeaders}/>}
                 {this.props.chartHeaders &&
                 <ChartDrawer chartHeaders={this.props.chartHeaders}/>}
-                {this.props.otherHeaders &&
+                {this.props.otherHeaders.length > 0 &&
                 <OtherDrawer otherHeaders={this.props.otherHeaders}/>}
             </List>
         )
