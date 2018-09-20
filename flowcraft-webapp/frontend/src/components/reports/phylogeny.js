@@ -71,7 +71,7 @@ export class Phylogeny extends React.Component{
             return {label: `Tree ${i}`, value: i}
         });
         // Options to change
-        const treeTypeOption = ["circular", "rectangular", "diagonal", "hierarchical"].map((v, i) => {
+        const treeTypeOption = ["circular", "rectangular", "diagonal", "hierarchical", "radial"].map((v, i) => {
             return {label: v, value: i}
         });
 
@@ -166,7 +166,7 @@ class PhylogeneticTree extends React.Component {
         // Set the tree type to rectangular
         this.tree.setTreeType(this.props.treeType);
         this.tree.disableZoom = !this.props.zoom;
-        // this.tree.setTextSize(20);
+        this.tree.setTextSize(15);
         this.tree.resizeToContainer();
         this.tree.draw()
     };
