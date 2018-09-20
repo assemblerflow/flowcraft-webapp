@@ -97,12 +97,6 @@ export class FastQcCharts extends React.Component {
 
                             // Check if sample or project is in highlights
                             const highlight = getHighlight(this.props.highlights, el.sample, r.projectid);
-                            // let highlight;
-                            // if (this.props.highlights.samples.some((v) => {return v.label === el.sample})){
-                            //     highlight = this.props.highlights.samples.filter((v) => {return v.label === el.sample})[0]
-                            // } else {
-                            //     highlight = this.props.highlights.projects.filter((v) => {return v.label === el.sample})[0]
-                            // }
 
                             qcCharts[plot].push({
                                 name: el.sample,

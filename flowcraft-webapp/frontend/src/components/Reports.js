@@ -13,7 +13,8 @@ import {
     findTableSignatures,
     findChartSignatures,
     findQcWarnings,
-    findNfMetadata
+    findNfMetadata,
+    findPhylogenySignatures
 } from "./reports/parsers";
 import {
     QualityControlTable,
@@ -53,6 +54,7 @@ import styles from "../styles/reports.css";
 
 import {TaskButtons} from "./reports/task_buttons"
 import {PositionedSnackbar} from "./reports/modals";
+import {Phylogeny} from "./reports/phylogeny";
 
 
 
@@ -661,10 +663,17 @@ class ReportsApp extends React.Component {
         // const activeReports = this.props.reportData;
         const {tableData, tableSamples} = findTableSignatures(activeReports, this.state.highlights);
         const {charts, chartSamples} = findChartSignatures(activeReports);
+        const {phylogenies, phylogeniesMetadata} = findPhylogenySignatures(activeReports);
         const qcInfo = findQcWarnings(activeReports);
         const tables = [...tableData.keys()];
 
+        let otherHeaders = [];
+        if (phylogenies.length > 0){
+            otherHeaders.push("phylogeny")
+        }
+
         console.log(this.props.reportData)
+        console.log(otherHeaders)
 
         //
         // This is the main element where the Reports components will be added,
@@ -687,8 +696,10 @@ class ReportsApp extends React.Component {
                     nfMetadata,
                     reportData: this.props.reportData
                 }}>
-                    <ReportsHeader tableHeaders={tables}
-                                   chartHeaders={charts}>
+                    <ReportsHeader
+                        otherHeaders={otherHeaders}
+                        tableHeaders={tables}
+                        chartHeaders={charts}>
                         <PositionedSnackbar
                             onRef={ref => (this.loadingSnackbar = ref)}
                             horizontal={"left"}
@@ -809,6 +820,15 @@ class ReportsApp extends React.Component {
                                 <AssemblySizeDistChart
                                     highlights={this.state.highlights}
                                     rawReports={activeReports}/>
+                            </Element>
+                        }
+                        {
+                            phylogenies.length > 0  &&
+                            <Element name={"phylogeny"}
+                                     className={styles.scrollElement}>
+                                <Phylogeny
+                                    treeMetadata={phylogeniesMetadata}
+                                    treeData={phylogenies}/>
                             </Element>
                         }
                     </ReportsHeader>

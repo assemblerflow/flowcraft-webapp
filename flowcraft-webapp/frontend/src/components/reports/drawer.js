@@ -26,6 +26,8 @@ import TableLargeIcon from "mdi-react/TableLargeIcon";
 import ChartLineIcon from "mdi-react/ChartLineIcon";
 import AlienIcon from "mdi-react/AlienIcon";
 import PillIcon from "mdi-react/PillIcon";
+import PlusOutlineIcon from "mdi-react/PlusOutlineIcon";
+import TournamentIcon from "mdi-react/TournamentIcon";
 import TagIcon from "mdi-react/TagIcon";
 
 import Header from "../Header";
@@ -48,6 +50,8 @@ class TableOfContents extends React.Component {
                 <TableDrawer tableHeaders={this.props.tableHeaders}/>}
                 {this.props.chartHeaders &&
                 <ChartDrawer chartHeaders={this.props.chartHeaders}/>}
+                {this.props.otherHeaders &&
+                <OtherDrawer otherHeaders={this.props.otherHeaders}/>}
             </List>
         )
     }
@@ -122,8 +126,10 @@ export class ReportsHeader extends React.Component {
                                            text={"Report Overview"} />
                     </Link>
                     {this.state.tabValue === "0" &&
-                        <TableOfContents tableHeaders={this.props.tableHeaders}
-                                         chartHeaders={this.props.chartHeaders}
+                        <TableOfContents
+                            otherHeaders={this.props.otherHeaders}
+                            tableHeaders={this.props.tableHeaders}
+                            chartHeaders={this.props.chartHeaders}
                         />
                     }
                 </Drawer>
@@ -133,6 +139,50 @@ export class ReportsHeader extends React.Component {
             </div>
         )
     }
+}
+
+
+class OtherDrawer extends React.Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            expanded: true
+        };
+
+        this.toggleDrawer = this.toggleDrawer.bind(this)
+    }
+
+    toggleDrawer() {
+        this.setState({"expanded": !this.state.expanded});
+    }
+
+    render () {
+        const headerMap = {
+            "phylogeny": {icon: <TournamentIcon/>, text: "Phylogenetics"}
+        };
+
+        return(
+            <div>
+                <DrawerHeader onClick={this.toggleDrawer} icon={<PlusOutlineIcon/>} text={"Other components"}/>
+                <div className={classNames(this.state.expanded ? styles.subDrawerOpen : styles.subDrawerClose)}>
+                    {
+                        this.props.otherHeaders.map((h) => {
+                            if (headerMap.hasOwnProperty(h)){
+                                return (
+                                    <Link activeClass={styles.activeSideButton} key={h} spy={true} to={`${h}`} smooth={true} duration={500} offset={-70}>
+                                        <DrawerButtonEntry key={h} icon={headerMap[h].icon}
+                                                           text={headerMap[h].text}/>
+                                    </Link>
+                                )
+                            }
+                        })
+                    }
+                </div>
+            </div>
+        )
+    }
+
 }
 
 

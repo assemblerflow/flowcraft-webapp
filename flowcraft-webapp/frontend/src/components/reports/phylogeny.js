@@ -3,15 +3,95 @@ import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import Typography from "@material-ui/core/Typography";
+import Switch from "@material-ui/core/Switch";
+import Grid from "@material-ui/core/Grid";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
 
+import randomColor from "randomcolor";
+import Select from "react-select";
 import Phylocanvas from 'phylocanvas';
 
-import contextMenu from 'phylocanvas-plugin-context-menu';
+import contextMenu from "phylocanvas-plugin-context-menu";
+import metadata from "phylocanvas-plugin-metadata";
+
 Phylocanvas.plugin(contextMenu);
+Phylocanvas.plugin(metadata);
 
 export class Phylogeny extends React.Component{
+
+    state = {
+        process: 0,
+        tree: 0,
+        treeType: 0,
+        zoom: false,
+    };
+
+    handleSelectChange = (selectType, val) => {
+
+        const newState = {};
+        newState[selectType] = val.value;
+
+        this.setState(newState)
+
+    };
+
+    prepareMetadata = (rawMetadata) => {
+
+        const metadata = new Map();
+
+        for (const m of rawMetadata){
+            const currentMeta = m.reportJson.metadata[0];
+            const sample = currentMeta.sample;
+
+            if (!metadata.has(sample)){
+                metadata.set(sample, {});
+            }
+
+            metadata.get(sample)[currentMeta.column] = {label: currentMeta.treeData};
+        }
+
+        return metadata
+
+    };
+
     render(){
+
+        const treeData = this.props.treeData[this.state.process];
+        const newick = treeData.reportJson.treeData[0].trees[this.state.tree];
+        const metadata = this.prepareMetadata(this.props.treeMetadata);
+
+        // Select options
+        // Options to change process name
+        const processOptions = this.props.treeData.map((v, i) => {
+            return {label: v.processName, value: i}
+        });
+        // Options to change tree index
+        const treeOptions = treeData.reportJson.treeData[0].trees.map((v, i) => {
+            return {label: `Tree ${i}`, value: i}
+        });
+        // Options to change
+        const treeTypeOption = ["circular", "rectangular", "diagonal", "hierarchical"].map((v, i) => {
+            return {label: v, value: i}
+        });
+
+        const style = {
+            root: {
+                width: "100%",
+            },
+            toolbar: {
+                display: "flex"
+            },
+            select: {
+                width: "170px",
+                marginRight: "10px",
+                zIndex: 100
+            },
+            zoom: {
+                marginLeft: "auto",
+            }
+        };
+
         return(
             <div>
                 <ExpansionPanel defaultExpanded >
@@ -19,7 +99,51 @@ export class Phylogeny extends React.Component{
                         <Typography variant={"headline"}>Phylogenetic tree</Typography>
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails>
-                        <PhylogeneticTree />
+                        <div style={style.root}>
+                            <Grid container style={style.toolbar}>
+                                <div style={style.select}>
+                                    <Typography>Process:</Typography>
+                                    <Select
+                                        value={processOptions[this.state.process]}
+                                        // menuPlacement={"top"}
+                                        options={processOptions}
+                                        onChange={(val) => {this.handleSelectChange("process", val)}}
+                                        id={"processName"} />
+                                </div>
+                                <div style={style.select}>
+                                    <Typography>Tree number:</Typography>
+                                    <Select
+                                        id={"trees"}
+                                        // menuPlacement={"top"}
+                                        closeMenuOnSelect={false}
+                                        options={treeOptions}
+                                        onChange={(val) => {this.handleSelectChange("tree", val)}}
+                                        value={treeOptions[this.state.tree]}/>
+                                </div>
+                                <div style={style.select}>
+                                    <Typography>Tree type:</Typography>
+                                    <Select
+                                        // menuPlacement={"top"}
+                                        closeMenuOnSelect={false}
+                                        options={treeTypeOption}
+                                        onChange={(val) => {this.handleSelectChange("treeType", val)}}
+                                        value={treeTypeOption[this.state.treeType]}/>
+                                </div>
+                                <FormControlLabel control={
+                                    <Switch
+                                        color={"primary"}
+                                        onChange={() => {this.setState({zoom: !this.state.zoom})}}
+                                        checked={this.state.zoom} />
+                                } label={
+                                    `Zoom is ${this.state.zoom ? "enabled" : "disabled"}`
+                                } style={style.zoom}/>
+                            </Grid>
+                            <PhylogeneticTree
+                                zoom={this.state.zoom}
+                                treeType={treeTypeOption[this.state.treeType].label}
+                                metadata={metadata}
+                                newickString={newick} />
+                        </div>
                     </ExpansionPanelDetails>
                 </ExpansionPanel>
             </div>
@@ -30,20 +154,74 @@ export class Phylogeny extends React.Component{
 
 class PhylogeneticTree extends React.Component {
 
+    constructor(props){
+        super(props);
+
+        this.tree = null;
+    }
+
+    setTreeAttributes = () => {
+        // Align tree labels to the right
+        this.tree.alignLabels = true;
+        // Set the tree type to rectangular
+        this.tree.setTreeType(this.props.treeType);
+        this.tree.disableZoom = !this.props.zoom;
+        // this.tree.setTextSize(20);
+        this.tree.resizeToContainer();
+        this.tree.draw()
+    };
+
     componentDidMount = () => {
 
-        const tree = Phylocanvas.createTree(this.node, {});
-        tree.load('(91-0104_NODE_1_length_10181_cov_326.328066_pilon:0.00029475898891859106,(((CC0031_k77_16_flag=0_multi=51073.1225_len=10085_pilon:0.00170958557080953832,91-0109_S4_L001_NODE_1_length_10219_cov_652.169197_pilon:0.00557430583452362457)98:0.00095486423779291669,((cc0007_S5_L001_NODE_1_length_10200_cov_119.548750_pilon:0.00075772273326911541,CC0150_NODE_1_length_10211_cov_3890.600750_pilon:0.00183728989850860083)99:0.00144146364117124070,(_R_Spike_NODE_3_length_10192_cov_76.475729_pilon:0.00356903514687932546,92-1094_NODE_1_length_10194_cov_816.402787_pilon:0.00358219455005535101)100:0.00398879348559155484)63:0.00044912699441025119)79:0.00279347721655816500,(_R_Poditivecontrol_S21_L001_k77_1_flag=1_multi=18520.4289_len=10237_pilon:0.04670407257072940743,(((_R_CC0009_NODE_1_length_10208_cov_2014.449018_pilon:0.00075880976715401592,(cc0010_S8_L001_NODE_1_length_10206_cov_450.733636_pilon:0.00346047860656655860,(_R_CC0011_NODE_1_length_10201_cov_607.818352_pilon:0.00772591549864747474,(_R_Spike_NODE_1_length_10319_cov_2021.782660_pilon:0.00410365277966747311,_R_91-0118_S8_L001_NODE_1_length_10178_cov_13.815371_pilon:0.00305659875508963730)79:0.00343242019390682879)45:0.00057953297086898818)48:0.00312524837879798968)100:0.39145381361534559161,(_R_91-0132_S6_L001_NODE_1_length_10218_cov_2041.289321_pilon:0.00000100000050002909,Spike_NODE_2_length_10199_cov_229.028848_pilon:0.00000100000050002909)100:0.45563636062332102394)100:0.23427023755058221099,(_R_CC0066_NODE_1_length_10174_cov_40.435419_pilon:0.00051478491518207412,(CC0061_k77_1_flag=1_multi=4641.2458_len=10267_pilon:0.00607271392667447108,(((91-0106_S12_L001_k77_18_flag=1_multi=13.3015_len=10127_pilon:0.00183590169778587078,_R_CC0116_NODE_1_length_10196_cov_675.724281_pilon:0.00217568748893862650)100:0.00281603516223942170,(_R_CC0067_NODE_1_length_10197_cov_734.754644_pilon:0.00038575807973464682,Spike_NODE_4_length_10182_cov_29.854132_pilon:0.00048566875724746360)79:0.00379486243895200926)71:0.00126808176018140557,(cc0030b_S21_NODE_1_length_10173_cov_54.897608_pilon:0.00000100000050002909,_R_cc0030a_S12_k77_1_flag=1_multi=2605.8572_len=10163_pilon:0.00038827628079737679)99:0.00531186452915028990)69:0.00206868502795854109)66:0.00542757983111424348)100:0.72212672597748650549)100:0.49290327802538463908)100:0.03008534893871310859)100:0.00911648034183995710,_R_91-0105_S2_L001_NODE_1_length_10206_cov_218.934841_pilon:0.00029389120506588773);', () => console.log('tree loaded'))
-        tree.setTreeType("hierarchical")
-        console.log(tree)
+        const colors = randomColor({count: this.props.metadata.size});
+        this.tree = Phylocanvas.createTree(this.node, {});
+
+        let _ids = [];
+
+        // Add metadata to tree
+        this.tree.on("beforeFirstDraw", () => {
+            for (const i in this.tree.leaves){
+                const taxon = this.tree.leaves[i].id.replace(/^_R_/, "");
+                const metadata = this.props.metadata.get(taxon);
+
+                for (const col of Object.keys(metadata)){
+
+                    const label = metadata[col].label;
+                    let colorIndex;
+
+                    if (!_ids.includes(label)){
+                        colorIndex = _ids.length;
+                        _ids.push(label);
+                    } else {
+                        colorIndex = _ids.indexOf(label);
+                    }
+
+                    const c = colors[colorIndex];
+
+                    this.tree.leaves[i].data[col] = {
+                        label: label,
+                        colour: c
+                    }
+                }
+            }
+        });
+
+        // Load the newick tree from props
+        this.tree.load(this.props.newickString);
+        this.setTreeAttributes();
+        // tree.load("((_R_CC0067_NODE_1_length_10197_cov_734.723715_pilon:0.0006430160208146113,(CC0061_k77_1_flag_1_multi_4641.2458_len_10267_pilon:0.00953411150529446,_R_CC0116_NODE_1_length_10196_cov_675.686135_pilon:0.004676216709352007)56:0.003523710625083518)100:0.5306604729360941,Spike_NODE_2_length_10199_cov_229.021834_pilon:0.29987078286758695,_R_Spike_NODE_1_length_10319_cov_2021.808436_pilon:0.2754770121464598);");
 
     };
 
     render(){
 
+        if (this.node){
+            this.setTreeAttributes();
+        }
+
         return(
-            <div style={{width: "100%"}}>
-                <div ref={node => this.node = node}></div>
+            <div style={{width: "100%", zIndex: "1"}}>
+                <div style={{height: "700px"}} ref={node => this.node = node}></div>
             </div>
         )
     }

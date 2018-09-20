@@ -39,8 +39,6 @@ export const findTableSignatures = (reportArray, highlights) => {
         }
     }
 
-    console.log(highlights)
-
     // Stores the unique table signatures found and sets the value as the
     // array of JSON for those tables
     let tables = new Map();
@@ -262,6 +260,44 @@ export const findChartSignatures = (reportArray) => {
 };
 
 /**
+ * Parses the reportData array and search for treeData signatures.
+ * Returns an array object with the treeData signatures.
+ *
+ * This will check each object in report Array for the presence of the
+ * following signature:
+ *      object["report_json"]["treeData"]
+ *
+ * @param reportArray
+ * @returns {Object}
+ */
+export const findPhylogenySignatures = (reportArray) => {
+
+    let phylogenies = [];
+    let phylogeniesMetadata = [];
+
+    for (const r of reportArray){
+        if (r.hasOwnProperty("reportJson")) {
+            if (r.reportJson.hasOwnProperty("treeData")){
+                phylogenies.push(r)
+            }
+
+            if (r.reportJson.hasOwnProperty("metadata")){
+                for (const m of r.reportJson.metadata){
+                    if (m.hasOwnProperty("treeData")){
+                        phylogeniesMetadata.push(r)
+                    }
+                }
+            }
+        }
+    }
+
+    return {
+        phylogenies,
+        phylogeniesMetadata,
+    }
+};
+
+/**
  * This method searches the raw report JSON for warnings and fails. This
  * information will be stored in a Map object that will contain the following
  * structure:
@@ -451,6 +487,8 @@ export const getTableHeaders = (dataArray) => {
     }
 
     // console.log(duplicateAccessors)
+    console.log(tableHeaders)
+    console.log(duplicateAccessors)
 
     return {
         tableHeaders,
