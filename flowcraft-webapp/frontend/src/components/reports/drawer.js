@@ -7,6 +7,7 @@ import classNames from "classnames";
 import ListItemText from "@material-ui/core/ListItemText";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import Typography from "@material-ui/core/Typography";
+import { withStyles } from '@material-ui/core/styles';
 import IconButton from "@material-ui/core/IconButton";
 import ListItem from "@material-ui/core/ListItem";
 import Divider from "@material-ui/core/Divider";
@@ -38,6 +39,16 @@ import logo from  "../../../resources/Logo_small.png";
 
 
 const styles = require("../../styles/drawer.css");
+
+const tableDrawerStyles = {
+    activeSideButton: {
+        display: "flex",
+        borderLeft: `7px solid ${themes[theme].palette.primary.main}`
+    },
+    ["svg path"]: {
+        fill: themes[theme].palette.primary.main
+    }
+};
 
 
 class TableOfContents extends React.Component {
@@ -98,6 +109,9 @@ export class ReportsHeader extends React.Component {
     };
 
     render () {
+
+        const {classes} = this.props;
+
         return (
             <div>
                 <Header
@@ -121,7 +135,7 @@ export class ReportsHeader extends React.Component {
                         </IconButton>
                     </div>
                     <Divider/>
-                    <Link activeClass={styles.activeSideButton} to={"reportOverview"} spy={true} smooth={true} duration={500} offset={-70}>
+                    <Link activeClass={classes.activeSideButton} to={"reportOverview"} spy={true} smooth={true} duration={500} offset={-70}>
                         <DrawerButtonEntry icon={<InformationIcon/>}
                                            text={"Report Overview"} />
                     </Link>
@@ -140,6 +154,7 @@ export class ReportsHeader extends React.Component {
         )
     }
 }
+ReportsHeader = withStyles(tableDrawerStyles)(ReportsHeader);
 
 
 class OtherDrawer extends React.Component {
@@ -162,6 +177,8 @@ class OtherDrawer extends React.Component {
             "phylogeny": {icon: <TournamentIcon/>, text: "Phylogenetics"}
         };
 
+        const {classes} = this.props;
+
         return(
             <div>
                 <DrawerHeader onClick={this.toggleDrawer} icon={<PlusOutlineIcon/>} text={"Other components"}/>
@@ -170,7 +187,7 @@ class OtherDrawer extends React.Component {
                         this.props.otherHeaders.map((h) => {
                             if (headerMap.hasOwnProperty(h)){
                                 return (
-                                    <Link activeClass={styles.activeSideButton} key={h} spy={true} to={`${h}`} smooth={true} duration={500} offset={-70}>
+                                    <Link activeClass={classes.activeSideButton} key={h} spy={true} to={`${h}`} smooth={true} duration={500} offset={-70}>
                                         <DrawerButtonEntry key={h} icon={headerMap[h].icon}
                                                            text={headerMap[h].text}/>
                                     </Link>
@@ -182,8 +199,8 @@ class OtherDrawer extends React.Component {
             </div>
         )
     }
-
 }
+OtherDrawer = withStyles(tableDrawerStyles)(OtherDrawer);
 
 
 class ChartDrawer extends React.Component {
@@ -208,6 +225,8 @@ class ChartDrawer extends React.Component {
             "size_dist": {"icon": <ChartScatterplotHexbinIcon/>, "text": "Contig size"},
         };
 
+        const {classes} = this.props;
+
         return (
             <div>
                 <DrawerHeader onClick={this.toggleDrawer} icon={<ChartLineIcon/>} text={"Charts"}/>
@@ -216,7 +235,7 @@ class ChartDrawer extends React.Component {
                         this.props.chartHeaders.map((h) => {
                             if (headerMap.hasOwnProperty(h)){
                                 return (
-                                    <Link activeClass={styles.activeSideButton} key={h} spy={true} to={`${h}Chart`} smooth={true} duration={500} offset={-70}>
+                                    <Link activeClass={classes.activeSideButton} key={h} spy={true} to={`${h}Chart`} smooth={true} duration={500} offset={-70}>
                                         <DrawerButtonEntry key={h} icon={headerMap[h].icon}
                                                            text={headerMap[h].text}/>
                                     </Link>
@@ -229,7 +248,7 @@ class ChartDrawer extends React.Component {
         )
     }
 }
-
+ChartDrawer = withStyles(tableDrawerStyles)(ChartDrawer);
 
 class TableDrawer extends React.Component {
 
@@ -260,6 +279,8 @@ class TableDrawer extends React.Component {
             {signature: "plasmids", icon: <CircleOutlineIcon/>, label: "Plasmids"}
         ];
 
+        const {classes} = this.props;
+
         return (
             <div>
                 <DrawerHeader onClick={this.toggleDrawer} icon={<TableLargeIcon/>} text={"Tables"}/>
@@ -268,7 +289,7 @@ class TableDrawer extends React.Component {
                         headerMap.map((h) => {
                                 if (this.props.tableHeaders.includes(h.signature)) {
                                     return (
-                                        <Link activeClass={styles.activeSideButton}
+                                        <Link activeClass={classes.activeSideButton}
                                               key={h.signature}
                                               to={`${h.signature}Table`}
                                               spy={true}
@@ -287,6 +308,7 @@ class TableDrawer extends React.Component {
         )
     }
 }
+TableDrawer = withStyles(tableDrawerStyles)(TableDrawer);
 
 
 class DrawerButtonEntry extends React.Component {

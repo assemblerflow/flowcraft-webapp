@@ -640,8 +640,8 @@ class OverviewCard extends React.Component{
                 fontSize: "50px",
                 textAlign: "center",
                 width: "100%",
-                color: indigo[500],
-                borderBottom: this.props.active ? "5px solid #5c6bc0" : "0px solid transparent"
+                color: themes[theme].palette.primary.main,
+                borderBottom: this.props.active ? `5px solid ${themes[theme].palette.primary.main}` : "0px solid transparent"
             },
             button: {
                 width: "100%",

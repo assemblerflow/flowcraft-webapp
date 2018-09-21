@@ -59,6 +59,54 @@ const base = createMuiTheme({
 });
 
 
+// Base theme used for FlowCraft reporting system
+const denim = createMuiTheme({
+    palette: {
+        primary: {
+            main: "#35485e"
+        },
+        secondary: {
+            main: lightblue[500]
+        },
+        success: {
+            main: green[300]
+        },
+        error: {
+            main: red[300]
+        },
+        info: {
+            main: grey[600],
+        },
+        warning: {
+            main: amber[300]
+        }
+    },
+    typography: {
+        // Use the system font instead of the default Roboto font.
+        fontWeightMedium: 500,
+        body1: {
+            fontWeight: 500,
+        },
+        headline: {
+            fontSize: 22,
+            fontWeight: "bold",
+            color: "#35485e",
+        },
+        subheading: {
+            fontSize: 18,
+            fontWeight: "bold",
+            color: "#35485e",
+        },
+        display1: {
+            fontSize: 20,
+            fontWeight: "bold",
+            color: "#f2f2f2",
+            letterSpacing: "6px"
+        }
+    },
+});
+
+
 // Theme for the INNUENDO Platform
 const innuendo = createMuiTheme({
     palette: {
@@ -109,5 +157,6 @@ const innuendo = createMuiTheme({
 // How themes will be available
 export const themes = {
     base: base,
+    denim: denim,
     innuendo: innuendo
 };
