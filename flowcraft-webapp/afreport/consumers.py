@@ -7,7 +7,7 @@ class ReportsConsumer(WebsocketConsumer):
 
     def connect(self):
 
-        self.run_id = self.scope["url_route"]["kwargs"]["run_id"]
+        self.run_id = "report{}".format(self.scope["url_route"]["kwargs"]["run_id"])
 
         async_to_sync(self.channel_layer.group_add)(
             self.run_id,
