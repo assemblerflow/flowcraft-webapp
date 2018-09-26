@@ -46,6 +46,7 @@ const ReactHighcharts = require("react-highcharts");
 // Other imports
 import axios from "axios";
 import moment from "moment";
+import momentTz from "moment-timezone";
 import prismjs from "prismjs";
 import PrismCode from "react-prism";
 import matchSorter from "match-sorter";
@@ -155,6 +156,7 @@ class InspectApp extends React.Component {
                             status: dataStatus.runStatus,
                             timeStart: dataStatus.timeStart,
                             timeStop: dataStatus.timeStop,
+                            timeLocale: dataStatus.timeLocale
                         },
                     });
                     // Set details data
@@ -462,13 +464,13 @@ class StatusPaper extends React.Component {
      */
     getDuration () {
 
-        const start = moment(this.props.runStatus.timeStart);
+        const start = moment(this.props.runStatus.timeStart, "YYYY MMM-D HH:mm:ss:SSS", this.props.runStatus.timeLocale);
 
         let stop;
         if (this.props.runStatus.timeStop === "-"){
             stop = moment();
         } else {
-            stop = moment(this.props.runStatus.timeStop);
+            stop = moment(this.props.runStatus.timeStop, "YYYY MMM-D HH:mm:ss:SSS", this.props.runStatus.timeLocale);
         }
 
         const d = stop.diff(start);
@@ -487,9 +489,9 @@ class StatusPaper extends React.Component {
 
         // Get relevant information from props.
         const status = this.props.runStatus.status.value;
-        const timeStart = moment(this.props.runStatus.timeStart).format("D/M/YYYY, h:mm:ss");
+        const timeStart = moment(this.props.runStatus.timeStart, "YYYY MMM-D HH:mm:ss:SSS", this.props.runStatus.timeLocale).format("D/M/YYYY, h:mm:ss");
         const timeStop = this.props.runStatus.timeStop === "-" ? "-" :
-            moment(this.props.runStatus.timeStop).format("D/M/YYYY, h:mm:ss");
+            moment(this.props.runStatus.timeStop, "YYYY MMM-D HH:mm:ss:SSS", this.props.runStatus.timeLocale).format("D/M/YYYY, h:mm:ss");
 
         return (
             <Paper elevation={6} style={{padding: 10, backgroundColor: statusColorMap[status]}}>
