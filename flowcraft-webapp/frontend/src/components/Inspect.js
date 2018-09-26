@@ -46,7 +46,6 @@ const ReactHighcharts = require("react-highcharts");
 // Other imports
 import axios from "axios";
 import moment from "moment";
-import momentTz from "moment-timezone";
 import prismjs from "prismjs";
 import PrismCode from "react-prism";
 import matchSorter from "match-sorter";
