@@ -168,7 +168,14 @@
     display: flex;
 }
 
+:local(.modalTitleScroll){
+    flex-grow: 1;
+    width: 90%;
+}
+
 :local(.modalTitle){
+    white-space: nowrap;
+    overflow-y: hidden;
     flex-grow: 1;
     line-height: 40px!important;
 }

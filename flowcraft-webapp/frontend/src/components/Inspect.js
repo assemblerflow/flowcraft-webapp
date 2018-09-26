@@ -832,10 +832,12 @@ class FailedTagsTable extends React.Component {
     render () {
         console.log(this.prepareData(this.props.failedData, this.props.tagData))
         return (
+            <div style={{height: "90%", overflowY: "auto"}}>
                 <ReactTable
                     data={this.prepareData(this.props.failedData, this.props.tagData)}
                     columns={this.prepareColumns()}
                     className="-striped -highlight"/>
+            </div>
             )
     }
 }
@@ -1609,9 +1611,11 @@ class ViewLogModal extends React.Component {
                        onClose={this.handleClose}>
                     <Paper className={styles.tagModal}>
                         <div className={styles.modalTitleContainer}>
-                            <Typography className={styles.modalTitle} variant={"title"} gutterBottom>
-                                Abortion cause: {this.props.title}
-                            </Typography>
+                            <div className={styles.modalTitleScroll}>
+                                <Typography className={styles.modalTitle} variant={"title"} gutterBottom>
+                                    Abortion cause: {this.props.title}
+                                </Typography>
+                            </div>
                             <IconButton onClick={this.handleClose}><CloseCircleIcon size={30} color={red[300]}/></IconButton>
                         </div>
                         <Divider/>
