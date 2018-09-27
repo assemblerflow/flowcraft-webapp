@@ -21,6 +21,8 @@ import RecordIcon from "mdi-react/RecordIcon"
 import MenuIcon from "mdi-react/MenuIcon";
 import HomeIcon from "mdi-react/HomeIcon"
 import TriangleIcon from "mdi-react/TriangleIcon"
+import MagnifyIcon from "mdi-react/MagnifyIcon"
+import FinanceIcon from "mdi-react/FinanceIcon"
 
 import {ReportBroadcastConsumer, ReportDataConsumer} from "./reports/contexts";
 // CSS imports
@@ -59,6 +61,11 @@ const styles = {
             display: "none",
         }
     },
+    title: {
+        [themes[theme].breakpoints.down("xs")]: {
+            display: "none",
+        }
+    },
     badge: {
         border: `2px solid ${themes[theme].palette.grey[200]}`,
         color: "#fff",
@@ -73,8 +80,8 @@ const styles = {
     },
     notification: {
         position: "absolute",
-        top: "55px",
-        right: "55px",
+        top: "12px",
+        right: "-10px",
         minWidth: "230px",
         maxWidth: "230px",
         padding: "10px",
@@ -82,8 +89,8 @@ const styles = {
     },
     notificationMarker: {
         position: "absolute",
-        top: "45px",
-        right: "85px",
+        // top: "45px",
+        right: "10px",
         height: "15px",
         zIndex: "100",
         fill: themes[theme].palette.error.main,
@@ -96,6 +103,41 @@ const styles = {
 
 
 class Header extends React.Component {
+
+    state = {
+        reportRedirect: false,
+    };
+
+    componentDidMount(){
+        console.log(this.props)
+
+        if (this.props.headerTitle === "Inspect" && this.props.runId){
+            axios.get(`/reports/broadcast/api/reports/exists?run_id=${this.props.runId}`)
+                .then(
+                    (response) => {
+                        if (response.data.message === true){
+                            this.setState({reportRedirect: true})
+                        }
+                    },
+                    (error) => {
+                        console.log(error)
+                    })
+        } else if (this.props.headerTitle === "Reports" && this.props.runId) {
+            axios.get(`/inspect/api/status/exists?run_id=${this.props.runId}`)
+                .then(
+                    (response) => {
+                        console.log(response)
+                        if (response.data.message === true){
+                            this.setState({reportRedirect: true})
+                        }
+                    },
+                    (error) => {
+                        console.log(error)
+                    }
+                )
+        }
+
+    }
 
     render() {
 
@@ -142,11 +184,18 @@ class Header extends React.Component {
                                                 className={classes.secTitle}><span
                                         style={{color: "#f2f2f2"}}>{this.props.headerTitle}</span>
                                         <span
+                                            className={classes.title}
                                             style={{
                                                 fontSize: "12px",
                                                 color: "#cbcbcb",
                                                 marginLeft: "5px"
                                             }}>Beta</span></Typography>
+                                    {
+                                        this.state.reportRedirect &&
+                                        <AppSwitcher
+                                            runId={this.props.runId}
+                                            header={this.props.headerTitle}/>
+                                    }
                                     {
                                         (typeof liveReport !== "undefined" && liveReport === true) &&
                                             <LiveReportTracker runId={runId} updateCallback={fetchReports}/>
@@ -165,8 +214,66 @@ class Header extends React.Component {
         )
     }
 }
-
 export default withStyles(styles)(Header);
+
+class AppSwitcher extends React.Component{
+
+    state = {
+        showNotification: this.props.header === "Inspect" ? true : false
+    };
+
+    componentDidMount(){
+        // The automatic notification in only ON for inspect app to avoid
+        // notification conflict with the live tracker icon of the reports app
+        if (this.props.header === "Inspect"){
+            setTimeout(
+                () => {this.setState({showNotification: false})},
+                5000
+            )
+        }
+    }
+
+    render() {
+
+        const {classes} = this.props;
+
+        const message = this.props.header === "Inspect" ?
+            "Report data is available for this inspect ID" :
+            "Inspect data is available for this report ID";
+        const pathname = this.props.header === "Inspect" ?
+            `/reports/broadcast/${this.props.runId}` :
+            `/inspect/${this.props.runId}`;
+        console.log(pathname)
+
+        return(
+            <div>
+                <Tooltip title={"Click to open reports app for this inspect ID"}>
+                    <IconButton>
+                        <Link to={{
+                            pathname: pathname
+                        }}>
+                            {
+                                this.props.header === "Inspect" ?
+                                    <FinanceIcon style={{"fill": "#fff"}}/> :
+                                    <MagnifyIcon style={{"fill": "#fff"}}/>
+
+                            }
+                        </Link>
+                    </IconButton>
+                </Tooltip>
+                <Fade in={this.state.showNotification}>
+                    <div style={{position: "relative"}}>
+                        <TriangleIcon className={classes.notificationMarker}/>
+                        <Paper elevation={5} className={classes.notification}>
+                            <Typography className={classes.notificationText}>{message}</Typography>
+                        </Paper>
+                    </div>
+                </Fade>
+            </div>
+        )
+    }
+}
+AppSwitcher = withStyles(styles)(AppSwitcher);
 
 class LiveReportTracker extends React.Component{
 
@@ -222,32 +329,34 @@ class LiveReportTracker extends React.Component{
         };
 
         return(
-            <div className={classes.liveIndicatorContainer}>
-                {
-                    this.state.status &&
-                    <Tooltip title={`Pipeline run status: ${this.state.status}`}>
-                        <div className={classes.recordIndicator}>
-                            <RecordIcon size={14} color={indicatorColor[this.state.status]}/>
-                        </div>
+            <div>
+                <div className={classes.liveIndicatorContainer}>
+                    {
+                        this.state.status &&
+                        <Tooltip title={`Pipeline run status: ${this.state.status}`}>
+                            <div className={classes.recordIndicator}>
+                                <RecordIcon size={14} color={indicatorColor[this.state.status]}/>
+                            </div>
+                        </Tooltip>
+                    }
+                    <Tooltip title={(this.state.reportQueue > 0) ?
+                        `There are ${this.state.reportQueue} new reports available. Click to update.` :
+                        `There are no new reports available`}>
+                        <IconButton onClick={() => {this.props.updateCallback(); this.setState({reportQueue: 0, showNotification: false})}}>
+                            {
+                                (this.state.reportQueue !== 0) ?
+                                    <Badge classes={{badge: classes.badge}}
+                                           badgeContent={this.state.reportQueue}
+                                           color={"error"}>
+                                        <InboxArrowDown color={"#fff"}/>
+                                    </Badge> :
+                                    <InboxIcon color={"#c4c4c4"}/>
+                            }
+                        </IconButton>
                     </Tooltip>
-                }
-                <Tooltip title={(this.state.reportQueue > 0) ?
-                    `There are ${this.state.reportQueue} new reports available. Click to update.` :
-                    `There are no new reports available`}>
-                    <IconButton onClick={() => {this.props.updateCallback(); this.setState({reportQueue: 0, showNotification: false})}}>
-                        {
-                            (this.state.reportQueue !== 0) ?
-                                <Badge classes={{badge: classes.badge}}
-                                       badgeContent={this.state.reportQueue}
-                                       color={"error"}>
-                                    <InboxArrowDown color={"#fff"}/>
-                                </Badge> :
-                                <InboxIcon color={"#c4c4c4"}/>
-                        }
-                    </IconButton>
-                </Tooltip>
+                </div>
                 <Fade in={this.state.showNotification}>
-                    <div>
+                    <div style={{position: "relative"}}>
                         <TriangleIcon className={classes.notificationMarker}/>
                         <Paper elevation={5} className={classes.notification}>
                             <Typography className={classes.notificationText}>New report data is available</Typography>

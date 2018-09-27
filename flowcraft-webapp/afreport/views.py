@@ -96,3 +96,14 @@ class Reports(View):
         else:
             return JsonResponse(serializer.errors,
                                 status=status.HTTP_400_BAD_REQUEST)
+
+
+class QueryId(View):
+
+    def get(self, request):
+
+        try:
+            models.Reports.objects.get(run_id=request.GET.get("run_id"))
+            return JsonResponse({"message": True}, status=status.HTTP_200_OK)
+        except ObjectDoesNotExist:
+            return JsonResponse({"message": False}, status=status.HTTP_200_OK)

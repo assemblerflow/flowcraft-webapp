@@ -140,6 +140,7 @@ export class ReportsBroadcast extends React.Component{
                                 this.state.reportData &&
                                 <ReportsWrapper
                                     liveReport={true}
+                                    reportId={this.props.match.params.runId}
                                     reportData={this.state.reportData}/>
                             }
                         </ReportBroadcastProvider>
@@ -291,6 +292,9 @@ class ReportsWrapper extends React.Component {
         this.state = {
             // Retrieve the initial state of reportData from the URL state
             "reportData": reportData === undefined ? [] : reportData,
+            // Report ID for broadcast sessions. It will be undefined for other
+            // sessions.
+            "reportId": this.props.reportId,
             // Additional info has additional information that can be passed
             // by the reportsRedirect. In this case, it can be user
             // information collected from INNUENDO
@@ -515,6 +519,7 @@ class ReportsWrapper extends React.Component {
                                 }}>
                                     <ReportsApp
                                         reportData={this.state.reportData}
+                                        reportId={this.state.reportId}
                                         filters={this.state.filters}
                                         highlights={this.state.highlights}
                                         additionalInfo={this.state.additionalInfo}
@@ -673,7 +678,6 @@ class ReportsApp extends React.Component {
         }
 
         console.log(this.props.reportData)
-        console.log(otherHeaders)
 
         //
         // This is the main element where the Reports components will be added,
@@ -697,6 +701,7 @@ class ReportsApp extends React.Component {
                     reportData: this.props.reportData
                 }}>
                     <ReportsHeader
+                        runId={this.props.reportId}
                         otherHeaders={otherHeaders}
                         tableHeaders={tables}
                         chartHeaders={charts}>

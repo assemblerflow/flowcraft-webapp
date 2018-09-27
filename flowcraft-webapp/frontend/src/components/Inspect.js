@@ -198,7 +198,9 @@ class InspectApp extends React.Component {
     render () {
         return (
             <div>
-                <Header headerTitle={"Inspect"}/>
+                <Header
+                    runId={this.state.runID}
+                    headerTitle={"Inspect"}/>
                 {
                     this.state.badRequest ?
                         // BAD request component

@@ -117,6 +117,7 @@ export class ReportsHeader extends React.Component {
                 <Header
                         homeRef={'/reports'}
                         headerTitle={"Reports"}
+                        runId={this.props.runId}
                         drawerButton={true}
                         drawer={this.state.drawerOpen}
                         openDrawer={this.openDrawer}/>
