@@ -99,7 +99,7 @@ class TreeDag extends Component {
         this.reDraw = this.reDraw.bind(this);
 
         this.state = {
-            treeDag: props.treeDag,
+            // treeDag: props.treeDag,
             update: false,
             processData: props.processData,
             error: false

@@ -319,3 +319,19 @@ export const sortColor = (a, b) => {
 
     return aValue - bValue
 };
+
+export const getParentLanes = (laneNumber, dict) => {
+    let parentLanes = [parseInt(laneNumber)];
+
+    while (true) {
+        let found = Object.entries(dict).filter( (v) => {
+            return v[1].includes(parseInt(laneNumber))
+        });
+        if (found.length > 0) {
+            parentLanes.push(parseInt(found[0][0]));
+            laneNumber = parseInt(found[0][0])
+        } else {
+            return parentLanes
+        }
+    }
+};
