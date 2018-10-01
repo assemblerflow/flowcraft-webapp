@@ -665,8 +665,6 @@ class ReportsApp extends React.Component {
         const activeReports = filterReportArray(this.props.reportData, this.state.filters);
         const nfMetadata = findNfMetadata(this.props.reportData);
 
-        console.log("dag", nfMetadata[0].dag)
-
         // const activeReports = this.props.reportData;
         const {tableData, tableSamples} = findTableSignatures(activeReports, this.state.highlights);
         const {charts, chartSamples} = findChartSignatures(activeReports);

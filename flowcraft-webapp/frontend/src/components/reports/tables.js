@@ -70,7 +70,7 @@ import {
     getSpeciesMapping
 } from "./utils";
 import {SampleDialog} from "../ReportsSample";
-import {TreeDag} from "../ReportDag"
+import {TreeDag, DagLegendReport} from "../ReportDag"
 import {HighlightSelectionPopup} from "./overview";
 import {updateFilterArray, updateHighlightArray} from "./filters_highlights";
 import FilterIcon from "../../../../node_modules/mdi-react/FilterIcon";
@@ -2023,6 +2023,7 @@ class ShowDAGPopover extends React.Component {
                                     </div>
                                     <TreeDag nfMetadata={nfMetadata}
                                              query={this.state.query}/>
+                                    <DagLegendReport/>
                                 </div>
                             </Dialog>
                         </div>

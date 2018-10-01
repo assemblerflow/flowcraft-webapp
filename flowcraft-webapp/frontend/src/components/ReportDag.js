@@ -10,11 +10,52 @@ import {event, max, zoom, Transform} from "d3";
 import Typography from "@material-ui/core/Typography";
 import Button from "@material-ui/core/Button";
 import Icon from "@material-ui/core/Icon";
+import Grid from "@material-ui/core/Grid/Grid";
 
 import {themes} from "./reports/themes";
 import {theme} from "../../config.json";
 
 import {getParentLanes} from "./reports/utils";
+
+/**
+ * Legend for DAG
+ */
+export class DagLegendReport extends React.Component{
+
+    constructor() {
+        super();
+
+        this.legendObj = {
+            "Child process": themes[theme].palette.warning.main,
+            "Selected process": themes[theme].palette.error.main,
+            "Other": themes[theme].palette.primary.main,
+        }
+    }
+
+    render() {
+        return(
+            <div>
+                <Grid container justify={"center"} spacing={24}>
+                    {Object.keys(this.legendObj).map( (k) => {
+                        return (
+                            <Grid item key={k}>
+                                <Grid container>
+                                    <Grid item>
+                                        <Icon size={30} style={{color: this.legendObj[k]}}>lens
+                                        </Icon>
+                                    </Grid>
+                                    <Grid item>
+                                        <Typography style={{lineHeight: "25px"}}>{k}</Typography>
+                                    </Grid>
+                                </Grid>
+                            </Grid>
+                        )
+                    })}
+                </Grid>
+            </div>
+        )
+    }
+}
 
 /**
  * This component is shown whenever the TreeDAG component cannot be rendered.
@@ -133,6 +174,29 @@ export class TreeDag extends Component {
             .style("opacity", 0)
     }
 
+    /**
+     * Function that checks the pid of the process that is being queried with
+     * each of the processes in the dag that is being iterated to add colors
+     * @param {String} name - the name of the node being colored
+     * @param {String} query - the name of the process being queried
+     */
+    mapProcessToComponent(name, query) {
+        if (name.split("_").slice(-2).join("_") === query.split("_").slice(-2).join("_")) {
+            return true
+        } else {
+            return false
+        }
+    }
+
+    /**
+     * Function that will highlight the nodes that is currently being selected
+     * and its respective children
+     * @param {String} name - The name of the process
+     * @param {Array} parentLanes - the lanes that are the children of the
+     * current process being queried
+     * @param {String} queryId - The id of the process being queried
+     * @returns {*} - the color to put in the nodes.
+     */
     checkProcess(name, parentLanes, queryId) {
         // skips first node that is root
         if (name !== "root") {
@@ -143,11 +207,18 @@ export class TreeDag extends Component {
                 -1
             ).join();
 
+            // fetches the id of the process for the node being looped
+            // this will be compared to queryId in order to know if the proc id
+            // is smaller than the queryId of the process being queried.
             const procId = name.split("_").slice(
                 -1
             ).join();
 
-            return (this.props.query === name) ?
+            const mapResult = this.mapProcessToComponent(name, this.props.query)
+
+            console.log(name, this.props.query, mapResult)
+
+            return (mapResult) ?
                 themes[theme].palette.error.main :
                 (parentLanes.includes(parseInt(laneNumber))
                     && parseInt(procId) < parseInt(queryId)) ?
@@ -155,7 +226,6 @@ export class TreeDag extends Component {
                     themes[theme].palette.primary.main
         }
     }
-
 
     /**
      * Function to force zoom and pan to default levels
@@ -268,20 +338,22 @@ export class TreeDag extends Component {
                 -1
             ).join();
 
+            // fetchs the parentLanes of the current process
             const parentLanes = getParentLanes(laneNumber,
                 this.props.nfMetadata[0].forks);
 
+            // fetches the ID of the process being clicked
             const queryId = this.props.query.split("_").slice(
                 -1
             ).join();
 
             // Update the node attributes and style
-            nodeUpdate.select('circle.node')
-                .attr('r', this.radius)
+            nodeUpdate.select("circle.node")
+                .attr("r", this.radius)
                 .style("fill", (d) => {
                     return this.checkProcess(d.data.name, parentLanes, queryId)
                 })
-                .attr('cursor', 'pointer');
+                .attr("cursor", "pointer");
 
             // Remove any exiting nodes
             const nodeExit = nodeGraph.exit().transition()
@@ -342,8 +414,7 @@ export class TreeDag extends Component {
 
     }
 
-    render() {
-        // if (this.state.update) {this.updateDagViz()}
+    render () {
         return(
             <div>
                 {

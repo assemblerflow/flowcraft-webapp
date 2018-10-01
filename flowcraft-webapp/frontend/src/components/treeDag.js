@@ -174,15 +174,22 @@ class TreeDag extends Component {
 
 
     /**
-     * Function that is used to check if node name matches any process status changes available in
+     * Function that is used to check if node name matches any process status
+     * changes available in
      * this.props.processData
-     * @param {String} name - The name of the node which contains the processes called through the pipeline string and
+     * @param {String} name - The name of the node which contains the processes
+     * called through the pipeline string and
      * their pid.
-     * @returns {*} - returns a string with the status of the main process. If the main process has two subprocesses
-     * that that has the same letter then the return value will be the one letter. E.g. array
-     * checkAllBarrier = ["W","W"], then the returning value will be "W". However, if any "R" is found within the
-     * checkAllBarrier array then the returning value will always be "R". If some processes are complete but others
-     * are waiting this will return false which will not update node color. It also returns "Q" when there are
+     * @returns {*} - returns a string with the status of the main process. If
+     * the main process has two subprocesses
+     * that that has the same letter then the return value will be the one
+     * letter. E.g. array
+     * checkAllBarrier = ["W","W"], then the returning value will be "W".
+     * However, if any "R" is found within the
+     * checkAllBarrier array then the returning value will always be "R".
+     * If some processes are complete but others
+     * are waiting this will return false which will not update node color.
+     * It also returns "Q" when there are
      * sub processes Waiting and some are already completed
      */
     checkBarrier(name) {
@@ -204,9 +211,11 @@ class TreeDag extends Component {
             });
 
             /**
-             * Variable that stores the counts for each one of the types of running elements and is used to make the pie
+             * Variable that stores the counts for each one of the types of
+             * running elements and is used to make the pie
              * chart percentages
-             * @type {{failed: number, finished: number, retry: number, submitted: number}}
+             * @type {{failed: number, finished: number, retry: number,
+             * submitted: number}}
              */
             const mapReturns = {
                 failed: 0,
@@ -215,7 +224,8 @@ class TreeDag extends Component {
                 submitted: 0,
             };
 
-            // counts the number of entries in each array and maps it to mapReturns object
+            // counts the number of entries in each array and maps it to
+            // mapReturns object
             checkAllBarriers.map( (subProc) => {
                 Object.keys(subProc).map( (type) => {
                     if (Object.keys(mapReturns).includes(type)) {
@@ -224,7 +234,8 @@ class TreeDag extends Component {
                 })
             });
 
-            // check if all arrays are empty and if so add 1 to the node that is wiating
+            // check if all arrays are empty and if so add 1 to the node that
+            // is waiting
             const waitingNode = (mapReturns.failed === 0 &&
                 mapReturns.finished === 0 &&
                 mapReturns.retry === 0 &&
