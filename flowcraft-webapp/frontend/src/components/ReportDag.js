@@ -1,5 +1,7 @@
 import React, {Component} from "react";
 
+import Select from 'react-select';
+
 // D3 related imports
 import {hierarchy, tree} from "d3-hierarchy";
 import {select, selectAll} from "d3-selection";
@@ -16,6 +18,38 @@ import {themes} from "./reports/themes";
 import {theme} from "../../config.json";
 
 import {getParentLanes} from "./reports/utils";
+
+class PipelineSelection extends React.Component{
+
+    render(){
+
+        const style = {
+            container: {
+                maxWidth: "300px",
+                marginBottom: "15px"
+            },
+            dropdownValue: {
+                lineHeight: "33px",
+                fontWeight: "bold"
+            }
+        };
+
+        const options = this.props.nfMetadata.map((v) => {
+            return {value: v.runName, label: <Typography style={style.dropdownValue}>{v.runName}</Typography>}
+        });
+
+        return(
+            <div style={style.container}>
+                <Typography>Select pipeline: </Typography>
+                <Select value={{value: this.props.selectedPipeline, label: <Typography>{this.props.selectedPipeline}</Typography>}}
+                        clearable={false}
+                        onChange={this.props.handlePipelineChange}
+                        options={options}/>
+            </div>
+        )
+    }
+
+}
 
 /**
  * Legend for DAG
@@ -88,48 +122,18 @@ export class TreeDag extends Component {
     constructor(props) {
         super(props);
 
-        // Set the dimensions and margins of the diagram
-        this.margin = {top: 20, right: 20, bottom: 20, left: 20};
-        this.width = window.innerWidth;
-        this.height = window.innerHeight * 0.7;
-
-        this.i = 0;
-
-        this.root = hierarchy(props.nfMetadata[0].dag, (d) => { return d.children });
-        // Assigns parent, children, height, depth
-        this.root.x0 = this.height / 2;
-        this.root.y0 = 0;
-
-        // declares a tree layout and assigns the size
-        const treemap = tree().size([this.height, this.width]);
-
-        // Assigns the x and y position for the nodes
-        const treeData = treemap(this.root);
-
-
-        // Compute the new tree layout.
-        this.nodes = treeData.descendants().filter( (d) => {
-            return d.depth
-        });
-        this.links = treeData.descendants().slice(1).filter( (d) => {
-            return d.depth !== 1
-        });
-
-        /**
-         * This variable sets the size of the nodes in the dag
-         * @type {number}
-         */
-        this.radius = 14;
+        this.state = {
+            update: false,
+            error: false,
+            // sets as default selected process the first element in
+            // nfMetadata array
+            selectedPipeline: props.nfMetadata[0],
+            selectedPipelineVal: props.nfMetadata[0].runName,
+        };
 
         // binds this function so that it can be used by other on component rendering (in this case on a button click)
         this.reDraw = this.reDraw.bind(this);
 
-        this.state = {
-            // treeDag: props.treeDag,
-            update: false,
-            // processData: props.processData,
-            error: false
-        }
     }
 
     // this is required for the initial DAG rendering. It will create the d3 instance as well as update the node colors
@@ -142,6 +146,31 @@ export class TreeDag extends Component {
             this.setState({"error": true})
         }
     }
+
+    componentDidUpdate() {
+        select(this.node).selectAll("g").remove()
+        this.createDagViz()
+    }
+
+    triggerPipelineSelection(id) {
+        return this.props.nfMetadata.filter( pipeline =>
+            pipeline.runName === id
+        );
+    }
+
+    /**
+     * Function that changes the state of changing the selected pipeline from
+     * the default value of 0
+     * @param value
+     */
+    handlePipelineChange = (value) => {
+        if (value){
+            this.setState({
+                selectedPipeline: this.triggerPipelineSelection(value.value)[0],
+                selectedPipelineVal: value.value
+            })
+        }
+    };
 
     /**
      * This function creates a tooltip with the node/process information
@@ -216,8 +245,6 @@ export class TreeDag extends Component {
 
             const mapResult = this.mapProcessToComponent(name, this.props.query)
 
-            console.log(name, this.props.query, mapResult)
-
             return (mapResult) ?
                 themes[theme].palette.error.main :
                 (parentLanes.includes(parseInt(laneNumber))
@@ -247,19 +274,51 @@ export class TreeDag extends Component {
      */
     createDagViz() {
 
+        // Set the dimensions and margins of the diagram
+        const margin = {top: 20, right: 20, bottom: 20, left: 20};
+        const width = window.innerWidth;
+        const height = window.innerHeight * 0.7;
+
+        let i = 0;
+
+        let root = hierarchy(this.state.selectedPipeline.dag, (d) => { return d.children });
+        // Assigns parent, children, height, depth
+        root.x0 = height / 2;
+        root.y0 = 0;
+
+        // declares a tree layout and assigns the size
+        const treemap = tree().size([height, width]);
+
+        // Assigns the x and y position for the nodes
+        const treeData = treemap(root);
+
+        // Compute the new tree layout.
+        const nodes = treeData.descendants().filter( (d) => {
+            return d.depth
+        });
+        const links = treeData.descendants().slice(1).filter( (d) => {
+            return d.depth !== 1
+        });
+
+        /**
+         * This variable sets the size of the nodes in the dag
+         * @type {number}
+         */
+        const radius = 14;
+
         // append the svg object to the body of the page
         // appends a 'group' element to 'svg'
         // moves the 'group' element to the top left margin
         this.svg = select(this.node)
-            .attr("width", this.width + this.margin.right + this.margin.left)
-            .attr("height", this.height + this.margin.top + this.margin.bottom)
+            .attr("width", width + margin.right + margin.left)
+            .attr("height", height + margin.top + margin.bottom)
             .call(zoom().on("zoom", () => {
                 this.svg.attr("transform", event.transform)
             }))
             .on("dblclick.zoom", null)
             .append("g")
             .attr("transform", "translate("
-                + this.margin.left + "," + this.margin.top + ")"
+                + margin.left + "," + margin.top + ")"
             );
 
         /**
@@ -289,7 +348,7 @@ export class TreeDag extends Component {
 
             // Update the nodes...
             const nodeGraph = this.svg.selectAll('g.node')
-                    .data(this.nodes, (d) => { return d.id || (d.id = ++this.i) });
+                    .data(nodes, (d) => { return d.id || (d.id = ++i) });
 
             // Enter any new modes at the parent's previous position.
             const nodeEnter = nodeGraph.enter().append('g')
@@ -320,7 +379,7 @@ export class TreeDag extends Component {
                 n => n.getComputedTextLength());
 
             // Normalize for fixed-depth, according to max_width
-            this.nodes.forEach( (d) => { d.y = d.depth * maxTextWidth } );
+            nodes.forEach( (d) => { d.y = d.depth * maxTextWidth } );
 
             // UPDATE
             const nodeUpdate = nodeEnter.merge(nodeGraph);
@@ -340,7 +399,7 @@ export class TreeDag extends Component {
 
             // fetchs the parentLanes of the current process
             const parentLanes = getParentLanes(laneNumber,
-                this.props.nfMetadata[0].forks);
+                this.state.selectedPipeline.forks);
 
             // fetches the ID of the process being clicked
             const queryId = this.props.query.split("_").slice(
@@ -349,7 +408,7 @@ export class TreeDag extends Component {
 
             // Update the node attributes and style
             nodeUpdate.select("circle.node")
-                .attr("r", this.radius)
+                .attr("r", radius)
                 .style("fill", (d) => {
                     return this.checkProcess(d.data.name, parentLanes, queryId)
                 })
@@ -375,7 +434,7 @@ export class TreeDag extends Component {
 
             // Update the links...
             const link = this.svg.selectAll('path.link')
-                .data(this.links, (d) => { return d.id });
+                .data(links, (d) => { return d.id });
 
             // Enter any new links at the parent's previous position.
             const linkEnter = link.enter().insert('path', "g")
@@ -403,24 +462,29 @@ export class TreeDag extends Component {
                 .remove();
 
             // Store the old positions for transition.
-            this.nodes.forEach( (d) => {
+            nodes.forEach( (d) => {
                 d.x0 = d.x;
                 d.y0 = d.y
             })
 
         };
 
-        update(this.root)
+        update(root)
 
     }
 
-    render () {
+    render() {
+        console.log("selected pipeline", this.state.selectedPipeline)
         return(
             <div>
                 {
                     this.state.error ?
                         <TreeDagError/> :
                         <div>
+                            <PipelineSelection
+                                selectedPipeline={this.state.selectedPipelineVal}
+                                handlePipelineChange={this.handlePipelineChange}
+                                nfMetadata={this.props.nfMetadata}/>
                             <div>
                                 <Button variant={"raised"}
                                         color={"primary"}
