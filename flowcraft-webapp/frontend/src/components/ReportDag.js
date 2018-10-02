@@ -278,7 +278,7 @@ export class TreeDag extends Component {
         // Set the dimensions and margins of the diagram
         const margin = {top: 20, right: 20, bottom: 20, left: 20};
         const width = window.innerWidth;
-        const height = window.innerHeight * 0.7;
+        const height = window.innerHeight * 0.65;
 
         let i = 0;
 
