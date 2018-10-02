@@ -132,25 +132,40 @@ export class TreeDag extends Component {
             selectedPipelineVal: props.nfMetadata[0].runName,
         };
 
-        // binds this function so that it can be used by other on component rendering (in this case on a button click)
+        // binds this function so that it can be used by other on component
+        // endering (in this case on a button click)
         this.reDraw = this.reDraw.bind(this);
 
     }
 
-    // this is required for the initial DAG rendering. It will create the d3 instance as well as update the node colors
+    // this is required for the initial DAG rendering. It will create the d3
+    // instance as well as update the node colors
     componentDidMount() {
         try {
             this.createDagViz();
-            // this.updateDagViz()
         } catch (e) {
             console.log(e);
             this.setState({"error": true})
         }
     }
 
-    componentDidUpdate() {
-        select(this.node).selectAll("g").remove()
-        this.createDagViz()
+    shouldComponentUpdate(nextProps, nextState) {
+        // prevents component from updating if nexState selectedPipeline is the
+        // same as the current state of the component
+        if (this.state.selectedPipeline === nextState.selectedPipeline) {
+            return false
+        } else {
+            try {
+                // removes previous d3 instnace and creates a new one
+                select(this.node).selectAll("g").remove();
+                this.createDagViz();
+            } catch (e) {
+                console.log(e);
+                this.setState({"error": true})
+            }
+            // returns true so that the component should update
+            return true
+        }
     }
 
     triggerPipelineSelection(id) {
