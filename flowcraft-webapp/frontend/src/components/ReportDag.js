@@ -42,7 +42,7 @@ class PipelineSelection extends React.Component{
         return(
             <div style={style.container}>
                 <Typography>Select pipeline: </Typography>
-                <Select value={{value: this.props.selectedPipeline, label: <Typography>{this.props.selectedPipeline}</Typography>}}
+                <Select value={{value: this.props.selectedPipelineVal, label: <Typography>{this.props.selectedPipelineVal}</Typography>}}
                         clearable={false}
                         onChange={this.props.handlePipelineChange}
                         options={options}/>
@@ -155,16 +155,19 @@ export class TreeDag extends Component {
         if (this.state.selectedPipeline === nextState.selectedPipeline) {
             return false
         } else {
-            try {
-                // removes previous d3 instnace and creates a new one
-                select(this.node).selectAll("g").remove();
-                this.createDagViz();
-            } catch (e) {
-                console.log(e);
-                this.setState({"error": true})
-            }
             // returns true so that the component should update
             return true
+        }
+    }
+
+    componentDidUpdate() {
+        try {
+            // removes previous d3 instance and creates a new one
+            select(this.node).selectAll("g").remove();
+            this.createDagViz();
+        } catch (e) {
+            console.log(e);
+            this.setState({"error": true})
         }
     }
 
@@ -183,7 +186,7 @@ export class TreeDag extends Component {
         if (value){
             this.setState({
                 selectedPipeline: this.triggerPipelineSelection(value.value)[0],
-                selectedPipelineVal: value.value
+                selectedPipelineVal: this.triggerPipelineSelection(value.value)[0].runName
             })
         }
     };
@@ -226,7 +229,8 @@ export class TreeDag extends Component {
      * @param {String} query - the name of the process being queried
      */
     mapProcessToComponent(name, query) {
-        if (name.split("_").slice(-2).join("_") === query.split("_").slice(-2).join("_")) {
+        if (name.split("_").slice(-2).join("_") === query.split("_").slice(-2).join("_") &&
+            JSON.stringify(this.state.selectedPipeline.dag).includes(query)) {
             return true
         } else {
             return false
@@ -509,7 +513,7 @@ export class TreeDag extends Component {
                         <div>
                             <div style={style.dropContainer}>
                                 <PipelineSelection
-                                    selectedPipeline={this.state.selectedPipelineVal}
+                                    selectedPipelineVal={this.state.selectedPipelineVal}
                                     handlePipelineChange={this.handlePipelineChange}
                                     nfMetadata={this.props.nfMetadata}/>
                             </div>
