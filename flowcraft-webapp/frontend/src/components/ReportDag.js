@@ -26,6 +26,7 @@ class PipelineSelection extends React.Component{
         const style = {
             container: {
                 maxWidth: "300px",
+                minWidth: "200px",
                 marginBottom: "15px"
             },
             dropdownValue: {
@@ -474,6 +475,16 @@ export class TreeDag extends Component {
     }
 
     render() {
+
+        const style = {
+            dropContainer: {
+                float: "right",
+            },
+            buttonContainer: {
+                float: "left",
+            },
+        };
+
         console.log("selected pipeline", this.state.selectedPipeline)
         return(
             <div>
@@ -481,11 +492,13 @@ export class TreeDag extends Component {
                     this.state.error ?
                         <TreeDagError/> :
                         <div>
-                            <PipelineSelection
-                                selectedPipeline={this.state.selectedPipelineVal}
-                                handlePipelineChange={this.handlePipelineChange}
-                                nfMetadata={this.props.nfMetadata}/>
-                            <div>
+                            <div style={style.dropContainer}>
+                                <PipelineSelection
+                                    selectedPipeline={this.state.selectedPipelineVal}
+                                    handlePipelineChange={this.handlePipelineChange}
+                                    nfMetadata={this.props.nfMetadata}/>
+                            </div>
+                            <div style={style.buttonContainer}>
                                 <Button variant={"raised"}
                                         color={"primary"}
                                         size={"small"}
