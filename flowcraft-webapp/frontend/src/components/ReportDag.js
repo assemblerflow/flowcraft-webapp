@@ -17,8 +17,6 @@ import Grid from "@material-ui/core/Grid/Grid";
 import {themes} from "./reports/themes";
 import {theme} from "../../config.json";
 
-import {getParentLanes} from "./reports/utils";
-
 class PipelineSelection extends React.Component{
 
     render(){
@@ -61,7 +59,6 @@ export class DagLegendReport extends React.Component{
         super();
 
         this.legendObj = {
-            "Child process": themes[theme].palette.warning.main,
             "Selected process": themes[theme].palette.error.main,
             "Other": themes[theme].palette.primary.main,
         }
@@ -108,16 +105,6 @@ class TreeDagError extends React.Component {
     }
 }
 
-/**
- * This div must be defined before the component, otherwise tooltips will not appear
- * @type {Selection<BaseType, Datum, PElement extends BaseType, PDatum>}
- */
-const div = select("body").append("div")
-    .attr("class", "tooltip")
-    .style("opacity", 0)
-    // set z-index to 2000 because of dialog z-index being much higher than body
-    .style("z-index", 2000);
-
 export class TreeDag extends Component {
 
     constructor(props) {
@@ -133,7 +120,7 @@ export class TreeDag extends Component {
         };
 
         // binds this function so that it can be used by other on component
-        // endering (in this case on a button click)
+        // rendering (in this case on a button click)
         this.reDraw = this.reDraw.bind(this);
 
     }
@@ -186,70 +173,20 @@ export class TreeDag extends Component {
         if (value){
             this.setState({
                 selectedPipeline: this.triggerPipelineSelection(value.value)[0],
-                selectedPipelineVal: this.triggerPipelineSelection(value.value)[0].runName
+                selectedPipelineVal: this.triggerPipelineSelection(value.value)[0].runName,
             })
         }
     };
-
-    /**
-     * This function creates a tooltip with the node/process information
-     * on mouse over in the respective node
-     *
-     * @param {String} name - stores the name of the process being hovered
-     * @param {Object} procObj - stores the current instance of failed, running, completed and retried samples for that
-     * process.
-     */
-    mouseover() {
-
-        div.transition()
-            .duration(200)
-            .style("opacity", .95);
-
-        div.html("test") // TODO
-            .style("left", (event.pageX) + "px")
-            .style("top", (event.pageY - 28) + "px")
-            .style("text-align", "left")
-    }
-
-    /**
-     * Function that hides the tooltip
-     * @param {Object} d - stores information of the node data (containing
-     * name, input, output, etc) and parent info for this node
-     */
-    mouseout(d) {
-        div.transition()
-            .duration(500)
-            .style("opacity", 0)
-    }
-
-    /**
-     * Function that checks if a red node will exist in the current dag for
-     * the current selected query (this.props.query). This is useful because a
-     * user can click on a column in the table that doesn't have a
-     * correspondence in the dag being displayed by this component.
-     * @returns {boolean} - returns true when a selected node exists and
-     * returns false when there is no selected node, preventing yellow nodes
-     * from being added by checkProcess function later on.
-     */
-    checkIfNode() {
-        if (JSON.stringify(this.state.selectedPipeline.dag).includes(this.props.query)) {
-            return true
-        } else {
-            return false
-        }
-    }
 
     /**
      * Function that checks the pid of the process that is being queried with
      * each of the processes in the dag that is being iterated to add colors
      * @param {String} name - the name of the node being colored
      * @param {String} query - the name of the process being queried
-     * @param {Boolean} redNodeExist - false when there is no node highlight in
      * red for the current selected query
      */
-    mapProcessToComponent(name, query, redNodeExist) {
-        if (name.split("_").slice(-2).join("_") === query.split("_").slice(-2).join("_") &&
-            redNodeExist) {
+    mapProcessToComponent(name, query) {
+        if (name.split("_").slice(-2).join("_") === query.split("_").slice(-2).join("_")) {
             // returns true if a red node is expected (the one being queried)
             return true
         } else {
@@ -263,39 +200,16 @@ export class TreeDag extends Component {
      * Function that will highlight the nodes that is currently being selected
      * and its respective children
      * @param {String} name - The name of the process
-     * @param {Array} parentLanes - the lanes that arredNodeExiste the children of the
-     * current process being queried
-     * @param {String} queryId - The id of the process being queried
-     * @param {Boolean} redNodeExist - false when there is no node highlight in
-     * red for the current selected query
      * @returns {*} - the color to put in the nodes.
      */
-    checkProcess(name, parentLanes, queryId, redNodeExist) {
+    checkProcess(name) {
         // skips first node that is root
         if (name !== "root") {
+            const mapResult = this.mapProcessToComponent(name,
+                this.props.query);
 
-            // fetch lane number
-            const laneNumber = name.split("_").slice(
-                name.split("_").length -2,
-                -1
-            ).join();
-
-            // fetches the id of the process for the node being looped
-            // this will be compared to queryId in order to know if the proc id
-            // is smaller than the queryId of the process being queried.
-            const procId = name.split("_").slice(
-                -1
-            ).join();
-
-            const mapResult = this.mapProcessToComponent(name, this.props.query,
-                redNodeExist);
-
-            return (mapResult) ?
-                themes[theme].palette.error.main :
-                (redNodeExist && parentLanes.includes(parseInt(laneNumber))
-                    && parseInt(procId) < parseInt(queryId)) ?
-                    themes[theme].palette.warning.main:
-                    themes[theme].palette.primary.main
+            return (mapResult) ? themes[theme].palette.error.main :
+                themes[theme].palette.primary.main
         }
     }
 
@@ -318,10 +232,6 @@ export class TreeDag extends Component {
      * integration it with react would lose some animations and transitions
      */
     createDagViz() {
-
-        // checks if pipeline will have a red node, if the current queried node
-        // (this.props.query) will have any selection in the current dag
-        const redNodeExist = this.checkIfNode();
 
         // Set the dimensions and margins of the diagram
         const margin = {top: 20, right: 20, bottom: 20, left: 20};
@@ -404,11 +314,7 @@ export class TreeDag extends Component {
                 .attr('class', 'node')
                 .attr("transform", (d) => {
                     return "translate(" + source.y0 + "," + source.x0 + ")"
-                })
-                // .on("mouseover", (d) => {
-                //     this.mouseover()
-                // })
-                // .on("mouseout", this.mouseout);
+                });
 
             // Add Circle for the nodes
             nodeEnter.append('circle')
@@ -440,27 +346,11 @@ export class TreeDag extends Component {
                     return "translate(" + d.y + "," + d.x + ")"
                 });
 
-            // get lane number to get all parent lanes
-            const laneNumber = this.props.query.split("_").slice(
-                this.props.query.split("_").length -2,
-                -1
-            ).join();
-
-            // fetchs the parentLanes of the current process
-            const parentLanes = getParentLanes(laneNumber,
-                this.state.selectedPipeline.forks);
-
-            // fetches the ID of the process being clicked
-            const queryId = this.props.query.split("_").slice(
-                -1
-            ).join();
-
             // Update the node attributes and style
             nodeUpdate.select("circle.node")
                 .attr("r", radius)
                 .style("fill", (d) => {
-                    return this.checkProcess(d.data.name, parentLanes, queryId,
-                        redNodeExist)
+                    return this.checkProcess(d.data.name)
                 })
                 .attr("cursor", "pointer");
 
