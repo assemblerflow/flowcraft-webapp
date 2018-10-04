@@ -424,7 +424,6 @@ export class TreeDag extends Component {
             },
         };
 
-        console.log("selected pipeline", this.state.selectedPipeline)
         return(
             <div>
                 {
