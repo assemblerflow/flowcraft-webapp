@@ -2018,7 +2018,7 @@ class ShowDAGPopover extends React.Component {
                                 <div style={style.dialogRoot}>
                                     <div style={style.dialogHeaderContainer}>
                                         <Typography style={style.dialogHeaderText}>DAG
-                                            overview with current process highlight: </Typography>
+                                            overview with current process highlight: {this.state.query}</Typography>
                                         {this.state.column}
                                     </div>
                                     <TreeDag nfMetadata={nfMetadata}
