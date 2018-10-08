@@ -139,12 +139,7 @@ export class TreeDag extends Component {
     shouldComponentUpdate(nextProps, nextState) {
         // prevents component from updating if nexState selectedPipeline is the
         // same as the current state of the component
-        if (this.state.selectedPipeline === nextState.selectedPipeline) {
-            return false
-        } else {
-            // returns true so that the component should update
-            return true
-        }
+        return this.state.selectedPipeline !== nextState.selectedPipeline;
     }
 
     componentDidUpdate() {
@@ -246,10 +241,10 @@ export class TreeDag extends Component {
         root.y0 = 0;
 
         // declares a tree layout and assigns the size
-        const treemap = tree().size([height, width]);
+        const treeMap = tree().size([height, width]);
 
         // Assigns the x and y position for the nodes
-        const treeData = treemap(root);
+        const treeData = treeMap(root);
 
         // Compute the new tree layout.
         const nodes = treeData.descendants().filter( (d) => {
@@ -306,23 +301,23 @@ export class TreeDag extends Component {
             // ****************** Nodes section ***************************
 
             // Update the nodes...
-            const nodeGraph = this.svg.selectAll('g.node')
+            const nodeGraph = this.svg.selectAll("g.node")
                     .data(nodes, (d) => { return d.id || (d.id = ++i) });
 
             // Enter any new modes at the parent's previous position.
-            const nodeEnter = nodeGraph.enter().append('g')
-                .attr('class', 'node')
+            const nodeEnter = nodeGraph.enter().append("g")
+                .attr("class", "node")
                 .attr("transform", (d) => {
                     return "translate(" + source.y0 + "," + source.x0 + ")"
                 });
 
             // Add Circle for the nodes
-            nodeEnter.append('circle')
-                .attr('class', 'node')
-                .attr('r', 1e-6);
+            nodeEnter.append("circle")
+                .attr("class", "node")
+                .attr("r", 1e-6);
 
             // Add labels for the nodes
-            nodeEnter.append('text')
+            nodeEnter.append("text")
                 .attr("y", "-20")
                 .attr("text-anchor", "middle")
                 .text( (d) => { return d.data.name } );
@@ -363,23 +358,23 @@ export class TreeDag extends Component {
                 .remove();
 
             // On exit reduce the node circles size to 0
-            nodeExit.select('circle')
-                .attr('r', 1e-6);
+            nodeExit.select("circle")
+                .attr("r", 1e-6);
 
             // On exit reduce the opacity of text labels
-            nodeExit.select('text')
-                .style('fill-opacity', 1e-6);
+            nodeExit.select("text")
+                .style("fill-opacity", 1e-6);
 
             // ****************** links section ***************************
 
             // Update the links...
-            const link = this.svg.selectAll('path.link')
+            const link = this.svg.selectAll("path.link")
                 .data(links, (d) => { return d.id });
 
             // Enter any new links at the parent's previous position.
-            const linkEnter = link.enter().insert('path', "g")
+            const linkEnter = link.enter().insert("path", "g")
                 .attr("class", "link")
-                .attr('d', (d) => {
+                .attr("d", (d) => {
                     const o = {x: source.x0, y: source.y0};
                     return diagonal(o, o)
                 });
@@ -390,12 +385,12 @@ export class TreeDag extends Component {
             // Transition back to the parent element position
             linkUpdate.transition()
             // .duration(duration)
-                .attr('d', (d) => { return diagonal(d, d.parent) });
+                .attr("d", (d) => { return diagonal(d, d.parent) });
 
             // Remove any existing links
             link.exit().transition()
             // .duration(duration)
-                .attr('d', (d) => {
+                .attr("d", (d) => {
                     const o = {x: source.x, y: source.y};
                     return diagonal(o, o)
                 })
