@@ -779,9 +779,13 @@ class DataLossOverview extends React.Component{
 
                 if (!laneData.hasOwnProperty(d.lane)){
                     const parentLane = this._findForkParent(d.pipelineId, d.lane);
-                    laneData[d.lane] = JSON.parse(JSON.stringify(laneData[parentLane]));
-                    laneData[d.lane].push(d);
-                    !tempKeys.includes(parentLane) && tempKeys.push(parentLane);
+                    // checks if laneData[parentLane] hasn't been removed by the
+                    // for loop below
+                    if (typeof laneData[parentLane] !== "undefined") {
+                        laneData[d.lane] = JSON.parse(JSON.stringify(laneData[parentLane]));
+                        laneData[d.lane].push(d);
+                        !tempKeys.includes(parentLane) && tempKeys.push(parentLane);
+                    }
                 } else {
                     laneData[d.lane].push(d)
                 }
