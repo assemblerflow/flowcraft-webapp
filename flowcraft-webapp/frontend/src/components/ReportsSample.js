@@ -344,7 +344,12 @@ class DataResources extends React.Component{
             if (!el.hasOwnProperty("sampleName")){
                 continue
             }
-            const resourceList = el.trace[1].split(" ");
+
+            // if for some reason the resources list is corrupted for a sample
+            const resourceList = (el.trace[1]) ? el.trace[1].split(" ") : false;
+            // if resourcesList if false then return false so that the component
+            // isn't mounted
+            if (resourceList === false) { return false }
 
             if (el.sampleName === sample){
                 resources.time.push({
@@ -389,7 +394,8 @@ class DataResources extends React.Component{
             }
         };
 
-        const resources = this.getResourceData(this.props.reportData, this.props.sample)
+        const resources = this.getResourceData(this.props.reportData,
+            this.props.sample);
         const options = Object.keys(resources).map((v) => {return {
             value: v,
             label: v
@@ -398,16 +404,22 @@ class DataResources extends React.Component{
         return(
             <div>
                 <LoadingComponent>
-                    <div style={style.headerContainer}>
-                        <Typography style={style.header}>Resource usage</Typography>
-                        <div style={style.headerSelect}>
-                            <Select
-                                value={{value: this.state.resource, label: this.state.resource}}
-                                onChange={this.handleChange}
-                                options={options}/>
+                    {
+                        resources &&
+                        <div>
+                            <div style={style.headerContainer}>
+                                <Typography style={style.header}>Resource usage</Typography>
+                                <div style={style.headerSelect}>
+                                    <Select
+                                        value={{value: this.state.resource, label: this.state.resource}}
+                                        onChange={this.handleChange}
+                                        options={options}/>
+                                </div>
+                            </div>
+                            <ResourcesPieChart name={this.state.resource}
+                                               data={resources[this.state.resource]}/>
                         </div>
-                    </div>
-                    <ResourcesPieChart name={this.state.resource} data={resources[this.state.resource]}/>
+                    }
                 </LoadingComponent>
             </div>
         )

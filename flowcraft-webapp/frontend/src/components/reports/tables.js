@@ -70,9 +70,11 @@ import {
     getSpeciesMapping
 } from "./utils";
 import {SampleDialog} from "../ReportsSample";
+import {TreeDag, DagLegendReport} from "../ReportDag"
 import {HighlightSelectionPopup} from "./overview";
 import {updateFilterArray, updateHighlightArray} from "./filters_highlights";
 import FilterIcon from "../../../../node_modules/mdi-react/FilterIcon";
+import GraphQLIcon from "../../../../node_modules/mdi-react/GraphqlIcon";
 import {FindDistributionChart} from "./charts";
 import axios from "axios";
 import {address} from "../../../config";
@@ -459,6 +461,7 @@ export class FCTable extends React.Component {
                                                 onToggleColumn={this.toggleColumnVisibility}
                                                 allColumns={this.props.columns}
                                                 stateColumns={this.state.columns}/>
+                                            <ShowDAGPopover columns={this.props.columns}/>
                                         </fieldset>
                                     }
                                     {
@@ -502,7 +505,6 @@ export class FCTable extends React.Component {
                                                                              data={this.props.data}/>
                                                 </div>
                                             }
-
                                             {this.props.selectedActions}
                                         </fieldset>
                                     }
@@ -1893,6 +1895,144 @@ export class FindDistributionPopover extends React.Component {
             </div>
         )
     }
+}
+
+class ShowDAGPopover extends React.Component {
+
+    state = {
+        anchorEl: null,
+        dialogOpen: false,
+        column: "",
+        data: []
+    };
+
+    handleClick = event => {
+        this.setState({
+            anchorEl: event.currentTarget,
+        });
+    };
+
+    openDialog = (query) => {
+        this.setState({
+            dialogOpen: true,
+            query
+        })
+    };
+
+    handleClose = () => {
+        this.setState({
+            anchorEl: null,
+        });
+    };
+
+    closeDialog = () => {
+        this.setState({dialogOpen: false})
+    };
+
+    render() {
+
+        const style = {
+            root: {
+                padding: "15px"
+            },
+            header: {
+                marginBottom: "10px"
+            },
+            dialogRoot: {
+                marginTop: "60px",
+                padding: "20px"
+            },
+            dialogHeaderContainer: {
+                display: "flex",
+                justifyContent: "center",
+                marginTop: "15px",
+                marginBottom: "15px"
+            },
+            dialogHeaderText: {
+                marginRight: "15px",
+                fontSize: "18px",
+                fontWeight: "bold",
+                lineHeight: "40px"
+            }
+        };
+
+        const {anchorEl} = this.state;
+        const skipAccessors = ["highlight", "rowId", "qc"];
+
+        return (
+            <ReportAppConsumer>
+                {
+                    ({nfMetadata}) => (
+                        <div style={{display: "inline-block"}}>
+                            <TableButton onClick={this.handleClick}
+                                         tooltip={"Show DAG"}>
+                                <GraphQLIcon color={"#fff"}/>
+                            </TableButton>
+                            <Popover open={Boolean(anchorEl)}
+                                     anchorEl={anchorEl}
+                                     onClose={this.handleClose}
+                                     anchorOrigin={{
+                                         vertical: "center",
+                                         horizontal: "right"
+                                     }}
+                                     transformOrigin={{
+                                         vertical: "center",
+                                         horizontal: "left"
+                                     }}>
+                                <div style={style.root}>
+                                    <Typography style={style.header} variant={"subheading"}>Select
+                                        column to display DAG</Typography>
+                                    <Divider/>
+                                    <List>
+                                        {
+                                            this.props.columns.map((col) => {
+                                                if (!skipAccessors.includes(col.accessor)) {
+                                                    return (
+                                                        <ListItem onClick={() => {
+                                                            this.openDialog(col.Header.props.children[1].props.children)
+                                                        }} button key={col.accessor}>
+                                                            <ListItemText
+                                                                primary={col.Header}/>
+                                                        </ListItem>
+                                                    )
+                                                }
+                                            })
+                                        }
+                                    </List>
+                                </div>
+                            </Popover>
+                            <Dialog
+                                onClose={this.closeDialog}
+                                open={this.state.dialogOpen}
+                                TransitionComponent={Transition}
+                                fullScreen>
+                                <AppBar>
+                                    <Toolbar>
+                                        <IconButton color="inherit"
+                                                    onClick={this.closeDialog}
+                                                    aria-label="Close">
+                                            <CloseIcon/>
+                                        </IconButton>
+                                    </Toolbar>
+                                </AppBar>
+                                <div style={style.dialogRoot}>
+                                    <div style={style.dialogHeaderContainer}>
+                                        <Typography style={style.dialogHeaderText}>DAG
+                                            overview with current process highlight: {this.state.query}</Typography>
+                                        {this.state.column}
+                                    </div>
+                                    <TreeDag nfMetadata={nfMetadata}
+                                             query={this.state.query}/>
+                                    <DagLegendReport/>
+                                </div>
+                            </Dialog>
+                        </div>
+                    )
+                }
+            </ReportAppConsumer>
+        )
+    }
+
 }
 
 

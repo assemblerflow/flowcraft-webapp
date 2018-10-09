@@ -356,7 +356,7 @@ class InspectPannels extends React.Component {
                             <Typography variant={"headline"}>DAG overview</Typography>
                         </ExpansionPanelSummary>
                         <ExpansionPanelDetails style={{display: "block"}}>
-                            <MainDag treeDag={this.props.treeDag} processData={this.props.processData}/>
+                            <TreeDag data={this.props.treeDag} processData={this.props.processData}/>
                             <DagLegend/>
 
                         </ExpansionPanelDetails>
@@ -1855,15 +1855,15 @@ class WarningPopover extends React.Component {
 
 /*
 Table and DAG controller
- */
-class MainDag extends React.Component {
-    render () {
-        return (
-            <TreeDag data={this.props.treeDag}
-                     processData={this.props.processData}/>
-        )
-    }
-}
+//  */
+// class MainDag extends React.Component {
+//     render () {
+//         return (
+//             <TreeDag data={this.props.treeDag}
+//                      processData={this.props.processData}/>
+//         )
+//     }
+// }
 
 
 /**

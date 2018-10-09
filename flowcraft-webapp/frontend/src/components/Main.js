@@ -25,8 +25,11 @@ export class Main extends React.Component {
                     <Route exact path="/reports/app" component={ReportsRedirect}/>
                     <Route exact path="/reports/app" component={ReportsRedirect}/>
                     <Route exact path="/reports/broadcast/:runId" component={ReportsBroadcast}/>
-                    <Route exact path="file*" component={ReportsFromFile}/>
-                    <Route component={NotFound}/>
+                    {
+                        typeof _fileReportData !== "undefined" ?
+                            <Route component={ReportsFromFile}/> :
+                            <Route component={NotFound}/>
+                    }
                 </Switch>
             </main>
         )
