@@ -241,8 +241,6 @@ class Overview extends React.Component{
 
     render(){
 
-        console.log("render sample overview")
-
         const style = {
             header: {
                 fontSize: "20px",
@@ -777,8 +775,7 @@ class DataLossOverview extends React.Component{
                     // instances it will look for parentLanes that aren't in
                     // laneData object
                     if (laneData.hasOwnProperty(parentLane)) {
-                        console.log(laneData[parentLane])
-                        laneData[d.lane] = JSON.parse(JSON.stringify(laneData[parentLane]));
+                        laneData[d.lane] = laneData[parentLane];
                         laneData[d.lane].push(d);
                         !tempKeys.includes(parentLane) && tempKeys.push(parentLane);
                     }
