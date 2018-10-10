@@ -39,7 +39,7 @@ import indigo from "@material-ui/core/colors/indigo";
 
 import {Chart} from "./reports/chart_utils";
 import {OverviewQcPopover} from "./reports/overview";
-import {sortNumber} from "./reports/utils";
+import {sortNumber, getParentLanes} from "./reports/utils";
 
 import {
     getContig,
@@ -241,6 +241,8 @@ class Overview extends React.Component{
 
     render(){
 
+        console.log("render sample overview")
+
         const style = {
             header: {
                 fontSize: "20px",
@@ -283,7 +285,7 @@ class Overview extends React.Component{
                                 <Grid style={style.gridItems} item xs={4}>
                                     <DataLossOverview sample={this.props.sample}
                                                       nfMetadata={this.props.nfMetadata}
-                                                      reportData={this.props.reportData} />
+                                                      reportData={this.props.reportData}/>
                                 </Grid>
                             </Grid>
                             <Grid container spacing={24}>
@@ -686,22 +688,6 @@ class GaugeChart extends React.Component{
 
 class DataLossOverview extends React.Component{
 
-    _findForkParent = (pipelineId, lane) => {
-
-        for (const nf of this.props.nfMetadata){
-            if (nf.runName === pipelineId){
-                const forkTree = nf.forks;
-
-                for (const l of Object.keys(forkTree)){
-                    if (forkTree[l].includes(parseInt(lane))){
-                        return l
-                    }
-                }
-            }
-        }
-
-    };
-
     getChartData = (reportData, sample) => {
 
         let tempData = [];
@@ -757,7 +743,6 @@ class DataLossOverview extends React.Component{
             const rawData = Array.from(tempData.sort((a, b) => {return b.value - a.value}));
             const data = rawData.map((v) => {return parseFloat(v.value) / maxBp});
             const categories = rawData.map((v) => {return v.process});
-
             return {
                 type: "sparkline",
                 data,
@@ -777,11 +762,22 @@ class DataLossOverview extends React.Component{
                     continue
                 }
 
+                // checks if d.lane (current lane) is in laneData, if not adds
+                // it to laneData, otherwise pushes the new entry to it
                 if (!laneData.hasOwnProperty(d.lane)){
-                    const parentLane = this._findForkParent(d.pipelineId, d.lane);
-                    // checks if laneData[parentLane] hasn't been removed by the
-                    // for loop below
-                    if (typeof laneData[parentLane] !== "undefined") {
+                    // fetches the correct fork for the selected pipeline
+                    const fetchForks = this.props.nfMetadata.filter( (el, i) => {
+                        return el.runName === d.pipelineId
+                    });
+
+                    // fetch parent lanes and select only the last one
+                    const parentLane = getParentLanes(d.lane, fetchForks[0].forks)[0];
+
+                    // checks if parentLane is in laneData, otherwise in some
+                    // instances it will look for parentLanes that aren't in
+                    // laneData object
+                    if (laneData.hasOwnProperty(parentLane)) {
+                        console.log(laneData[parentLane])
                         laneData[d.lane] = JSON.parse(JSON.stringify(laneData[parentLane]));
                         laneData[d.lane].push(d);
                         !tempKeys.includes(parentLane) && tempKeys.push(parentLane);
@@ -814,9 +810,6 @@ class DataLossOverview extends React.Component{
 
     };
 
-    shouldComponentUpdate(nextProps, nextState){
-        return nextProps.reportData !== this.props.reportData;
-    }
     render(){
 
         const style = {
