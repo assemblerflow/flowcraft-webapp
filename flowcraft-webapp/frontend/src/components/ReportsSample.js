@@ -686,6 +686,16 @@ class GaugeChart extends React.Component{
 
 class DataLossOverview extends React.Component{
 
+    /**
+     * Function that generates the data to feed to the data loss graph
+     * @param {Object} reportData - the full reportData passed to the flowcraft
+     * report.json
+     * @param {String} sample - the name of the sample being currently asked for
+     * display
+     * @returns {Object} - the object for the graph generation with highcharts.
+     * In this case a sparlkline or a multisparkline plot, depending on the
+     * the pipeline being linear or forked.
+     */
     getChartData = (reportData, sample) => {
 
         let tempData = [];
@@ -775,19 +785,28 @@ class DataLossOverview extends React.Component{
                     // instances it will look for parentLanes that aren't in
                     // laneData object
                     if (laneData.hasOwnProperty(parentLane)) {
-                        laneData[d.lane] = laneData[parentLane];
+                        // create a deep copy of the laneData[parentLane] object
+                        // into the entry being added by d.lane.
+                        laneData[d.lane] = JSON.parse(JSON.stringify(laneData[parentLane]));
+                        // then since laneData[parentLane] should be an array
+                        // we can directly use push here.
                         laneData[d.lane].push(d);
                         !tempKeys.includes(parentLane) && tempKeys.push(parentLane);
                     }
                 } else {
+                    // if d.lane is already in laneData then use push to
+                    // continue adding new d entries.
                     laneData[d.lane].push(d)
                 }
             }
 
+            // removes unwanted entries from laneData
             for (const k of tempKeys){
                 delete laneData[k];
             }
 
+            // iterates through laneData in order to create the object that will
+            // create the graph for data loss
             for (const d of Object.keys(laneData)){
                 const data = laneData[d].map((v) => {return parseFloat(v.value) / maxBp})
                 const categories = laneData[d].map((v) => {return v.process});
