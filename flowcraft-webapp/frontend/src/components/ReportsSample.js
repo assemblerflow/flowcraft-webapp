@@ -50,6 +50,7 @@ import {
 
 import {ReportAppConsumer} from "./reports/contexts";
 import {FindDistributionChart, ResourcesPieChart, KronaPieChart} from "./reports/charts";
+import {DefaultTable} from "./reports/tables";
 import {getSamplePlot} from "./reports/parsers";
 
 import {LoadingComponent} from "./ReportsBase";
@@ -108,7 +109,7 @@ export class SampleDialog extends React.Component{
         return(
             <ReportAppConsumer>
                 {
-                    ({charts, reportData}) => (
+                    ({charts, tsvData, reportData}) => (
                         <div style={style.buttonContainer}>
                             <div onClick={this.handleClickOpen}>
                                 {this.props.button}
@@ -130,6 +131,7 @@ export class SampleDialog extends React.Component{
                                 <div style={style.reportContainer}>
                                     <SampleSpecificReport charts={charts}
                                                           sample={this.props.sample}
+                                                          tsvData={tsvData}
                                                           zoomInitialGene={this.props.zoomInitialGene}
                                                           reportData={reportData}/>
                                 </div>
@@ -199,7 +201,64 @@ class SampleSpecificReport extends React.Component{
                         }
                     </ReportAppConsumer>
                 }
+                {
+                    this.props.tsvData.includes("MaxBin2") &&
+                        <ReportAppConsumer>
+                        {
+                            ({tsvData, reportData}) => (
+                                <MaxBinContainer
+                                    sample={this.props.sample}
+                                    reportData={reportData}
+                                />
+                            )
+                        }
+                    </ReportAppConsumer>
+                }
             </div>
+        )
+    }
+}
+
+class MaxBinContainer extends React.Component {
+
+    getMaxBinData = (sample, reportData) => {
+        for (const report of reportData) {
+            if (report.sampleName === sample && report.reportJson.tsvData !== undefined) {
+                for (const tsv of report.reportJson.tsvData) {
+                    if (tsv.hasOwnProperty("data") &&
+                        tsv.data.hasOwnProperty("MaxBin2")) {
+                        return tsv.data["MaxBin2"];
+                    }
+                }
+            }
+        }
+    }
+
+    render() {
+
+        let maxBinData = this.getMaxBinData(this.props.sample, this.props.reportData);
+        maxBinData = maxBinData === undefined ? [] : maxBinData;
+
+        const style = {
+            divTable: {
+                "margin": "10px auto auto",
+                "width": "100%"
+            }
+        };
+
+        return(
+            <ExpansionPanel defaultExpanded>
+                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
+                    <Typography variant={"headline"}>
+                        Metagenomic Binning
+                    </Typography>
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails>
+                    <div style={style.divTable}>
+                        <DefaultTable data={maxBinData}></DefaultTable>
+                    </div>
+                </ExpansionPanelDetails>
+            </ExpansionPanel>
         )
     }
 }

@@ -299,6 +299,30 @@ export const findPhylogenySignatures = (reportArray) => {
     }
 };
 
+export const findTsvSignatures = (reportArray) => {
+    let tsvData = [];
+    let tsvSamples = [];
+
+    for (const r of reportArray){
+        if (r.hasOwnProperty("reportJson")) {
+            if (r.reportJson.hasOwnProperty("tsvData")){
+                for (const entry of r.reportJson.tsvData) {
+                    for (const tsv of Object.keys(entry.data)) {
+                        !tsvData.includes(tsv) && tsvData.push(tsv);
+                        !tsvSamples.includes(entry.sample) && tsvSamples.push(entry.sample);
+                    }
+                }
+            }
+        }
+    }
+
+    return {
+        tsvData,
+        tsvSamples,
+    }
+
+};
+
 /**
  * This method searches the raw report JSON for warnings and fails. This
  * information will be stored in a Map object that will contain the following
