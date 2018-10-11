@@ -85,7 +85,7 @@ const getAssemblyPath = (sampleId, reportData) => {
             if (sampleId === pid) {
                 //assemblySuffix = assemblySuffix + el.report_json.task + `/${el.sample_name}_trim_spades3111_proc_filt_polished.fasta`;
                 assemblySuffix = assemblySuffix + el.task +
-                    `/${el.reportJson.tableRow[0].sample}_trim_spades3111_proc_filt_polished.fasta`;
+                    `/${el.reportJson.tableRow[0].sample}*.fasta`;
                 filePath = el.workdir.split("/").slice(0, -3).join("/") + assemblySuffix;
                 sampleName = el.sample_name
             }
@@ -107,7 +107,12 @@ export const getAssemblies = (rows, reportData) => {
     let sampleNames = [];
 
     for (const row of rows) {
-        const pid = `${row.projectId}.${row._id}`;
+        let pid = "";
+
+        for (const raw in row.raw) {
+            pid = `${row.raw[raw].projectId}.${row._id}`;
+            break
+        }
         const res = getAssemblyPath(pid, reportData);
         fileList.push(res[0]);
         sampleNames.push(res[1]);

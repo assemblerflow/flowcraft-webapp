@@ -49,7 +49,7 @@ import {
 } from "./reports/sample_specific_utils";
 
 import {ReportAppConsumer} from "./reports/contexts";
-import {FindDistributionChart, ResourcesPieChart} from "./reports/charts";
+import {FindDistributionChart, ResourcesPieChart, KronaPieChart} from "./reports/charts";
 import {getSamplePlot} from "./reports/parsers";
 
 import {LoadingComponent} from "./ReportsBase";
@@ -153,7 +153,7 @@ class SampleSpecificReport extends React.Component{
     }
 
     render(){
-
+        console.log(this.props.charts);
         return(
             <div>
                 <ReportAppConsumer>
@@ -184,8 +184,224 @@ class SampleSpecificReport extends React.Component{
                                     reportData={this.props.reportData}/>
                             )
                         }
-                    </ReportAppConsumer>}
+                    </ReportAppConsumer>
+                }
+                {
+                    this.props.charts.includes("kronaPlot") &&
+                        <ReportAppConsumer>
+                        {
+                            ({charts, reportData}) => (
+                                <KronaPlotContainer
+                                    sample={this.props.sample}
+                                    reportData={reportData}
+                                />
+                            )
+                        }
+                    </ReportAppConsumer>
+                }
             </div>
+        )
+    }
+}
+
+class KronaPlotContainer extends React.Component {
+
+    constructor(props) {
+        super(props);
+        const processes = this.getAllKronaProcesses(props.sample, props.reportData);
+
+        this.state = {
+            process: processes.length === 0 ? "" : processes[0].label
+        }
+    }
+
+    handleChange = (e) => {
+        this.setState({process: e.label})
+    };
+
+    getAllKronaProcesses = (sample, reportData) => {
+        let processes = [];
+
+        for (const report of reportData) {
+            if (report.sampleName === sample && report.reportJson.plotData !== undefined) {
+                for (const plot of report.reportJson.plotData) {
+                    if (plot.hasOwnProperty("data") && plot.data.hasOwnProperty("kronaPlot")) {
+                        processes.push({
+                            value: report.processName,
+                            label: report.processName
+                        });
+                    }
+                }
+            }
+        }
+
+        return processes;
+    };
+
+    parseChildren = (entry, globalClass) => {
+        let countLevels = 0;
+        let currentLevel = JSON.parse(JSON.stringify(entry));
+        let lastParent = "top";
+
+        while (Object.keys(currentLevel.children).length !== 0 && currentLevel.children.constructor === Object) {
+            countLevels += 1;
+            let toDrill = null;
+
+            if (Object.keys(currentLevel.children.children).length !== 0) {
+                toDrill = currentLevel.key
+            }
+
+            let toAdd = {
+                "name": currentLevel.key,
+                "id": lastParent,
+                "y": currentLevel.value,
+                "drilldown": toDrill,
+                "parent": lastParent
+            };
+
+            if (!globalClass.hasOwnProperty(String(countLevels))) {
+                globalClass[String(countLevels)] = [toAdd];
+            } else {
+                let add = true;
+                for (const l of globalClass[String(countLevels)]) {
+                    if (l.name === currentLevel.key) {
+                        add = false;
+                        break;
+                    }
+                }
+                if (add) {
+                    globalClass[String(countLevels)].push(toAdd);
+                }
+            }
+            lastParent = currentLevel.key;
+            currentLevel = currentLevel.children;
+
+        }
+    };
+
+    buildSeries = (globalClass) => {
+        const globalClassKeys = Object.keys(globalClass);
+        const sortedKeys = globalClassKeys.sort(function(a, b){return parseInt(a)-parseInt(b)});
+        let newGlobalClass = {};
+        let tempSum = {};
+
+        for (const key of sortedKeys) {
+            let tmpObject = {};
+
+            for (const entry of globalClass[key]) {
+                if (!tmpObject.hasOwnProperty(entry.id)) {
+                    tmpObject[entry.id] = [entry];
+                    tempSum[entry.id] = entry.y;
+                }
+                else {
+                    tmpObject[entry.id].push(entry);
+                    tempSum[entry.id] = tempSum[entry.id] + entry.y;
+                }
+            }
+
+            newGlobalClass[key] = tmpObject;
+        }
+
+        globalClass = newGlobalClass;
+
+        let drillDown = [];
+
+        for (const key of sortedKeys.reverse()) {
+            for (const s in globalClass[key]) {
+                let entry = globalClass[key];
+                let currentLevel = s;
+
+                let dataToAdd = [];
+
+                for (const result of entry[currentLevel]) {
+                    if (result.drilldown === null) {
+                        dataToAdd.push([result.name, result.y])
+                    }
+                    else {
+                        dataToAdd.push({
+                            "name": result.name,
+                            "y": result.y,
+                            "drilldown": result.drilldown
+                        })
+                    }
+                }
+
+                drillDown.push({
+                    "name": currentLevel,
+                    "id": currentLevel,
+                    "data": dataToAdd
+                });
+            }
+        }
+
+        return drillDown;
+    };
+
+    getKronaData = (sample, processName, reportData) => {
+        for (const report of reportData) {
+            if (report.sampleName === sample && report.reportJson.plotData !== undefined) {
+                for (const plot of report.reportJson.plotData) {
+                    if (plot.hasOwnProperty("data") &&
+                        plot.data.hasOwnProperty("kronaPlot") &&
+                        report.processName === processName) {
+                        return plot.data;
+                    }
+                }
+            }
+        }
+    };
+
+    constructSeries = (kronaData) => {
+        let series = [];
+        let globalClass = {};
+
+        if (kronaData === undefined) {
+            return series;
+        } else {
+            for(const entry of kronaData.kronaPlot) {
+                this.parseChildren(entry, globalClass);
+            }
+            const kronaSeries = this.buildSeries(globalClass);
+            return kronaSeries;
+        }
+    };
+
+
+    render() {
+        const options = this.getAllKronaProcesses(this.props.sample, this.props.reportData);
+        const kronaData = this.getKronaData(this.props.sample, this.state.process, this.props.reportData);
+        const kronaSeries = this.constructSeries(kronaData);
+
+        const style = {
+            divPlot: {
+                "margin": "10px auto auto",
+                "width": "100%"
+            },
+            headerSelect: {
+                "width": "40%",
+                "float": "right"
+            }
+        };
+
+        return(
+            <ExpansionPanel defaultExpanded>
+                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
+                    <Typography variant={"headline"}>
+                        Taxonomic Identification
+                    </Typography>
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails>
+                    <div style={style.divPlot}>
+                        <div style={style.headerSelect}>
+                            <Select
+                                value={{value: this.state.process, label: this.state.process}}
+                                onChange={this.handleChange}
+                                options={options}/>
+                        </div>
+                        <KronaPieChart series={kronaSeries}/>
+                    </div>
+                </ExpansionPanelDetails>
+            </ExpansionPanel>
         )
     }
 }
@@ -1837,8 +2053,6 @@ class SyncCharts extends React.Component{
             }
         }
 
-        console.log(this.props.plotData)
-
         return(
             <div ref={elem => this.chartContainer = elem} style={{"width":"100%"}}>
                 <CollapsableChart title={"GC% content"}>
@@ -1945,7 +2159,6 @@ class ChartWrapper extends React.Component{
     }
 
     render(){
-        console.log(this.props)
         return(
             <React.Fragment>
                 {this.props.children}

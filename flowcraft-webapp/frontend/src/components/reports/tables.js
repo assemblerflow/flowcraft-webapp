@@ -1041,13 +1041,10 @@ export class AssemblyTable extends React.Component {
     };
 
     downloadAssemblies = async () => {
-        console.log(this.state.selection);
         const res = await getAssemblies(
             this.state.selection.rows,
             this.props.reportData
         );
-
-        console.log(res);
 
         const fileStr = res[0].join(";");
         const sampleStr = res[1].join(";");

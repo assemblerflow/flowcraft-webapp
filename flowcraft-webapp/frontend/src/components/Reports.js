@@ -677,8 +677,6 @@ class ReportsApp extends React.Component {
             otherHeaders.push("phylogeny")
         }
 
-        console.log(this.props.reportData)
-
         //
         // This is the main element where the Reports components will be added,
         // Their addition should be conditional on the presence of relevant

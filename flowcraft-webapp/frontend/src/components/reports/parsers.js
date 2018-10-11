@@ -238,6 +238,8 @@ export const findChartSignatures = (reportArray) => {
                 continue
             }
 
+            //console.log(r.reportJson);
+
             for (const el of r.reportJson.plotData) {
 
                 if (!el.hasOwnProperty("data")) {
@@ -485,10 +487,6 @@ export const getTableHeaders = (dataArray) => {
             })
         }
     }
-
-    // console.log(duplicateAccessors)
-    console.log(tableHeaders)
-    console.log(duplicateAccessors)
 
     return {
         tableHeaders,
