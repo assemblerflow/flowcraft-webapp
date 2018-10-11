@@ -39,7 +39,7 @@ import indigo from "@material-ui/core/colors/indigo";
 
 import {Chart} from "./reports/chart_utils";
 import {OverviewQcPopover} from "./reports/overview";
-import {sortNumber} from "./reports/utils";
+import {sortNumber, getParentLanes} from "./reports/utils";
 
 import {
     getContig,
@@ -283,7 +283,7 @@ class Overview extends React.Component{
                                 <Grid style={style.gridItems} item xs={4}>
                                     <DataLossOverview sample={this.props.sample}
                                                       nfMetadata={this.props.nfMetadata}
-                                                      reportData={this.props.reportData} />
+                                                      reportData={this.props.reportData}/>
                                 </Grid>
                             </Grid>
                             <Grid container spacing={24}>
@@ -686,22 +686,16 @@ class GaugeChart extends React.Component{
 
 class DataLossOverview extends React.Component{
 
-    _findForkParent = (pipelineId, lane) => {
-
-        for (const nf of this.props.nfMetadata){
-            if (nf.runName === pipelineId){
-                const forkTree = nf.forks;
-
-                for (const l of Object.keys(forkTree)){
-                    if (forkTree[l].includes(parseInt(lane))){
-                        return l
-                    }
-                }
-            }
-        }
-
-    };
-
+    /**
+     * Function that generates the data to feed to the data loss graph
+     * @param {Object} reportData - the full reportData passed to the flowcraft
+     * report.json
+     * @param {String} sample - the name of the sample being currently asked for
+     * display
+     * @returns {Object} - the object for the graph generation with highcharts.
+     * In this case a sparlkline or a multisparkline plot, depending on the
+     * the pipeline being linear or forked.
+     */
     getChartData = (reportData, sample) => {
 
         let tempData = [];
@@ -757,7 +751,6 @@ class DataLossOverview extends React.Component{
             const rawData = Array.from(tempData.sort((a, b) => {return b.value - a.value}));
             const data = rawData.map((v) => {return parseFloat(v.value) / maxBp});
             const categories = rawData.map((v) => {return v.process});
-
             return {
                 type: "sparkline",
                 data,
@@ -777,20 +770,43 @@ class DataLossOverview extends React.Component{
                     continue
                 }
 
+                // checks if d.lane (current lane) is in laneData, if not adds
+                // it to laneData, otherwise pushes the new entry to it
                 if (!laneData.hasOwnProperty(d.lane)){
-                    const parentLane = this._findForkParent(d.pipelineId, d.lane);
-                    laneData[d.lane] = JSON.parse(JSON.stringify(laneData[parentLane]));
-                    laneData[d.lane].push(d);
-                    !tempKeys.includes(parentLane) && tempKeys.push(parentLane);
+                    // fetches the correct fork for the selected pipeline
+                    const fetchForks = this.props.nfMetadata.filter( (el, i) => {
+                        return el.runName === d.pipelineId
+                    });
+
+                    // fetch parent lanes and select only the last one
+                    const parentLane = getParentLanes(d.lane, fetchForks[0].forks)[0];
+
+                    // checks if parentLane is in laneData, otherwise in some
+                    // instances it will look for parentLanes that aren't in
+                    // laneData object
+                    if (laneData.hasOwnProperty(parentLane)) {
+                        // create a deep copy of the laneData[parentLane] object
+                        // into the entry being added by d.lane.
+                        laneData[d.lane] = JSON.parse(JSON.stringify(laneData[parentLane]));
+                        // then since laneData[parentLane] should be an array
+                        // we can directly use push here.
+                        laneData[d.lane].push(d);
+                        !tempKeys.includes(parentLane) && tempKeys.push(parentLane);
+                    }
                 } else {
+                    // if d.lane is already in laneData then use push to
+                    // continue adding new d entries.
                     laneData[d.lane].push(d)
                 }
             }
 
+            // removes unwanted entries from laneData
             for (const k of tempKeys){
                 delete laneData[k];
             }
 
+            // iterates through laneData in order to create the object that will
+            // create the graph for data loss
             for (const d of Object.keys(laneData)){
                 const data = laneData[d].map((v) => {return parseFloat(v.value) / maxBp})
                 const categories = laneData[d].map((v) => {return v.process});
@@ -810,9 +826,6 @@ class DataLossOverview extends React.Component{
 
     };
 
-    shouldComponentUpdate(nextProps, nextState){
-        return nextProps.reportData !== this.props.reportData;
-    }
     render(){
 
         const style = {

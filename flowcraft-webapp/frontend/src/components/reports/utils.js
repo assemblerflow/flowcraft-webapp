@@ -320,8 +320,15 @@ export const sortColor = (a, b) => {
     return aValue - bValue
 };
 
+/**
+ * Function to fetch all the lanes that are parent from the provided laneNumber
+ * @param {String} laneNumber - the number of the lane that should be queried
+ * @param {Object} dict - the dictionary with the forks of the currently
+ * selected pipeline.
+ * @returns {number[]} - the parent lanes
+ */
 export const getParentLanes = (laneNumber, dict) => {
-    let parentLanes = [parseInt(laneNumber)];
+    let parentLanes = [];
 
     while (true) {
         let found = Object.entries(dict).filter( (v) => {
