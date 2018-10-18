@@ -155,7 +155,6 @@ class SampleSpecificReport extends React.Component{
     }
 
     render(){
-        console.log(this.props.charts);
         return(
             <div>
                 <ReportAppConsumer>
@@ -219,8 +218,13 @@ class SampleSpecificReport extends React.Component{
     }
 }
 
+/*
+Container for the Bin information results on the sample specific report.
+It requires the MaxBin2 signature on the tsvData report signature.
+ */
 class MaxBinContainer extends React.Component {
 
+    // Get MaxBin data for a given sample in the reports
     getMaxBinData = (sample, reportData) => {
         for (const report of reportData) {
             if (report.sampleName === sample && report.reportJson.tsvData !== undefined) {
@@ -263,6 +267,10 @@ class MaxBinContainer extends React.Component {
     }
 }
 
+/*
+Container to load the taxonomic results plot.
+- Loads the krona plot results.
+ */
 class KronaPlotContainer extends React.Component {
 
     constructor(props) {
@@ -278,6 +286,8 @@ class KronaPlotContainer extends React.Component {
         this.setState({process: e.label})
     };
 
+    // Get the krona processes for a given sample available in the reports.
+    // A given sample can have more than one krona process.
     getAllKronaProcesses = (sample, reportData) => {
         let processes = [];
 
@@ -338,6 +348,9 @@ class KronaPlotContainer extends React.Component {
         }
     };
 
+    // Construct the series based on the classification provided.
+    // Start with higher level classifications and then merge with the low
+    // level classifications.
     buildSeries = (globalClass) => {
         const globalClassKeys = Object.keys(globalClass);
         const sortedKeys = globalClassKeys.sort(function(a, b){return parseInt(a)-parseInt(b)});
@@ -396,6 +409,7 @@ class KronaPlotContainer extends React.Component {
         return drillDown;
     };
 
+    // Get a specific krona plot for a given sample
     getKronaData = (sample, processName, reportData) => {
         for (const report of reportData) {
             if (report.sampleName === sample && report.reportJson.plotData !== undefined) {
@@ -410,6 +424,7 @@ class KronaPlotContainer extends React.Component {
         }
     };
 
+    // Build input for highcharts drilldown plot.
     constructSeries = (kronaData) => {
         let series = [];
         let globalClass = {};

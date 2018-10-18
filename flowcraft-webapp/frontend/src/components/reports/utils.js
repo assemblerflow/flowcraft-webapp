@@ -107,13 +107,12 @@ export const getAssemblies = (rows, reportData) => {
     let sampleNames = [];
 
     for (const row of rows) {
-        let pid = "";
 
-        for (const raw in row.raw) {
-            pid = `${row.raw[raw].projectId}.${row._id}`;
-            break
-        }
+        const rawKeys = Object.keys(row.raw);
+        const pid = `${row.raw[rawKeys[0]].projectId}.${row._id}`;
+
         const res = getAssemblyPath(pid, reportData);
+
         fileList.push(res[0]);
         sampleNames.push(res[1]);
     }

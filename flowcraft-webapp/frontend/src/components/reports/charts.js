@@ -920,6 +920,11 @@ class ChartToolbar extends React.Component{
     }
 }
 
+/*
+Component to build the drilldown plot.
+- Build starting series
+- Build drilldown series
+ */
 export class KronaPieChart extends React.Component {
 
     render() {

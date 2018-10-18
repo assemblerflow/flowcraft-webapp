@@ -89,7 +89,11 @@ const statusColor = {
     "warning": themes[theme].palette.warning.main
 };
 
-
+/*
+Default table component.
+- Requires header and body array.
+    [header_array, ...body_array]
+ */
 export class DefaultTable extends React.Component {
 
     render() {
