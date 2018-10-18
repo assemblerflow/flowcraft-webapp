@@ -15,6 +15,7 @@ import CloseIcon from "mdi-react/CloseIcon";
 
 import classNames from "classnames";
 import Boost from 'highcharts/modules/boost';
+import drilldown from 'highcharts/modules/drilldown';
 import {Chart, PreviewSnack} from "./chart_utils";
 import {LoadingComponent} from "../ReportsBase";
 import {getHighlight} from "./utils";
@@ -30,7 +31,9 @@ import {theme} from "../../../config.json";
 import SortAlphabeticalIcon from "mdi-react/SortAlphabeticalIcon";
 
 const ReactHighcharts = require("react-highcharts");
+
 Boost(ReactHighcharts.Highcharts);
+drilldown(ReactHighcharts.Highcharts);
 
 export class FastQcCharts extends React.Component {
 
@@ -913,6 +916,72 @@ class ChartToolbar extends React.Component{
                     }
                 </div>
             </div>
+        )
+    }
+}
+
+/*
+Component to build the drilldown plot.
+- Build starting series
+- Build drilldown series
+ */
+export class KronaPieChart extends React.Component {
+
+    render() {
+
+        let new_series = [];
+
+        if (this.props.series.length === 0) {
+            new_series = [{
+                "name": "Unclassified",
+                "data": [
+                    ["Unclassified", 100]
+                ]
+            }]
+        }
+        else {
+            new_series = [...this.props.series];
+        }
+
+        const start_series = new_series.pop();
+
+
+        const config = {
+                chart: {
+                    type: 'pie',
+                    plotShadow: false
+            },
+            title: {
+                text: null
+            },
+            xAxis: {
+                type: 'category'
+            },
+            tooltip: {
+                pointFormat: "<b>{point.name}</b>: {point.percentage:.1f} % ({point.y:.3f}))"
+            },
+            legend: {
+                enabled: false
+            },
+
+            plotOptions: {
+                series: {
+                    borderWidth: 0,
+                    dataLabels: {
+                        enabled: true,
+                    }
+                }
+            },
+            series: [start_series],
+            drilldown: {
+                series: new_series
+            }
+        };
+
+        return(
+            <LoadingComponent>
+                <ReactHighcharts config={config} ref="kronaChart"></ReactHighcharts>
+            </LoadingComponent>
         )
     }
 }

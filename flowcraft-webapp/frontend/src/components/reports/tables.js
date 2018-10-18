@@ -31,6 +31,12 @@ import Chip from "@material-ui/core/Chip";
 import Grid from "@material-ui/core/Grid";
 import List from "@material-ui/core/List";
 
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
+
 import styles from "../../styles/reports.css";
 import classNames from "classnames";
 
@@ -79,12 +85,64 @@ import {FindDistributionChart} from "./charts";
 import axios from "axios";
 import {address} from "../../../config";
 
-
 const statusColor = {
     "fail": themes[theme].palette.error.main,
     "pass": themes[theme].palette.success.main,
     "warning": themes[theme].palette.warning.main
 };
+
+/*
+Default table component.
+- Requires header and body array.
+    [header_array, ...body_array]
+ */
+export class DefaultTable extends React.Component {
+
+    render() {
+
+        let header = [];
+        let body  = [];
+
+        if (this.props.data.length > 0) {
+            header = [this.props.data[0]];
+            body = this.props.data.slice(1, this.props.data.length);
+        }
+
+        return(
+            <Table>
+                <TableHead>
+                    {
+                        header.map((row, id) => {
+                            return (
+                                <TableRow key={id}>
+                                    {
+                                        row.map( (cell, id2) => {
+                                             return <TableCell key={id2}>{cell}</TableCell>
+                                        })
+                                    }
+                                </TableRow>
+                            );
+                    })}
+                </TableHead>
+                <TableBody>
+                  {body.map((row, id) => {
+                    return (
+                        <TableRow key={id}>
+                            {
+                                row.map( (cell, id2) => {
+                                     return <TableCell key={id2}>{cell}</TableCell>
+                                })
+                            }
+                        </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+
+
+        )
+    }
+}
 
 /**
  * General component for rendering a React Table. It accepts four main props:
@@ -1043,13 +1101,10 @@ export class AssemblyTable extends React.Component {
     };
 
     downloadAssemblies = async () => {
-        console.log(this.state.selection);
         const res = await getAssemblies(
             this.state.selection.rows,
             this.props.reportData
         );
-
-        console.log(res);
 
         const fileStr = res[0].join(";");
         const sampleStr = res[1].join(";");

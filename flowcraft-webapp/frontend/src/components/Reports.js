@@ -14,7 +14,8 @@ import {
     findChartSignatures,
     findQcWarnings,
     findNfMetadata,
-    findPhylogenySignatures
+    findPhylogenySignatures,
+    findTsvSignatures
 } from "./reports/parsers";
 import {
     QualityControlTable,
@@ -668,6 +669,7 @@ class ReportsApp extends React.Component {
         // const activeReports = this.props.reportData;
         const {tableData, tableSamples} = findTableSignatures(activeReports, this.state.highlights);
         const {charts, chartSamples} = findChartSignatures(activeReports);
+        const {tsvData, tsvSamples} = findTsvSignatures(activeReports);
         const {phylogenies, phylogeniesMetadata} = findPhylogenySignatures(activeReports);
         const qcInfo = findQcWarnings(activeReports);
         const tables = [...tableData.keys()];
@@ -676,8 +678,6 @@ class ReportsApp extends React.Component {
         if (phylogenies.length > 0){
             otherHeaders.push("phylogeny")
         }
-
-        console.log(this.props.reportData)
 
         //
         // This is the main element where the Reports components will be added,
@@ -697,6 +697,8 @@ class ReportsApp extends React.Component {
                     qcInfo,
                     tableSamples,
                     chartSamples,
+                    tsvData,
+                    tsvSamples,
                     nfMetadata,
                     reportData: this.props.reportData
                 }}>

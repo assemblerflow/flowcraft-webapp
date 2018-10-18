@@ -49,7 +49,8 @@ import {
 } from "./reports/sample_specific_utils";
 
 import {ReportAppConsumer} from "./reports/contexts";
-import {FindDistributionChart, ResourcesPieChart} from "./reports/charts";
+import {FindDistributionChart, ResourcesPieChart, KronaPieChart} from "./reports/charts";
+import {DefaultTable} from "./reports/tables";
 import {getSamplePlot} from "./reports/parsers";
 
 import {LoadingComponent} from "./ReportsBase";
@@ -108,7 +109,7 @@ export class SampleDialog extends React.Component{
         return(
             <ReportAppConsumer>
                 {
-                    ({charts, reportData}) => (
+                    ({charts, tsvData, reportData}) => (
                         <div style={style.buttonContainer}>
                             <div onClick={this.handleClickOpen}>
                                 {this.props.button}
@@ -130,6 +131,7 @@ export class SampleDialog extends React.Component{
                                 <div style={style.reportContainer}>
                                     <SampleSpecificReport charts={charts}
                                                           sample={this.props.sample}
+                                                          tsvData={tsvData}
                                                           zoomInitialGene={this.props.zoomInitialGene}
                                                           reportData={reportData}/>
                                 </div>
@@ -153,7 +155,6 @@ class SampleSpecificReport extends React.Component{
     }
 
     render(){
-
         return(
             <div>
                 <ReportAppConsumer>
@@ -184,8 +185,297 @@ class SampleSpecificReport extends React.Component{
                                     reportData={this.props.reportData}/>
                             )
                         }
-                    </ReportAppConsumer>}
+                    </ReportAppConsumer>
+                }
+                {
+                    this.props.charts.includes("kronaPlot") &&
+                        <ReportAppConsumer>
+                        {
+                            ({charts, reportData}) => (
+                                <KronaPlotContainer
+                                    sample={this.props.sample}
+                                    reportData={reportData}
+                                />
+                            )
+                        }
+                    </ReportAppConsumer>
+                }
+                {
+                    this.props.tsvData.includes("MaxBin2") &&
+                        <ReportAppConsumer>
+                        {
+                            ({tsvData, reportData}) => (
+                                <MaxBinContainer
+                                    sample={this.props.sample}
+                                    reportData={reportData}
+                                />
+                            )
+                        }
+                    </ReportAppConsumer>
+                }
             </div>
+        )
+    }
+}
+
+/*
+Container for the Bin information results on the sample specific report.
+It requires the MaxBin2 signature on the tsvData report signature.
+ */
+class MaxBinContainer extends React.Component {
+
+    // Get MaxBin data for a given sample in the reports
+    getMaxBinData = (sample, reportData) => {
+        for (const report of reportData) {
+            if (report.sampleName === sample && report.reportJson.tsvData !== undefined) {
+                for (const tsv of report.reportJson.tsvData) {
+                    if (tsv.hasOwnProperty("data") &&
+                        tsv.data.hasOwnProperty("MaxBin2")) {
+                        return tsv.data["MaxBin2"];
+                    }
+                }
+            }
+        }
+    }
+
+    render() {
+
+        let maxBinData = this.getMaxBinData(this.props.sample, this.props.reportData);
+        maxBinData = maxBinData === undefined ? [] : maxBinData;
+
+        const style = {
+            divTable: {
+                "margin": "10px auto auto",
+                "width": "100%"
+            }
+        };
+
+        return(
+            <ExpansionPanel defaultExpanded>
+                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
+                    <Typography variant={"headline"}>
+                        Metagenomic Binning
+                    </Typography>
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails>
+                    <div style={style.divTable}>
+                        <DefaultTable data={maxBinData}></DefaultTable>
+                    </div>
+                </ExpansionPanelDetails>
+            </ExpansionPanel>
+        )
+    }
+}
+
+/*
+Container to load the taxonomic results plot.
+- Loads the krona plot results.
+ */
+class KronaPlotContainer extends React.Component {
+
+    constructor(props) {
+        super(props);
+        const processes = this.getAllKronaProcesses(props.sample, props.reportData);
+
+        this.state = {
+            process: processes.length === 0 ? "" : processes[0].label
+        }
+    }
+
+    handleChange = (e) => {
+        this.setState({process: e.label})
+    };
+
+    // Get the krona processes for a given sample available in the reports.
+    // A given sample can have more than one krona process.
+    getAllKronaProcesses = (sample, reportData) => {
+        let processes = [];
+
+        for (const report of reportData) {
+            if (report.sampleName === sample && report.reportJson.plotData !== undefined) {
+                for (const plot of report.reportJson.plotData) {
+                    if (plot.hasOwnProperty("data") && plot.data.hasOwnProperty("kronaPlot")) {
+                        processes.push({
+                            value: report.processName,
+                            label: report.processName
+                        });
+                    }
+                }
+            }
+        }
+
+        return processes;
+    };
+
+    parseChildren = (entry, globalClass) => {
+        let countLevels = 0;
+        let currentLevel = JSON.parse(JSON.stringify(entry));
+        let lastParent = "top";
+
+        while (Object.keys(currentLevel.children).length !== 0 && currentLevel.children.constructor === Object) {
+            countLevels += 1;
+            let toDrill = null;
+
+            if (Object.keys(currentLevel.children.children).length !== 0) {
+                toDrill = currentLevel.key
+            }
+
+            let toAdd = {
+                "name": currentLevel.key,
+                "id": lastParent,
+                "y": currentLevel.value,
+                "drilldown": toDrill,
+                "parent": lastParent
+            };
+
+            if (!globalClass.hasOwnProperty(String(countLevels))) {
+                globalClass[String(countLevels)] = [toAdd];
+            } else {
+                let add = true;
+                for (const l of globalClass[String(countLevels)]) {
+                    if (l.name === currentLevel.key) {
+                        add = false;
+                        break;
+                    }
+                }
+                if (add) {
+                    globalClass[String(countLevels)].push(toAdd);
+                }
+            }
+            lastParent = currentLevel.key;
+            currentLevel = currentLevel.children;
+
+        }
+    };
+
+    // Construct the series based on the classification provided.
+    // Start with higher level classifications and then merge with the low
+    // level classifications.
+    buildSeries = (globalClass) => {
+        const globalClassKeys = Object.keys(globalClass);
+        const sortedKeys = globalClassKeys.sort(function(a, b){return parseInt(a)-parseInt(b)});
+        let newGlobalClass = {};
+        let tempSum = {};
+
+        for (const key of sortedKeys) {
+            let tmpObject = {};
+
+            for (const entry of globalClass[key]) {
+                if (!tmpObject.hasOwnProperty(entry.id)) {
+                    tmpObject[entry.id] = [entry];
+                    tempSum[entry.id] = entry.y;
+                }
+                else {
+                    tmpObject[entry.id].push(entry);
+                    tempSum[entry.id] = tempSum[entry.id] + entry.y;
+                }
+            }
+
+            newGlobalClass[key] = tmpObject;
+        }
+
+        globalClass = newGlobalClass;
+
+        let drillDown = [];
+
+        for (const key of sortedKeys.reverse()) {
+            for (const s in globalClass[key]) {
+                let entry = globalClass[key];
+                let currentLevel = s;
+
+                let dataToAdd = [];
+
+                for (const result of entry[currentLevel]) {
+                    if (result.drilldown === null) {
+                        dataToAdd.push([result.name, result.y])
+                    }
+                    else {
+                        dataToAdd.push({
+                            "name": result.name,
+                            "y": result.y,
+                            "drilldown": result.drilldown
+                        })
+                    }
+                }
+
+                drillDown.push({
+                    "name": currentLevel,
+                    "id": currentLevel,
+                    "data": dataToAdd
+                });
+            }
+        }
+
+        return drillDown;
+    };
+
+    // Get a specific krona plot for a given sample
+    getKronaData = (sample, processName, reportData) => {
+        for (const report of reportData) {
+            if (report.sampleName === sample && report.reportJson.plotData !== undefined) {
+                for (const plot of report.reportJson.plotData) {
+                    if (plot.hasOwnProperty("data") &&
+                        plot.data.hasOwnProperty("kronaPlot") &&
+                        report.processName === processName) {
+                        return plot.data;
+                    }
+                }
+            }
+        }
+    };
+
+    // Build input for highcharts drilldown plot.
+    constructSeries = (kronaData) => {
+        let series = [];
+        let globalClass = {};
+
+        if (kronaData === undefined) {
+            return series;
+        } else {
+            for(const entry of kronaData.kronaPlot) {
+                this.parseChildren(entry, globalClass);
+            }
+            const kronaSeries = this.buildSeries(globalClass);
+            return kronaSeries;
+        }
+    };
+
+
+    render() {
+        const options = this.getAllKronaProcesses(this.props.sample, this.props.reportData);
+        const kronaData = this.getKronaData(this.props.sample, this.state.process, this.props.reportData);
+        const kronaSeries = this.constructSeries(kronaData);
+
+        const style = {
+            divPlot: {
+                "margin": "10px auto auto",
+                "width": "100%"
+            },
+            headerSelect: {
+                "width": "40%",
+                "float": "right"
+            }
+        };
+
+        return(
+            <ExpansionPanel defaultExpanded>
+                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
+                    <Typography variant={"headline"}>
+                        Taxonomic Identification
+                    </Typography>
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails>
+                    <div style={style.divPlot}>
+                        <div style={style.headerSelect}>
+                            <Select
+                                value={{value: this.state.process, label: this.state.process}}
+                                onChange={this.handleChange}
+                                options={options}/>
+                        </div>
+                        <KronaPieChart series={kronaSeries}/>
+                    </div>
+                </ExpansionPanelDetails>
+            </ExpansionPanel>
         )
     }
 }
@@ -1862,8 +2152,6 @@ class SyncCharts extends React.Component{
             }
         }
 
-        console.log(this.props.plotData)
-
         return(
             <div ref={elem => this.chartContainer = elem} style={{"width":"100%"}}>
                 <CollapsableChart title={"GC% content"}>
@@ -1970,7 +2258,6 @@ class ChartWrapper extends React.Component{
     }
 
     render(){
-        console.log(this.props)
         return(
             <React.Fragment>
                 {this.props.children}
