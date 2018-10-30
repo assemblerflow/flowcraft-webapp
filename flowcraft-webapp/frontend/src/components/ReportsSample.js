@@ -51,7 +51,7 @@ import {
 import {ReportAppConsumer} from "./reports/contexts";
 import {FindDistributionChart, ResourcesPieChart, KronaPieChart} from "./reports/charts";
 import {DefaultTable} from "./reports/tables";
-import {getSamplePlot} from "./reports/parsers";
+import {findNfMetadata, getSamplePlot} from "./reports/parsers";
 
 import {LoadingComponent} from "./ReportsBase";
 import {PositionedSnackbar} from "./reports/modals";
@@ -1526,10 +1526,16 @@ class SyncChartsContainer extends React.Component{
 
     };
 
-    complementAbricateData = (reportData, sample, assemblyFile, xBars, window) => {
+    complementAbricateData = (reportData, sample, assemblyFile, xBars, window,
+                              processId, nfMetadata) => {
 
         let xrangeData = [];
         let xrangeCategories = [];
+        // variable to check if process ids have lane information
+        let hasLane = true;
+
+        // get the parent process lane (e.g. pilon_report_*_*)
+        const processLane = parseInt(processId.split("_")[0]);
 
         for (const el of reportData) {
 
@@ -1542,7 +1548,33 @@ class SyncChartsContainer extends React.Component{
                         continue
                     }
 
-                    if (plot.data.hasOwnProperty("abricateXrange")) {
+                    // get the lane of the current process
+                    const currentLane = el.processId.split("_")[0];
+
+                    // get the forks to iterate in getParentLanes function
+                    const fetchForks = nfMetadata.filter( (e, i) => {
+                        return e.runName === el.pipelineId
+                    });
+
+                    // start parentLane variable
+                    let parentLane;
+
+                    // try/catch to work with custom pids (e.g. innuendo)
+                    try {
+                        parentLane = getParentLanes(currentLane,
+                            fetchForks[0].forks);
+                    } catch (e) {
+                        hasLane = false;
+                    }
+
+                    // look for abricateXrange signature and check if
+                    // processLane is the same as the parentLane.
+                    // if hasLane is false then tries to mount the component
+                    // with the all the abricateXrange (this will fail if many
+                    // forks have this signature.
+                    if (plot.data.hasOwnProperty("abricateXrange") &&
+                        (processLane === parentLane[0] || !hasLane)) {
+
                         let counter = 0;
                         for (const [db, data] of Object.entries(plot.data.abricateXrange)){
 
@@ -1624,47 +1656,85 @@ class SyncChartsContainer extends React.Component{
         return accessionsResults
     };
 
-    complementPlasmidData = (reportData, sample, assemblyFile, xBars, window) => {
+    complementPlasmidData = (reportData, sample, assemblyFile, xBars, window,
+                             processId, nfMetadata) => {
 
         let xrangeCategoriesPlasmids = [],
             xrangeDataPlasmids = [];
+        // variable to check if process ids have lane information
+        let hasLane = true;
 
-        for (const el of getSamplePlot(reportData, sample)) {
+        // get the parent process lane (e.g. pilon_report_*_*)
+        const processLane = parseInt(processId.split("_")[0]);
 
-            for (const plot of el.reportJson.plotData){
+        for (const el of reportData) {
 
-                if (plot.data.hasOwnProperty("patlasMashDistXrange") &&
-                    plot.assemblyFile === assemblyFile){
+            if (((el || {}).reportJson || {}).plotData) {
 
-                    xrangeCategoriesPlasmids.push("plasmids");
+                for (const plot of el.reportJson.plotData) {
 
-                    const tempData = Object.keys(plot.data.patlasMashDistXrange).map((contig) => {
+                    // Skip entries for different sample/ assembly file
+                    if (plot.sample !== sample || plot.assemblyFile !== assemblyFile) {
+                        continue
+                    }
 
-                        const correctRange = this._convertPlasmidPosition(
-                            xBars, contig, window);
+                    // get the lane of the current process
+                    const currentLane = el.processId.split("_")[0];
 
-                        // get information from tableRow with the corresponding
-                        // identity, shared sequences.
-                        const accessionsResults = this._getPlasmidsResults(
-                            el.reportJson.tableRow[0].data,
-                            plot.data.patlasMashDistXrange[contig]
-                        );
-
-                        return {
-                            x: correctRange[0],
-                            x2: correctRange[1],
-                            y: 0,
-                            gene: contig,
-                            accessionsResults
-                        };
+                    // get the forks to iterate in getParentLanes function
+                    const fetchForks = nfMetadata.filter((e, i) => {
+                        return e.runName === el.pipelineId
                     });
 
-                    xrangeDataPlasmids.push({
-                        name: "plasmids",
-                        data: tempData,
-                        pointWidth: 12,
-                        pointRange: 0,
-                    })
+                    // start parentLane variable
+                    let parentLane;
+
+                    // try/catch to work with custom pids (e.g. innuendo)
+                    try {
+                        parentLane = getParentLanes(currentLane,
+                            fetchForks[0].forks);
+                    } catch (e) {
+                        hasLane = false;
+                    }
+
+                    // look for patlasMashDistXrange signature and check if
+                    // processLane is the same as the parentLane.
+                    // if hasLane is false then tries to mount the component
+                    // with the all the patlasMashDistXrange (this will fail if many
+                    // forks have this signature.
+                    if (plot.data.hasOwnProperty("patlasMashDistXrange") &&
+                        (processLane === parentLane[0] || !hasLane)) {
+
+                        xrangeCategoriesPlasmids.push("plasmids");
+
+                        const tempData = Object.keys(plot.data.patlasMashDistXrange).map((contig) => {
+
+                            const correctRange = this._convertPlasmidPosition(
+                                xBars, contig, window);
+
+                            // get information from tableRow with the corresponding
+                            // identity, shared sequences.
+                            const accessionsResults = this._getPlasmidsResults(
+                                el.reportJson.tableRow[0].data,
+                                plot.data.patlasMashDistXrange[contig]
+                            );
+
+                            return {
+                                x: correctRange[0],
+                                x2: correctRange[1],
+                                y: 0,
+                                gene: contig,
+                                accessionsResults
+                            };
+                        });
+
+                        xrangeDataPlasmids.push({
+                            name: "plasmids",
+                            data: tempData,
+                            pointWidth: 12,
+                            pointRange: 0,
+                        })
+                    }
                 }
             }
         }
@@ -1677,6 +1747,8 @@ class SyncChartsContainer extends React.Component{
 
         let data = new Map();
         let processes = [];
+
+        const nfMetadata = findNfMetadata(this.props.reportData);
 
         for (const el of getSamplePlot(reportData, sample)){
 
@@ -1702,10 +1774,13 @@ class SyncChartsContainer extends React.Component{
                     });
 
                     if (this.props.charts.includes("abricateXrange")){
+
                         const {xrangeData, xrangeCategories} = this.complementAbricateData(
                             reportData, sample,
                             plot.data.genomeSliding.assemblyFile,
-                            currentData.xBars, currentData.window
+                            currentData.xBars, currentData.window,
+                            el.processId,
+                            nfMetadata
                         );
 
                         currentData.xrangeData = xrangeData;
@@ -1717,7 +1792,9 @@ class SyncChartsContainer extends React.Component{
                             reportData, sample,
                             plot.data.genomeSliding.assemblyFile,
                             currentData.xBars,
-                            currentData.window
+                            currentData.window,
+                            el.processId,
+                            nfMetadata
                         );
 
                         currentData.xrangeDataPlasmids = xrangeDataPlasmids;
