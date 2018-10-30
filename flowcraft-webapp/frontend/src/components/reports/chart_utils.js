@@ -112,3 +112,40 @@ export class PreviewSnack extends React.Component{
         )
     }
 }
+
+
+/**
+ * Function to generate random colors and return an hex code per color.
+ */
+const getRandomColor = () => {
+  const authorizedLetters = '0123456789ABCDEF';
+  let color = '#';
+  for (let i = 0; i < 6; i++) {
+    color += authorizedLetters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+};
+
+/**
+ * Function to generate an array of colors in hex code for a given number of
+ * entries
+ *
+ * @param {Number} counter - A number for the lenght of the array of colors to
+ * return
+ * @returns {Array}
+ * @constructor
+ */
+export const GenerateColors = (counter) => {
+
+    let colorArray = [];
+
+    while (colorArray.length < counter) {
+        // generates hex code randomly
+        const color = getRandomColor();
+        // pushes the color to the colorArray if it is not there yet
+        !colorArray.includes(color) && colorArray.push(color)
+    }
+
+    return colorArray
+
+};

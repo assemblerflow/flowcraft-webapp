@@ -16,7 +16,7 @@ import CloseIcon from "mdi-react/CloseIcon";
 import classNames from "classnames";
 import Boost from 'highcharts/modules/boost';
 import drilldown from 'highcharts/modules/drilldown';
-import {Chart, PreviewSnack} from "./chart_utils";
+import {Chart, PreviewSnack, GenerateColors} from "./chart_utils";
 import {LoadingComponent} from "../ReportsBase";
 import {getHighlight} from "./utils";
 
@@ -485,7 +485,8 @@ export class AssemblySizeDistChart extends React.Component {
         let colorIndexMap = new Map();
         let colorIndex = 0;
 
-        let highlightsExist = (this.props.highlights.samples.length > 0 || this.props.highlights.projects.length > 0);
+        let highlightsExist = (this.props.highlights.samples.length > 0 ||
+            this.props.highlights.projects.length > 0);
 
         for (const r of reportData){
             if(r.hasOwnProperty("reportJson")) {
@@ -535,6 +536,11 @@ export class AssemblySizeDistChart extends React.Component {
             }
         }
 
+        // after knowing the maximum number of series to be added (given by the
+        // number of colorIndex counter), construct an array of colors
+        // dynamically with a unique color per colorIndex
+        const colorArray = GenerateColors(colorIndex);
+        
         for (const data of chartDataByProcess.values()){
 
             for (const point of data){
@@ -548,15 +554,23 @@ export class AssemblySizeDistChart extends React.Component {
                     }
                 }
 
-                const highlight = getHighlight(this.props.highlights, point.name, point.project);
+                const highlight = getHighlight(this.props.highlights,
+                    point.name, point.project);
+
+                // fetch colorIndex for the current point
+                const pointColorIndex = colorIndexMap.get(point.id).colorIndex;
+
+                const color = highlight ? highlight.color :
+                        highlightsExist ? "gray" :
+                            colorArray[pointColorIndex];
 
                 chartData.push({
                     linkedTo: point.linkedTo,
                     id: point.id,
                     name: point.name,
                     index: sampleCounter,
-                    colorIndex: !highlightsExist ? colorIndexMap.get(point.id).colorIndex : null,
-                    color: highlight ? highlight.color : highlightsExist ? "gray" : null,
+                    // colorIndex: !highlightsExist ? colorIndexMap.get(point.id).colorIndex : null,
+                    color,
                     data: this.spreadData(point.data, sampleCounter),
                     marker: {
                         symbol: "circle",
@@ -691,6 +705,8 @@ class PilonSizeDistChart extends React.Component{
     }
 
     render(){
+
+        console.log("lala", this.props.plotData.chartData.slice(-1)[0].colorIndex + 1)
 
         console.log("render pilon chart")
 
