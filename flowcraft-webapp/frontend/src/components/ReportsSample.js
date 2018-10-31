@@ -1534,7 +1534,7 @@ class SyncChartsContainer extends React.Component{
         // variable to check if process ids have lane information
         let hasLane = true;
 
-        // get the parent process lane (e.g. pilon_report_*_*)
+        // get the process lane (e.g. 1_3, lane will be 1)
         const processLane = parseInt(processId.split("_")[0]);
 
         for (const el of reportData) {
@@ -1664,7 +1664,7 @@ class SyncChartsContainer extends React.Component{
         // variable to check if process ids have lane information
         let hasLane = true;
 
-        // get the parent process lane (e.g. pilon_report_*_*)
+        // get the process lane (e.g. 1_3, lane will be 1)
         const processLane = parseInt(processId.split("_")[0]);
 
         for (const el of reportData) {
