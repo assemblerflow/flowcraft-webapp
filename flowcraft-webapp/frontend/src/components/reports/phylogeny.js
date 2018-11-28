@@ -182,7 +182,6 @@ class PhylogeneticTree extends React.Component {
     componentDidMount = () => {
 
         const colors = randomColor({count: this.props.metadata.size});
-        console.log(this.node);
         this.tree = Phylocanvas.createTree(this.node, {});
 
         let _ids = [];
