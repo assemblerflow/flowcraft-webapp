@@ -40,16 +40,24 @@ export class Phylogeny extends React.Component{
 
         const metadata = new Map();
 
-        for (const m of rawMetadata){
-            const currentMeta = m.reportJson.metadata[0];
-            const sample = currentMeta.sample;
+        for (const m of rawMetadata) {
+            for (const x of m.reportJson.metadata) {
 
-            if (!metadata.has(sample)){
-                metadata.set(sample, {});
+                const currentMeta = x;
+                console.log("currentMeta:", currentMeta)
+
+                const sample = currentMeta.sample;
+
+                if (!metadata.has(sample)) {
+                    metadata.set(sample, {});
+
+
+                }
+
+                metadata.get(sample)[currentMeta.column] = {label: currentMeta.treeData};
             }
-
-            metadata.get(sample)[currentMeta.column] = {label: currentMeta.treeData};
         }
+
 
         return metadata
 
@@ -174,6 +182,7 @@ class PhylogeneticTree extends React.Component {
     componentDidMount = () => {
 
         const colors = randomColor({count: this.props.metadata.size});
+        console.log(this.node);
         this.tree = Phylocanvas.createTree(this.node, {});
 
         let _ids = [];
