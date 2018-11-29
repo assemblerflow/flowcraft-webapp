@@ -40,16 +40,20 @@ export class Phylogeny extends React.Component{
 
         const metadata = new Map();
 
-        for (const m of rawMetadata){
-            const currentMeta = m.reportJson.metadata[0];
-            const sample = currentMeta.sample;
+        for (const sampleMetadata of rawMetadata) {
+            for (const currentMeta of sampleMetadata.reportJson.metadata) {
 
-            if (!metadata.has(sample)){
-                metadata.set(sample, {});
+                const sample = currentMeta.sample;
+
+                if (!metadata.has(sample)) {
+                    metadata.set(sample, {});
+
+                }
+
+                metadata.get(sample)[currentMeta.column] = {label: currentMeta.treeData};
             }
-
-            metadata.get(sample)[currentMeta.column] = {label: currentMeta.treeData};
         }
+
 
         return metadata
 
