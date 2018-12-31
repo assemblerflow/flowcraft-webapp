@@ -64,6 +64,8 @@ export class Phylogeny extends React.Component{
         const treeData = this.props.treeData[this.state.process];
         const newick = treeData.reportJson.treeData[0].trees[this.state.tree];
         const metadata = this.prepareMetadata(this.props.treeMetadata);
+        const treeLabels = treeData.reportJson.treeData[0].labels ?
+            treeData.reportJson.treeData[0].labels[0] : null;
 
         // Select options
         // Options to change process name
@@ -146,6 +148,7 @@ export class Phylogeny extends React.Component{
                                 zoom={this.state.zoom}
                                 treeType={treeTypeOption[this.state.treeType].label}
                                 metadata={metadata}
+                                labelsMap={treeLabels}
                                 newickString={newick} />
                         </div>
                     </ExpansionPanelDetails>
@@ -185,8 +188,20 @@ class PhylogeneticTree extends React.Component {
         // Add metadata to tree
         this.tree.on("beforeFirstDraw", () => {
             for (const i in this.tree.leaves){
+
+                // If the labelsMap prop is provided, then check if the current
+                // leaf name is in that object. If yes, replace the old label
+                // with the one in this object
+                const leafLabel = this.tree.leaves[i].label;
+                if (this.props.labelsMap && this.props.labelsMap.hasOwnProperty(leafLabel)) {
+                    this.tree.leaves[i].label = this.props.labelsMap[leafLabel]
+                }
+
                 const taxon = this.tree.leaves[i].id.replace(/^_R_/, "");
                 const metadata = this.props.metadata.get(taxon);
+
+                // If there is no metadata, skip the rest
+                if (!metadata) continue;
 
                 for (const col of Object.keys(metadata)){
 
