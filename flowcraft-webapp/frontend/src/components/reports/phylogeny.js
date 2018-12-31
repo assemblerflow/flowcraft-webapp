@@ -14,9 +14,11 @@ import Phylocanvas from 'phylocanvas';
 
 import contextMenu from "phylocanvas-plugin-context-menu";
 import metadata from "phylocanvas-plugin-metadata";
+import scalebar from 'phylocanvas-plugin-scalebar';
 
 Phylocanvas.plugin(contextMenu);
 Phylocanvas.plugin(metadata);
+Phylocanvas.plugin(scalebar);
 
 export class Phylogeny extends React.Component{
 
