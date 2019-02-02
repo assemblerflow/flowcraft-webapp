@@ -740,7 +740,8 @@ class ReportsApp extends React.Component {
                             <Element name={"typingTable"}
                                      className={styles.scrollElement}>
                                 <TypingTable
-                                    tableData={tableData.get("typing")}/>
+                                    tableData={tableData.get("typing")}
+                                    qcInfo={qcInfo}/>
                             </Element>
                         }
                         {

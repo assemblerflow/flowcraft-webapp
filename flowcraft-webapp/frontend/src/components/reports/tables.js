@@ -1185,6 +1185,8 @@ export class TypingTable extends React.Component {
 
     render() {
         const tableData = genericTableParser(this.props.tableData);
+        qcParseAdditionalData(tableData, this.props.tableData,
+            this.props.qcInfo, "typing");
 
         const style = {
             header: {
