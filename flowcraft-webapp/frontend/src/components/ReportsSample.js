@@ -1573,7 +1573,7 @@ class SyncChartsContainer extends React.Component{
                     // with the all the abricateXrange (this will fail if many
                     // forks have this signature.
                     if (plot.data.hasOwnProperty("abricateXrange") &&
-                        (processLane === parentLane[0] || !hasLane)) {
+                        (!hasLane || processLane === parentLane[0])) {
 
                         let counter = 0;
                         for (const [db, data] of Object.entries(plot.data.abricateXrange)){
