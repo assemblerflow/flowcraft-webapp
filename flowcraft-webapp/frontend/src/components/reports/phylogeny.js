@@ -183,10 +183,23 @@ class PhylogeneticTree extends React.Component {
     componentDidMount = () => {
 
         const colors = randomColor({count: this.props.metadata.size});
-        this.tree = Phylocanvas.createTree(this.node, {});
+        this.tree = Phylocanvas.createTree(this.node, {nodeAlign: true});
+        let newickTree = this.props.newickString
 
+        // This ad-hoc code prevents the metadata associated with the tree leaves from being very far from the
+        // name of the leafs. The issue was that the distance between leaf and metadata was calculated with the
+        // old (and larger) labels, and then we switched the label names but the distance remained. To fix that,
+        // the replacement of the labels is done on the newick string itself before being provided to phylocanvas.
+        // We also update the metadata Map with the new labels.
+        let counter = 0
+        for (const leafLabel of Object.keys(this.props.labelsMap)) {
+            let newLabel = this.props.labelsMap[leafLabel].replace(':', '')
+            if (newLabel === 'Spike') newLabel = `Spike${counter}`
+            counter += 1
+            newickTree = newickTree.replace(leafLabel, newLabel)
+            this.props.metadata.set(newLabel, this.props.metadata.get(leafLabel.replace(/^_R_/, "")))
+        }
         let _ids = [];
-
         // Add metadata to tree
         this.tree.on("beforeFirstDraw", () => {
             for (const i in this.tree.leaves){
@@ -199,8 +212,9 @@ class PhylogeneticTree extends React.Component {
                     this.tree.leaves[i].label = this.props.labelsMap[leafLabel]
                 }
 
-                const taxon = this.tree.leaves[i].id.replace(/^_R_/, "");
+                const taxon = this.tree.leaves[i].id;
                 const metadata = this.props.metadata.get(taxon);
+                console.log(metadata)
 
                 // If there is no metadata, skip the rest
                 if (!metadata) continue;
@@ -208,6 +222,7 @@ class PhylogeneticTree extends React.Component {
                 for (const col of Object.keys(metadata)){
 
                     const label = metadata[col].label;
+                    console.log(label)
                     let colorIndex;
 
                     if (!_ids.includes(label)){
@@ -228,7 +243,7 @@ class PhylogeneticTree extends React.Component {
         });
 
         // Load the newick tree from props
-        this.tree.load(this.props.newickString);
+        this.tree.load(newickTree);
         this.setTreeAttributes();
         // tree.load("((_R_CC0067_NODE_1_length_10197_cov_734.723715_pilon:0.0006430160208146113,(CC0061_k77_1_flag_1_multi_4641.2458_len_10267_pilon:0.00953411150529446,_R_CC0116_NODE_1_length_10196_cov_675.686135_pilon:0.004676216709352007)56:0.003523710625083518)100:0.5306604729360941,Spike_NODE_2_length_10199_cov_229.021834_pilon:0.29987078286758695,_R_Spike_NODE_1_length_10319_cov_2021.808436_pilon:0.2754770121464598);");
 
