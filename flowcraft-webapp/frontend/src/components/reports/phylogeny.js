@@ -214,7 +214,6 @@ class PhylogeneticTree extends React.Component {
 
                 const taxon = this.tree.leaves[i].id;
                 const metadata = this.props.metadata.get(taxon);
-                console.log(metadata)
 
                 // If there is no metadata, skip the rest
                 if (!metadata) continue;
@@ -222,7 +221,6 @@ class PhylogeneticTree extends React.Component {
                 for (const col of Object.keys(metadata)){
 
                     const label = metadata[col].label;
-                    console.log(label)
                     let colorIndex;
 
                     if (!_ids.includes(label)){
