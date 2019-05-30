@@ -7,12 +7,15 @@ import Fade from '@material-ui/core/Fade';
 import Grid from "@material-ui/core/Grid";
 
 import logo from  "../../resources/Logo_small.png";
+import GithubCircleIcon from "mdi-react/GithubCircleIcon";
+import BookOpenIcon from "mdi-react/BookOpenIcon";
 
 import {HomeInnuendo} from "./innuendo/home";
 
 // Theme imports
 import {themes} from "./reports/themes";
 import {theme, service} from "../../config.json";
+import IconButton from "@material-ui/core/IconButton";
 
 
 class Home extends React.Component {
@@ -57,8 +60,9 @@ class HomeFlowcraft extends React.Component {
                 color: "#6e6e6e",
             },
             logo: {
-                height: "20%",
-                width: "80%"
+                height: "40%",
+                width: "100%",
+                textAlign: "center",
             },
             logoContainer: {
                 display: "flex"
@@ -127,6 +131,18 @@ class HomeFlowcraft extends React.Component {
                     <Fade in={this.state.showReportTooltip}>
                         <Typography style={style.tooltip} align={"center"}>See the interactive reports from a Flowcraft pipeline execution</Typography>
                     </Fade>
+                </div>
+                <div align="center">
+                <IconButton
+                    href={"https://github.com/assemblerflow/flowcraft"}
+                    target={"_blank"}>
+                    <GithubCircleIcon style={style.icon} size={28}/>
+                </IconButton>
+                <IconButton
+                    href={"https://flowcraft.readthedocs.io/en/latest/"}
+                    target={"_blank"}>
+                    <BookOpenIcon style={style.icon} size={28}/>
+                </IconButton>
                 </div>
             </div>
         )
