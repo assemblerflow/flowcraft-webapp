@@ -34,7 +34,7 @@
     "css-loader": "^0.28.11",
     "d3": "^5.1.0",
     "d3-svg-legend": "^2.25.6",
-    "highcharts": "^6.1.1",
+    "highcharts": "^8.2.0",
     "highcharts-histogram-bellcurve": "^0.1.7",
     "match-sorter": "^2.2.3",
     "material-design-icons": "^3.0.1",
